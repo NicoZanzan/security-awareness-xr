@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Awareness AR Experience</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/landing.css">
+</head>
+<body class="landing-page">
+  <div class="landing-container">
+    <div class="landing-content">
+      <h1>🛡️ Security Awareness AR Experience</h1>
+      <p class="tagline">Learn to stay alert - Danger might be closer than you think</p>
+      
+      <div class="security-warning">
+        ⚠️ Always be vigilant when handling sensitive information
+      </div>
+      
+      <div class="features">
+        <div class="feature">
+          <div class="icon">🤖</div>
+          <h3>Meet Wendy</h3>
+          <p>Your friendly security guide who teaches awareness</p>
+        </div>
+        <div class="feature">
+          <div class="icon">👁️</div>
+          <h3>Hidden Threats</h3>
+          <p>Discover how bad actors can spy on you unnoticed</p>
+        </div>
+        <div class="feature">
+          <div class="icon">🔄</div>
+          <h3>Interactive Learning</h3>
+          <p>Turn around and uncover the truth behind you</p>
+        </div>
+      </div>
+      
+      <p class="instructions">
+        <strong>Experience Overview:</strong><br>
+        1. Find an open area with good lighting<br>
+        2. Allow camera and sensor access when prompted<br>
+        3. Meet Wendy, your security awareness guide<br>
+        4. Listen carefully and follow instructions<br>
+        5. Be prepared to turn around when prompted!
+      </p>
+      
+      <button class="start-button interactive-button" id="startBtn" onclick="window.location.href='app.html'">
+        🚀 Start Security Experience
+      </button>
+      
+      <div class="wave-indicator" id="waveIndicator">
+        👋 Wave detected! Click the button or continue waving to proceed
+      </div>
+      
+      <div class="compatibility">
+        <p><strong>Story Preview:</strong> Meet Wendy, a friendly robot who will teach you about digital security. But beware - when she asks you to turn around, you'll discover that Mendy, an unfriendly spy, has been watching you all along!</p>
+        <p>Best experienced on Meta Quest 3 or compatible AR-enabled devices</p>
+        <p class="fallback">Desktop preview available for non-AR devices</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/gestures.js"></script>
+  <script src="js/utils.js"></script>
+  <script>
+    // Initialize the landing page functionality
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeLandingPage();
+    });
+  </script>
+</body>
+</html>
