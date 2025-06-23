@@ -279,32 +279,53 @@ class ARExperience {
     
     async startXRSession() {
         try {
-            // Try immersive AR first
-            if (navigator.xr) {
-                try {
+            console.log('Attempting to start XR session...');
+            
+            // For desktop testing, skip WebXR and go straight to fallback
+            if (!navigator.xr) {
+                console.log('No WebXR support, using fallback mode');
+                this.startFallbackMode();
+                return;
+            }
+            
+            // Try immersive AR first, but expect it to fail on desktop
+            try {
+                const supported = await navigator.xr.isSessionSupported('immersive-ar');
+                if (supported) {
                     this.session = await navigator.xr.requestSession('immersive-ar', {
                         requiredFeatures: ['local'],
                         optionalFeatures: ['dom-overlay'],
                         domOverlay: { root: document.getElementById('arView') }
                     });
-                } catch (arError) {
-                    console.log('Immersive AR failed, trying inline mode for desktop testing');
-                    // Fallback to inline for desktop testing
-                    this.session = await navigator.xr.requestSession('inline');
+                    
+                    this.renderer.xr.setSession(this.session);
+                    this.session.addEventListener('end', () => this.onSessionEnd());
+                    
+                    // Start render loop
+                    this.renderer.setAnimationLoop((time, frame) => this.render(time, frame));
+                    console.log('Immersive AR session started');
+                } else {
+                    throw new Error('Immersive AR not supported');
                 }
+            } catch (arError) {
+                console.log('Immersive AR failed, trying inline mode:', arError.message);
                 
-                this.renderer.xr.setSession(this.session);
-                this.session.addEventListener('end', () => this.onSessionEnd());
-                
-                // Start render loop
-                this.renderer.setAnimationLoop((time, frame) => this.render(time, frame));
-            } else {
-                // Fallback for non-WebXR browsers
-                this.startFallbackMode();
+                try {
+                    this.session = await navigator.xr.requestSession('inline');
+                    this.renderer.xr.setSession(this.session);
+                    this.session.addEventListener('end', () => this.onSessionEnd());
+                    
+                    // Start render loop
+                    this.renderer.setAnimationLoop((time, frame) => this.render(time, frame));
+                    console.log('Inline XR session started');
+                } catch (inlineError) {
+                    console.log('Inline XR failed, using fallback:', inlineError.message);
+                    this.startFallbackMode();
+                }
             }
             
         } catch (error) {
-            console.error('XR Session failed:', error);
+            console.error('All XR options failed:', error);
             // Start fallback mode for testing
             this.startFallbackMode();
         }
@@ -313,6 +334,9 @@ class ARExperience {
     startFallbackMode() {
         console.log('Starting fallback mode for desktop testing');
         
+        // Disable XR mode for fallback
+        this.renderer.xr.enabled = false;
+        
         // Position camera for desktop view - slightly elevated like standing
         this.camera.position.set(0, 1.6, 0);
         this.camera.rotation.set(0, 0, 0);
@@ -320,8 +344,10 @@ class ARExperience {
         // Add basic controls
         this.setupDesktopControls();
         
-        // Start render loop
-        this.renderer.setAnimationLoop(() => this.render());
+        // Start regular render loop (not XR)
+        this.renderer.setAnimationLoop((time) => this.render(time));
+        
+        console.log('Fallback mode started successfully');
     }
     
     setupDesktopControls() {
