@@ -127,9 +127,9 @@ class ARExperience {
     }
     
     setupScene() {
-        // Position start button - center it in view
-        this.startButtonModel.position.set(0, 0, -2);
-        this.startButtonModel.scale.set(2, 2, 2); // Make it bigger
+        // Position start button - center it in view at eye level
+        this.startButtonModel.position.set(0, 0, -3);
+        this.startButtonModel.scale.set(1, 1, 1); // Normal size first
         this.scene.add(this.startButtonModel);
         
         // Position Wendy (hidden initially)
@@ -248,8 +248,8 @@ class ARExperience {
     startFallbackMode() {
         console.log('Starting fallback mode for desktop testing');
         
-        // Position camera for desktop view - center it properly
-        this.camera.position.set(0, 0, 0);
+        // Position camera for desktop view - slightly elevated like standing
+        this.camera.position.set(0, 1.6, 0);
         this.camera.rotation.set(0, 0, 0);
         
         // Add basic controls
