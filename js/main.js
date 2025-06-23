@@ -8,6 +8,7 @@ class ARExperience {
         // Models
         this.startButtonModel = null;
         this.pauseButtonModel = null;
+        this.nextButtonModel = null;
         this.wendyModel = null;
         this.mendyModel = null;
         
@@ -203,6 +204,11 @@ class ARExperience {
             // For now, create placeholder pause button
             this.createPauseButtonPlaceholder();
             
+            // Load next button
+            const nextGLB = await this.loadGLB(loader, './assets/models/next.glb');
+            this.nextButtonModel = nextGLB.scene;
+            this.scaleModel(this.nextButtonModel, 1.0);
+            
             // Load Wendy
             const wendyGLB = await this.loadGLB(loader, './assets/models/wendy.glb');
             this.wendyModel = wendyGLB.scene;
@@ -265,6 +271,11 @@ class ARExperience {
         
         // Fallback pause button
         this.createPauseButtonPlaceholder();
+        
+        // Fallback next button
+        const nextGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.05, 6);
+        const nextMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+        this.nextButtonModel = new THREE.Mesh(nextGeometry, nextMaterial);
         
         // Fallback Wendy
         const wendyGeometry = new THREE.CapsuleGeometry(0.3, 1.5);
@@ -331,6 +342,11 @@ class ARExperience {
         this.pauseButtonModel.position.set(1, 1.8, -2); // Top right area
         this.scene.add(this.pauseButtonModel);
         
+        // Add next button to scene (hidden initially)
+        this.nextButtonModel.visible = false;
+        this.nextButtonModel.position.set(0, 1.2, -2); // Center-bottom area
+        this.scene.add(this.nextButtonModel);
+        
         // Setup interaction
         this.setupInteraction();
         
@@ -363,6 +379,13 @@ class ARExperience {
                     console.log('Pause button clicked!');
                     this.togglePause();
                 }
+            } else if (this.nextButtonModel.visible) {
+                // Check for next button
+                const nextIntersects = raycaster.intersectObject(this.nextButtonModel, true);
+                if (nextIntersects.length > 0) {
+                    console.log('Next button clicked!');
+                    this.handleNext();
+                }
             }
         };
         
@@ -375,6 +398,8 @@ class ARExperience {
                 this.beginCybersecurityExperience();
             } else if (event.code === 'KeyP' && this.experienceStarted && this.pauseButtonModel.visible) {
                 this.togglePause();
+            } else if (event.code === 'KeyN' && this.nextButtonModel.visible) {
+                this.handleNext();
             }
         });
     }
@@ -438,8 +463,47 @@ class ARExperience {
         
         this.mendyModel.visible = true;
         
+        // Show next button
+        this.nextButtonModel.visible = true;
+        
         document.getElementById('arInstructions').textContent = 
-            'Mendy was spying on you all along! Stay aware of your surroundings.';
+            'Mendy was spying on you all along! Stay aware of your surroundings. Click Next or press N to continue.';
+    }
+    
+    handleNext() {
+        console.log('Next button clicked - experience complete!');
+        
+        // Hide all models
+        this.wendyModel.visible = false;
+        this.mendyModel.visible = false;
+        this.nextButtonModel.visible = false;
+        
+        // Update instructions
+        document.getElementById('arInstructions').textContent = 
+            'Cybersecurity experience complete! Thank you for staying aware.';
+        
+        // Optional: Return to landing page after a delay
+        setTimeout(() => {
+            this.resetExperience();
+        }, 3000);
+    }
+    
+    resetExperience() {
+        console.log('Resetting experience');
+        
+        // Reset state
+        this.experienceStarted = false;
+        this.isPaused = false;
+        
+        // Show landing page again
+        document.getElementById('arView').style.display = 'none';
+        document.getElementById('landingPage').style.display = 'flex';
+        
+        // Reset start button
+        this.startButtonModel.visible = true;
+        
+        // Reset audio
+        this.wendyAudio.currentTime = 0;
     }
     
     onWindowResize() {
@@ -457,6 +521,11 @@ class ARExperience {
         // Animate pause button
         if (this.pauseButtonModel && this.pauseButtonModel.visible) {
             this.pauseButtonModel.rotation.y = Math.sin(timestamp * 0.003) * 0.2;
+        }
+        
+        // Animate next button
+        if (this.nextButtonModel && this.nextButtonModel.visible) {
+            this.nextButtonModel.rotation.y = timestamp * 0.002;
         }
         
         this.renderer.render(this.scene, this.camera);
