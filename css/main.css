@@ -1,154 +1,105 @@
-/* Reset and base styles */
+/* Reset and Base Styles */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-  }
-  
-  html, body {
-    width: 100%;
-    height: 100%;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #000;
-    color: #fff;
-  }
-  
-  /* Apply overflow hidden only to non-landing pages (AR experience pages) */
-  body:not(.landing-page) {
-    overflow: hidden;
-  }
-  
-  canvas {
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
-  
-  /* UI Elements */
-  .ui-element {
-    position: fixed;
-    z-index: 10;
-    pointer-events: none;
-  }
-  
-  /* Status messages */
-  #status {
-    top: 20px;
-    left: 20px;
-    padding: 8px 12px;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 8px;
-    font-size: 14px;
-    line-height: 1.4;
-    max-width: 80%;
-    transition: opacity 0.3s ease;
-  }
-  
-  /* Loading indicator */
-  .loader {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    height: 100vh;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.8);
-    border-radius: 16px;
-    padding: 24px;
+    overflow: hidden;
+}
+
+/* Landing Page Styles */
+.landing-page {
+    text-align: center;
+    color: white;
     z-index: 100;
-  }
-  
-  .loader-spinner {
-    width: 48px;
-    height: 48px;
-    border: 5px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: #fff;
-    animation: spin 1s ease-in-out infinite;
-    margin-bottom: 16px;
-  }
-  
-  .loader-text {
-    font-size: 16px;
-    color: #fff;
-  }
-  
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-  
-  /* Error messages */
-  .error {
-    position: fixed;
+}
+
+.landing-page h1 {
+    font-size: 3rem;
+    margin-bottom: 2rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.subtitle {
+    margin-bottom: 2rem;
+    font-size: 1.2rem;
+}
+
+.start-button {
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    padding: 20px 40px;
+    font-size: 1.5rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.start-button:hover {
+    background: #ff5252;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.3);
+}
+
+.start-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.device-note {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* AR View Styles */
+.ar-view {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: black;
+    display: none;
+}
+
+.ar-instructions {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    background: rgba(0,0,0,0.7);
+    padding: 10px 20px;
+    border-radius: 10px;
+    z-index: 10;
+}
+
+.error-message {
+    position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(200, 0, 0, 0.8);
+    color: #ff6b6b;
+    background: rgba(0,0,0,0.8);
     padding: 20px;
     border-radius: 10px;
     text-align: center;
-    max-width: 80%;
-    z-index: 1000;
-  }
-  
-  /* Utility classes */
-  .hidden {
-    display: none !important;
-  }
-  
-  .fadeout {
-    opacity: 0;
-    transition: opacity 0.5s ease;
-  }
-  
-  .fadein {
-    opacity: 1;
-    transition: opacity 0.5s ease;
-  }
-  
-  /* Gesture hint */
-  .gesture-hint {
-    position: fixed;
-    bottom: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.7);
-    padding: 12px 20px;
-    border-radius: 30px;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    z-index: 100;
-  }
-  
-  .gesture-icon {
-    width: 24px;
-    height: 24px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-  }
-  
-  /* Story subtitle area */
-  .subtitle-area {
-    position: fixed;
-    bottom: 10%;
-    left: 0;
+    z-index: 10;
+}
+
+#arCanvas {
     width: 100%;
-    text-align: center;
-    padding: 20px;
-    z-index: 20;
-  }
-  
-  .subtitle {
-    display: inline-block;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 12px 24px;
-    border-radius: 10px;
-    font-size: 18px;
-    max-width: 80%;
-    margin: 0 auto;
-  }
+    height: 100%;
+}
