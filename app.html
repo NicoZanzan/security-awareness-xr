@@ -8,14 +8,12 @@
     <!-- External CSS -->
     <link rel="stylesheet" href="./css/main.css">
     <link rel="stylesheet" href="./css/app.css">
-
     
-    <!-- Three.js and WebXR Scripts -->
+    <!-- Three.js and WebXR Scripts - Load in correct order -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/webxr/VRButton.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/js/webxr/VRButton.js"></script>
 </head>
 <body>
     <div id="container">
@@ -42,18 +40,13 @@
         </div>
     </div>
 
-    <script type="module">
-    // Import modules
-    import { initializeGestures } from './js/gestures.js';
-    import { initializeCharacters } from './js/characters.js';
-    import { setupStory, advanceStory } from './js/story.js';
-    import { 
-      LoaderUtils, 
-      AnimationUtils, 
-      MathUtils,
-      DOMUtils 
-    } from './js/utils.js';
+    <!-- Load your custom modules as regular scripts (not ES6 modules) -->
+    <script src="./js/utils.js"></script>
+    <script src="./js/gestures.js"></script>
+    <script src="./js/characters.js"></script>
+    <script src="./js/story.js"></script>
 
+    <script>
     // Application state
     let app = {
       scene: null,
@@ -177,7 +170,11 @@
       
       for (const [name, path] of Object.entries(characterModels)) {
         try {
-          const gltf = await LoaderUtils.loadModel(path);
+          // Use the global GLTFLoader from the CDN
+          const loader = new THREE.GLTFLoader();
+          const gltf = await new Promise((resolve, reject) => {
+            loader.load(path, resolve, undefined, reject);
+          });
           
           // Set up the character
           const character = gltf.scene;
@@ -237,7 +234,12 @@
       
       for (const [name, path] of Object.entries(audioFiles)) {
         try {
-          const audio = await LoaderUtils.loadAudio(path);
+          const audio = new Audio(path);
+          await new Promise((resolve, reject) => {
+            audio.addEventListener('canplaythrough', resolve);
+            audio.addEventListener('error', reject);
+            audio.load();
+          });
           app.audio[name] = audio;
           console.log(`✅ Loaded audio: ${name}`);
         } catch (error) {
@@ -310,17 +312,11 @@
     function handlePinchGesture() {
       console.log('Pinch detected - checking for interactions');
       updateStatus('Pinch gesture detected!');
-      
-      // Could be used for character interactions or menu selections
-      // Implementation depends on your specific interaction needs
     }
 
     function handlePointGesture(direction) {
       console.log('Point detected at:', direction);
       updateStatus(`Pointing detected: ${direction.x.toFixed(2)}, ${direction.y.toFixed(2)}, ${direction.z.toFixed(2)}`);
-      
-      // Could be used for object selection or navigation
-      // Implementation depends on your specific interaction needs
     }
 
     // Utility functions for story integration
@@ -349,7 +345,7 @@
       gestureElement.textContent = statusText;
     }
 
-    // Character management functions (enhanced for story integration)
+    // Character management functions
     function showCharacter(characterName) {
       if (app.characters[characterName]) {
         app.characters[characterName].visible = true;
@@ -370,11 +366,13 @@
       if (app.audio[audioName]) {
         // Stop any currently playing audio
         Object.values(app.audio).forEach(sound => {
-          if (sound.isPlaying) sound.stop();
+          if (sound.pause) sound.pause();
         });
         
         // Play the requested audio
-        app.audio[audioName].play();
+        if (app.audio[audioName].play) {
+          app.audio[audioName].play();
+        }
         console.log(`Playing audio: ${audioName}`);
       } else {
         console.warn(`Audio not found: ${audioName}`);
@@ -383,11 +381,11 @@
 
     function stopAllAudio() {
       Object.values(app.audio).forEach(sound => {
-        if (sound.isPlaying) sound.stop();
+        if (sound.pause) sound.pause();
       });
     }
 
-    // Subtitle management (needed for story.js integration)
+    // Subtitle management
     window.showSubtitle = function(text) {
       const subtitle = document.getElementById('subtitle');
       if (subtitle) {
@@ -419,7 +417,7 @@
       handleGestureEvents();
 
       // Update story controller
-      if (app.storyController) {
+      if (app.storyController && app.storyController.update) {
         app.storyController.update(deltaTime);
       }
 
@@ -461,24 +459,28 @@
         updateStatus('Loading audio...');
         await loadAudioResources();
         
-        // Initialize gesture detection
-        console.log('Initializing gesture detection...');
-        updateStatus('Setting up gesture detection...');
-        app.gestureDetector = await initializeGestures(app.camera);
+        // Initialize gesture detection (if available)
+        if (window.initializeGestures) {
+          console.log('Initializing gesture detection...');
+          updateStatus('Setting up gesture detection...');
+          app.gestureDetector = await window.initializeGestures(app.camera);
+        }
         
         // Initialize WebXR
         console.log('Initializing WebXR...');
         updateStatus('Setting up WebXR...');
         initializeWebXR();
         
-        // Initialize story controller
-        console.log('Setting up story controller...');
-        updateStatus('Preparing security story...');
-        app.storyController = setupStory(app.characters, app.audio);
-        
-        // Start intro sequence
-        console.log('Starting intro sequence...');
-        app.storyController.start('intro');
+        // Initialize story controller (if available)
+        if (window.setupStory) {
+          console.log('Setting up story controller...');
+          updateStatus('Preparing security story...');
+          app.storyController = window.setupStory(app.characters, app.audio);
+          
+          // Start intro sequence
+          console.log('Starting intro sequence...');
+          app.storyController.start('intro');
+        }
         
         // Start render loop
         animate();
@@ -486,11 +488,6 @@
         app.isInitialized = true;
         updateStatus('🎉 Security Awareness XR Experience Ready - Wave to begin!');
         console.log('🎉 Application initialized successfully!');
-        
-        // Add some helpful info to the console
-        console.log('👋 Wave your hand to start the security story');
-        console.log('🤏 Use pinch gestures for interactions');
-        console.log('👉 Point to select objects');
         
       } catch (error) {
         console.error('❌ Failed to initialize application:', error);
@@ -517,7 +514,7 @@
 
     // Reset functionality
     function resetExperience() {
-      if (app.storyController) {
+      if (app.storyController && app.storyController.reset) {
         app.storyController.reset();
         app.storyController.start('intro');
         updateStatus('Experience reset - Wave to begin!');
