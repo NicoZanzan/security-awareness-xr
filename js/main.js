@@ -3,134 +3,86 @@ class ARExperience {
         this.scene = null;
         this.camera = null;
         this.renderer = null;
-        this.session = null;
-        this.frameRequest = null;
         
         // Models
         this.startButtonModel = null;
         this.wendyModel = null;
         this.mendyModel = null;
         
-        // Animation state
+        // State
         this.experienceStarted = false;
-        this.wendySpeaking = false;
-        this.mendyRevealed = false;
         
         this.init();
     }
     
     init() {
-        this.setupEventListeners();
-        this.checkWebXRSupport();
-    }
-    
-    setupEventListeners() {
+        // Simple start button click
         document.getElementById('startButton').addEventListener('click', () => {
             this.startARExperience();
         });
     }
     
-    async checkWebXRSupport() {
-        if (!navigator.xr) {
-            this.showError('WebXR not supported on this device');
-            return;
-        }
-        
-        try {
-            const supported = await navigator.xr.isSessionSupported('immersive-ar');
-            if (!supported) {
-                // For testing on desktop, we'll use inline mode
-                console.log('Immersive AR not supported, will use inline mode for testing');
-            }
-        } catch (error) {
-            console.log('WebXR check failed, will attempt inline mode');
-        }
-    }
-    
     async startARExperience() {
         try {
-            document.getElementById('startButton').disabled = true;
-            document.getElementById('startButton').textContent = 'Starting...';
+            console.log('Starting AR experience...');
             
-            await this.initThreeJS();
-            await this.startXRSession();
-            
+            // Hide landing page, show AR view
             document.getElementById('landingPage').style.display = 'none';
             document.getElementById('arView').style.display = 'block';
             
+            // Initialize Three.js
+            await this.initThreeJS();
+            
+            // Start the experience
+            this.startScene();
+            
         } catch (error) {
-            console.error('Failed to start AR experience:', error);
-            this.showError('Failed to start AR experience: ' + error.message);
-            document.getElementById('startButton').disabled = false;
-            document.getElementById('startButton').textContent = 'Start AR Experience';
+            console.error('Failed to start:', error);
+            alert('Failed to start AR experience: ' + error.message);
         }
     }
     
     async initThreeJS() {
-        // Scene setup
+        // Basic Three.js setup
         this.scene = new THREE.Scene();
-        
-        // Camera
         this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         
-        // Renderer
         const canvas = document.getElementById('arCanvas');
-        this.renderer = new THREE.WebGLRenderer({ 
-            canvas: canvas,
-            antialias: true,
-            alpha: true 
-        });
+        this.renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.xr.enabled = true;
         
-        // Lighting
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-        this.scene.add(ambientLight);
-        
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(0, 10, 5);
-        this.scene.add(directionalLight);
+        // Basic lighting
+        const light = new THREE.AmbientLight(0xffffff, 0.8);
+        this.scene.add(light);
         
         // Load models
         await this.loadModels();
         
-        // Setup scene
-        this.setupScene();
+        // Position camera
+        this.camera.position.set(0, 1.6, 0);
+        
+        // Start render loop
+        this.renderer.setAnimationLoop(() => this.render());
     }
     
     async loadModels() {
         const loader = new THREE.GLTFLoader();
         
-        try {
-            // Load your actual GLB models
-            const buttonGLB = await this.loadGLB(loader, './assets/models/button.glb');
-            this.startButtonModel = buttonGLB.scene;
-            
-            const wendyGLB = await this.loadGLB(loader, './assets/models/wendy.glb');
-            this.wendyModel = wendyGLB.scene;
-            
-            const mendyGLB = await this.loadGLB(loader, './assets/models/mendy.glb');
-            this.mendyModel = mendyGLB.scene;
-            
-            // Debug: Log model information
-            console.log('Button model bounding box:', this.getModelSize(this.startButtonModel));
-            console.log('Wendy model bounding box:', this.getModelSize(this.wendyModel));
-            console.log('Mendy model bounding box:', this.getModelSize(this.mendyModel));
-            
-            console.log('GLB models loaded successfully');
-            
-        } catch (error) {
-            console.error('Error loading models:', error);
-            throw new Error('Failed to load 3D models');
-        }
-    }
-    
-    // Helper function to get model size for debugging
-    getModelSize(model) {
-        const box = new THREE.Box3().setFromObject(model);
-        const size = box.getSize(new THREE.Vector3());
-        const center = box.getCenter(new THREE.Vector3());
-        return { size, center };
+        console.log('Loading models...');
+        
+        // Load button
+        const buttonGLB = await this.loadGLB(loader, './assets/models/button.glb');
+        this.startButtonModel = buttonGLB.scene;
+        
+        // Load Wendy
+        const wendyGLB = await this.loadGLB(loader, './assets/models/wendy.glb');
+        this.wendyModel = wendyGLB.scene;
+        
+        // Load Mendy
+        const mendyGLB = await this.loadGLB(loader, './assets/models/mendy.glb');
+        this.mendyModel = mendyGLB.scene;
+        
+        console.log('All models loaded');
     }
     
     loadGLB(loader, path) {
@@ -139,274 +91,111 @@ class ARExperience {
         });
     }
     
-    setupScene() {
-        // Center the start button properly
-        this.centerModel(this.startButtonModel);
-        this.startButtonModel.position.set(0, 1.6, -3); // Eye level, 3 units away
+    startScene() {
+        // Add start button to scene
+        this.startButtonModel.position.set(0, 1.6, -3);
         this.scene.add(this.startButtonModel);
         
-        // Position Wendy (hidden initially)
-        this.centerModel(this.wendyModel);
-        this.wendyModel.position.set(-1, 0.5, -3);
+        // Hide other models initially
         this.wendyModel.visible = false;
-        this.scene.add(this.wendyModel);
-        
-        // Position Mendy behind user (hidden initially)
-        this.centerModel(this.mendyModel);
-        this.mendyModel.position.set(0, 0.5, 2);
         this.mendyModel.visible = false;
+        this.scene.add(this.wendyModel);
         this.scene.add(this.mendyModel);
         
-        // Add interaction handling
-        this.setupInteractions();
+        // Add click detection
+        this.setupClicking();
+        
+        console.log('Scene ready - you should see the start button');
     }
     
-    // Helper function to center models at their origin
-    centerModel(model) {
-        const box = new THREE.Box3().setFromObject(model);
-        const center = box.getCenter(new THREE.Vector3());
+    setupClicking() {
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
         
-        // Offset the model so its center is at (0,0,0) relative to its position
-        model.position.sub(center);
+        document.addEventListener('click', (event) => {
+            if (this.experienceStarted) return;
+            
+            // Get mouse position
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            // Check if we hit the button
+            raycaster.setFromCamera(mouse, this.camera);
+            const intersects = raycaster.intersectObject(this.startButtonModel, true);
+            
+            if (intersects.length > 0) {
+                console.log('Button clicked!');
+                this.beginCybersecurityExperience();
+            }
+        });
         
-        // Reset the position to origin for now
-        const offsetX = center.x;
-        const offsetY = center.y;
-        const offsetZ = center.z;
-        
-        model.traverse((child) => {
-            if (child.isMesh) {
-                child.geometry.translate(-offsetX, -offsetY, -offsetZ);
+        // Backup: press SPACE to start
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Space' && !this.experienceStarted) {
+                console.log('Space pressed - starting experience');
+                this.beginCybersecurityExperience();
             }
         });
     }
     
-    setupInteractions() {
-        // Simple click/tap detection for the start button
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2();
-        
-        const onPointerDown = (event) => {
-            if (this.experienceStarted) return;
-            
-            console.log('Click detected, checking for button intersection...');
-            
-            // Calculate mouse position
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-            
-            console.log('Mouse coordinates:', mouse.x, mouse.y);
-            
-            // Raycast
-            raycaster.setFromCamera(mouse, this.camera);
-            const intersects = raycaster.intersectObject(this.startButtonModel, true); // true for recursive
-            
-            console.log('Intersections found:', intersects.length);
-            
-            if (intersects.length > 0) {
-                console.log('Button clicked! Starting experience...');
-                this.beginExperience();
-            } else {
-                console.log('No intersection with button');
-            }
-        };
-        
-        // Add click anywhere fallback for testing
-        const onKeyDown = (event) => {
-            if (event.key === 'Enter' && !this.experienceStarted) {
-                console.log('Enter key pressed, starting experience...');
-                this.beginExperience();
-            }
-        };
-        
-        // Temporary: click anywhere to start (for debugging)
-        const onScreenClick = (event) => {
-            if (!this.experienceStarted) {
-                console.log('Screen clicked, starting experience...');
-                this.beginExperience();
-            }
-        };
-        
-        window.addEventListener('pointerdown', onPointerDown);
-        window.addEventListener('keydown', onKeyDown);
-        // Temporary fallback - remove this once button clicking works
-        window.addEventListener('click', onScreenClick);
-        
-        console.log('Interaction listeners set up');
-    }
-    
-    beginExperience() {
+    beginCybersecurityExperience() {
         this.experienceStarted = true;
+        
+        console.log('Starting cybersecurity experience...');
         
         // Hide start button
         this.startButtonModel.visible = false;
         
         // Show Wendy
+        this.wendyModel.position.set(-1, 0, -3);
         this.wendyModel.visible = true;
-        this.wendySpeaking = true;
         
         // Update instructions
         document.getElementById('arInstructions').textContent = 
             'Wendy is talking about cybersecurity. Listen carefully!';
         
-        // Simulate Wendy's speech duration
+        // After 5 seconds, end Wendy's speech
         setTimeout(() => {
             this.endWendySpeech();
-        }, 5000); // 5 seconds for demo
+        }, 5000);
     }
     
     endWendySpeech() {
-        this.wendySpeaking = false;
+        console.log('Wendy finished speaking');
         
         // Update instructions
         document.getElementById('arInstructions').textContent = 
             'Turn around! Someone has been watching...';
         
-        // Show Mendy after a delay
+        // After 2 seconds, reveal Mendy
         setTimeout(() => {
             this.revealMendy();
         }, 2000);
     }
     
     revealMendy() {
-        this.mendyModel.visible = true;
-        this.mendyRevealed = true;
+        console.log('Revealing Mendy');
         
-        // Update instructions
+        // Show Mendy behind the user
+        this.mendyModel.position.set(0, 0, 3);
+        this.mendyModel.visible = true;
+        
+        // Final message
         document.getElementById('arInstructions').textContent = 
             'Mendy was spying on you all along! Stay aware of your surroundings.';
     }
     
-    async startXRSession() {
-        try {
-            console.log('Attempting to start XR session...');
-            
-            // For desktop testing, skip WebXR and go straight to fallback
-            if (!navigator.xr) {
-                console.log('No WebXR support, using fallback mode');
-                this.startFallbackMode();
-                return;
-            }
-            
-            // Try immersive AR first, but expect it to fail on desktop
-            try {
-                const supported = await navigator.xr.isSessionSupported('immersive-ar');
-                if (supported) {
-                    this.session = await navigator.xr.requestSession('immersive-ar', {
-                        requiredFeatures: ['local'],
-                        optionalFeatures: ['dom-overlay'],
-                        domOverlay: { root: document.getElementById('arView') }
-                    });
-                    
-                    this.renderer.xr.setSession(this.session);
-                    this.session.addEventListener('end', () => this.onSessionEnd());
-                    
-                    // Start render loop
-                    this.renderer.setAnimationLoop((time, frame) => this.render(time, frame));
-                    console.log('Immersive AR session started');
-                } else {
-                    throw new Error('Immersive AR not supported');
-                }
-            } catch (arError) {
-                console.log('Immersive AR failed, trying inline mode:', arError.message);
-                
-                try {
-                    this.session = await navigator.xr.requestSession('inline');
-                    this.renderer.xr.setSession(this.session);
-                    this.session.addEventListener('end', () => this.onSessionEnd());
-                    
-                    // Start render loop
-                    this.renderer.setAnimationLoop((time, frame) => this.render(time, frame));
-                    console.log('Inline XR session started');
-                } catch (inlineError) {
-                    console.log('Inline XR failed, using fallback:', inlineError.message);
-                    this.startFallbackMode();
-                }
-            }
-            
-        } catch (error) {
-            console.error('All XR options failed:', error);
-            // Start fallback mode for testing
-            this.startFallbackMode();
-        }
-    }
-    
-    startFallbackMode() {
-        console.log('Starting fallback mode for desktop testing');
-        
-        // Disable XR mode for fallback
-        this.renderer.xr.enabled = false;
-        
-        // Position camera for desktop view - slightly elevated like standing
-        this.camera.position.set(0, 1.6, 0);
-        this.camera.rotation.set(0, 0, 0);
-        
-        // Add basic controls
-        this.setupDesktopControls();
-        
-        // Start regular render loop (not XR)
-        this.renderer.setAnimationLoop((time) => this.render(time));
-        
-        console.log('Fallback mode started successfully');
-    }
-    
-    setupDesktopControls() {
-        // Simple mouse controls for desktop testing
-        let mouseX = 0, mouseY = 0;
-        
-        document.addEventListener('mousemove', (event) => {
-            mouseX = (event.clientX / window.innerWidth) * 2 - 1;
-            mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
-            
-            // Rotate camera based on mouse
-            this.camera.rotation.y = mouseX * 0.5;
-            this.camera.rotation.x = mouseY * 0.3;
-        });
-    }
-    
-    render(time, frame) {
-        // Simple animations
+    render() {
+        // Simple rotation animation for the start button
         if (this.startButtonModel && this.startButtonModel.visible) {
             this.startButtonModel.rotation.y += 0.01;
         }
         
-        if (this.wendyModel && this.wendySpeaking) {
-            this.wendyModel.rotation.y = Math.sin(time * 0.003) * 0.2;
-        }
-        
         this.renderer.render(this.scene, this.camera);
-    }
-    
-    onSessionEnd() {
-        this.session = null;
-        document.getElementById('landingPage').style.display = 'flex';
-        document.getElementById('arView').style.display = 'none';
-        document.getElementById('startButton').disabled = false;
-        document.getElementById('startButton').textContent = 'Start AR Experience';
-    }
-    
-    showError(message) {
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'error-message';
-        errorDiv.innerHTML = `<h3>Error</h3><p>${message}</p>`;
-        document.body.appendChild(errorDiv);
-        
-        setTimeout(() => {
-            document.body.removeChild(errorDiv);
-        }, 5000);
     }
 }
 
-// Initialize the AR experience when page loads
+// Start when page loads
 document.addEventListener('DOMContentLoaded', () => {
-    window.arExperience = new ARExperience();
-});
-
-// Handle window resize
-window.addEventListener('resize', () => {
-    if (window.arExperience && window.arExperience.camera && window.arExperience.renderer) {
-        window.arExperience.camera.aspect = window.innerWidth / window.innerHeight;
-        window.arExperience.camera.updateProjectionMatrix();
-        window.arExperience.renderer.setSize(window.innerWidth, window.innerHeight);
-    }
+    new ARExperience();
 });
