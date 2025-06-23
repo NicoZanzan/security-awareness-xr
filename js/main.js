@@ -106,15 +106,15 @@ class ARExperience {
             // Uncomment and modify paths below:
             
             
-            const buttonGLB = await this.loadGLB(loader, './models/button.glb');
+            const buttonGLB = await this.loadGLB(loader, './assets/models/button.glb');
             this.startButtonModel = buttonGLB.scene;
             
-            const wendyGLB = await this.loadGLB(loader, './models/wendy.glb');
+            const wendyGLB = await this.loadGLB(loader, './assets/models/wendy.glb');
             this.wendyModel = wendyGLB.scene;
             
-            const mendyGLB = await this.loadGLB(loader, './models/mendy.glb');
+            const mendyGLB = await this.loadGLB(loader, './assets/models/mendy.glb');
             this.mendyModel = mendyGLB.scene;
-              
+
             
             // For now, using placeholder geometries
             // Start button (placeholder)
