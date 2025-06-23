@@ -1,6 +1,6 @@
 // gestures.js - Hand gesture detection for WebXR and Landing Page
 
-import * as THREE from 'three';
+// import * as THREE from 'three';
 
 // Gesture types
 const GESTURES = {

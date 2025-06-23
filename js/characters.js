@@ -1,6 +1,6 @@
 // characters.js - Character management and positioning
 
-import * as THREE from 'three';
+// import * as THREE from 'three';
 
 // Character placement settings
 const CHARACTER_SETTINGS = {

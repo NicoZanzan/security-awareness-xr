@@ -1,7 +1,7 @@
 // main.js - Integrated wendyXR with AR Story Experience
 // Priority: wendyXR WebXR implementation + your story elements
 
-import * as THREE from 'three';
+// import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { XRButton } from 'three/examples/jsm/webxr/XRButton.js';
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
