@@ -1,6 +1,6 @@
 // story.js - Story management and sequencing
 
-import { showSubtitle, hideSubtitle, setStatus } from './utils.js';
+// import { showSubtitle, hideSubtitle, setStatus } from './utils.js';
 
 // Story sequence definition
 const STORY_SEQUENCES = {

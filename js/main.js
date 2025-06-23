@@ -2,18 +2,18 @@
 // Priority: wendyXR WebXR implementation + your story elements
 
 // import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { XRButton } from 'three/examples/jsm/webxr/XRButton.js';
-import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
-import { XRHandModelFactory } from 'three/examples/jsm/webxr/XRHandModelFactory.js';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+// import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+// import { XRButton } from 'three/examples/jsm/webxr/XRButton.js';
+// import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
+// import { XRHandModelFactory } from 'three/examples/jsm/webxr/XRHandModelFactory.js';
+// import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+// import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 
-// Import your modular components (keeping your structure)
-import { setupStory, advanceStory } from './story.js';
-import { loadCharacters, setupCharacters } from './characters.js';
-import { setupGestureDetection } from './gestures.js';
-import { setStatus, hideLoader, showError } from './utils.js';
+// // Import your modular components (keeping your structure)
+// import { setupStory, advanceStory } from './story.js';
+// import { loadCharacters, setupCharacters } from './characters.js';
+// import { setupGestureDetection } from './gestures.js';
+// import { setStatus, hideLoader, showError } from './utils.js';
 
 // Global variables (wendyXR style)
 let container;
