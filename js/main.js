@@ -112,12 +112,25 @@ class ARExperience {
             const mendyGLB = await this.loadGLB(loader, './assets/models/mendy.glb');
             this.mendyModel = mendyGLB.scene;
             
+            // Debug: Log model information
+            console.log('Button model bounding box:', this.getModelSize(this.startButtonModel));
+            console.log('Wendy model bounding box:', this.getModelSize(this.wendyModel));
+            console.log('Mendy model bounding box:', this.getModelSize(this.mendyModel));
+            
             console.log('GLB models loaded successfully');
             
         } catch (error) {
             console.error('Error loading models:', error);
             throw new Error('Failed to load 3D models');
         }
+    }
+    
+    // Helper function to get model size for debugging
+    getModelSize(model) {
+        const box = new THREE.Box3().setFromObject(model);
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
+        return { size, center };
     }
     
     loadGLB(loader, path) {
@@ -127,23 +140,45 @@ class ARExperience {
     }
     
     setupScene() {
-        // Position start button - center it in view at eye level
-        this.startButtonModel.position.set(0, 0, -3);
-        this.startButtonModel.scale.set(1, 1, 1); // Normal size first
+        // Center the start button properly
+        this.centerModel(this.startButtonModel);
+        this.startButtonModel.position.set(0, 1.6, -3); // Eye level, 3 units away
         this.scene.add(this.startButtonModel);
         
         // Position Wendy (hidden initially)
-        this.wendyModel.position.set(-1, -0.5, -3);
+        this.centerModel(this.wendyModel);
+        this.wendyModel.position.set(-1, 0.5, -3);
         this.wendyModel.visible = false;
         this.scene.add(this.wendyModel);
         
         // Position Mendy behind user (hidden initially)
-        this.mendyModel.position.set(0, -0.5, 2);
+        this.centerModel(this.mendyModel);
+        this.mendyModel.position.set(0, 0.5, 2);
         this.mendyModel.visible = false;
         this.scene.add(this.mendyModel);
         
         // Add interaction handling
         this.setupInteractions();
+    }
+    
+    // Helper function to center models at their origin
+    centerModel(model) {
+        const box = new THREE.Box3().setFromObject(model);
+        const center = box.getCenter(new THREE.Vector3());
+        
+        // Offset the model so its center is at (0,0,0) relative to its position
+        model.position.sub(center);
+        
+        // Reset the position to origin for now
+        const offsetX = center.x;
+        const offsetY = center.y;
+        const offsetZ = center.z;
+        
+        model.traverse((child) => {
+            if (child.isMesh) {
+                child.geometry.translate(-offsetX, -offsetY, -offsetZ);
+            }
+        });
     }
     
     setupInteractions() {
@@ -154,20 +189,50 @@ class ARExperience {
         const onPointerDown = (event) => {
             if (this.experienceStarted) return;
             
+            console.log('Click detected, checking for button intersection...');
+            
             // Calculate mouse position
             mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
             mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
             
+            console.log('Mouse coordinates:', mouse.x, mouse.y);
+            
             // Raycast
             raycaster.setFromCamera(mouse, this.camera);
-            const intersects = raycaster.intersectObject(this.startButtonModel);
+            const intersects = raycaster.intersectObject(this.startButtonModel, true); // true for recursive
+            
+            console.log('Intersections found:', intersects.length);
             
             if (intersects.length > 0) {
+                console.log('Button clicked! Starting experience...');
+                this.beginExperience();
+            } else {
+                console.log('No intersection with button');
+            }
+        };
+        
+        // Add click anywhere fallback for testing
+        const onKeyDown = (event) => {
+            if (event.key === 'Enter' && !this.experienceStarted) {
+                console.log('Enter key pressed, starting experience...');
+                this.beginExperience();
+            }
+        };
+        
+        // Temporary: click anywhere to start (for debugging)
+        const onScreenClick = (event) => {
+            if (!this.experienceStarted) {
+                console.log('Screen clicked, starting experience...');
                 this.beginExperience();
             }
         };
         
         window.addEventListener('pointerdown', onPointerDown);
+        window.addEventListener('keydown', onKeyDown);
+        // Temporary fallback - remove this once button clicking works
+        window.addEventListener('click', onScreenClick);
+        
+        console.log('Interaction listeners set up');
     }
     
     beginExperience() {
