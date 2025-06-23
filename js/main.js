@@ -7,6 +7,7 @@ class ARExperience {
         
         // Models
         this.startButtonModel = null;
+        this.pauseButtonModel = null;
         this.wendyModel = null;
         this.mendyModel = null;
         
@@ -16,6 +17,7 @@ class ARExperience {
         // State
         this.experienceStarted = false;
         this.isXRActive = false;
+        this.isPaused = false;
         
         this.init();
     }
@@ -195,6 +197,12 @@ class ARExperience {
             this.startButtonModel = buttonGLB.scene;
             this.scaleModel(this.startButtonModel, 1.0);
             
+            // TODO: Load pause button GLB when available
+            // const pauseGLB = await this.loadGLB(loader, './assets/models/pause.glb');
+            // this.pauseButtonModel = pauseGLB.scene;
+            // For now, create placeholder pause button
+            this.createPauseButtonPlaceholder();
+            
             // Load Wendy
             const wendyGLB = await this.loadGLB(loader, './assets/models/wendy.glb');
             this.wendyModel = wendyGLB.scene;
@@ -228,6 +236,25 @@ class ARExperience {
         console.log(`Model scaled to: ${model.scale.x}`);
     }
     
+    createPauseButtonPlaceholder() {
+        // Create a simple pause button placeholder (two vertical bars)
+        const group = new THREE.Group();
+        
+        const barGeometry = new THREE.BoxGeometry(0.03, 0.1, 0.02);
+        const barMaterial = new THREE.MeshPhongMaterial({ color: 0xffaa00 });
+        
+        const bar1 = new THREE.Mesh(barGeometry, barMaterial);
+        bar1.position.x = -0.02;
+        group.add(bar1);
+        
+        const bar2 = new THREE.Mesh(barGeometry, barMaterial);
+        bar2.position.x = 0.02;
+        group.add(bar2);
+        
+        this.pauseButtonModel = group;
+        console.log('Pause button placeholder created');
+    }
+    
     createFallbackModels() {
         console.log('Creating fallback models');
         
@@ -235,6 +262,9 @@ class ARExperience {
         const buttonGeometry = new THREE.BoxGeometry(0.3, 0.1, 0.05);
         const buttonMaterial = new THREE.MeshPhongMaterial({ color: 0xff4444 });
         this.startButtonModel = new THREE.Mesh(buttonGeometry, buttonMaterial);
+        
+        // Fallback pause button
+        this.createPauseButtonPlaceholder();
         
         // Fallback Wendy
         const wendyGeometry = new THREE.CapsuleGeometry(0.3, 1.5);
@@ -296,6 +326,11 @@ class ARExperience {
         this.mendyModel.position.set(0, 0, 2);
         this.scene.add(this.mendyModel);
         
+        // Add pause button to scene (hidden initially)
+        this.pauseButtonModel.visible = false;
+        this.pauseButtonModel.position.set(1, 1.8, -2); // Top right area
+        this.scene.add(this.pauseButtonModel);
+        
         // Setup interaction
         this.setupInteraction();
         
@@ -307,19 +342,27 @@ class ARExperience {
         const pointer = new THREE.Vector2();
         
         const onPointerDown = (event) => {
-            if (this.experienceStarted) return;
-            
             // Get pointer position
             pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
             pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
             
             // Raycast
             raycaster.setFromCamera(pointer, this.camera);
-            const intersects = raycaster.intersectObject(this.startButtonModel, true);
             
-            if (intersects.length > 0) {
-                console.log('Button clicked!');
-                this.beginCybersecurityExperience();
+            if (!this.experienceStarted) {
+                // Check for start button
+                const startIntersects = raycaster.intersectObject(this.startButtonModel, true);
+                if (startIntersects.length > 0) {
+                    console.log('Start button clicked!');
+                    this.beginCybersecurityExperience();
+                }
+            } else if (this.pauseButtonModel.visible) {
+                // Check for pause button
+                const pauseIntersects = raycaster.intersectObject(this.pauseButtonModel, true);
+                if (pauseIntersects.length > 0) {
+                    console.log('Pause button clicked!');
+                    this.togglePause();
+                }
             }
         };
         
@@ -330,6 +373,8 @@ class ARExperience {
         document.addEventListener('keydown', (event) => {
             if (event.code === 'Space' && !this.experienceStarted) {
                 this.beginCybersecurityExperience();
+            } else if (event.code === 'KeyP' && this.experienceStarted && this.pauseButtonModel.visible) {
+                this.togglePause();
             }
         });
     }
@@ -341,12 +386,13 @@ class ARExperience {
         // Hide start button
         this.startButtonModel.visible = false;
         
-        // Show Wendy
+        // Show Wendy and pause button
         this.wendyModel.visible = true;
+        this.pauseButtonModel.visible = true;
         
         // Update instructions
         document.getElementById('arInstructions').textContent = 
-            'Wendy is talking about cybersecurity. Listen carefully!';
+            'Wendy is talking about cybersecurity. Click the pause button or press P to pause.';
         
         // Play audio
         this.wendyAudio.play().catch(error => {
@@ -356,8 +402,30 @@ class ARExperience {
         });
     }
     
+    togglePause() {
+        if (this.isPaused) {
+            // Resume
+            this.wendyAudio.play();
+            this.isPaused = false;
+            document.getElementById('arInstructions').textContent = 
+                'Wendy is talking about cybersecurity. Click the pause button or press P to pause.';
+            console.log('Audio resumed');
+        } else {
+            // Pause
+            this.wendyAudio.pause();
+            this.isPaused = true;
+            document.getElementById('arInstructions').textContent = 
+                'Audio paused. Click the pause button or press P to resume.';
+            console.log('Audio paused');
+        }
+    }
+    
     endWendySpeech() {
         console.log('Wendy finished speaking');
+        
+        // Hide pause button
+        this.pauseButtonModel.visible = false;
+        this.isPaused = false;
         
         document.getElementById('arInstructions').textContent = 
             'Turn around! Someone has been watching...';
@@ -384,6 +452,11 @@ class ARExperience {
         // Rotate start button for visibility
         if (this.startButtonModel && this.startButtonModel.visible) {
             this.startButtonModel.rotation.y = timestamp * 0.001;
+        }
+        
+        // Animate pause button
+        if (this.pauseButtonModel && this.pauseButtonModel.visible) {
+            this.pauseButtonModel.rotation.y = Math.sin(timestamp * 0.003) * 0.2;
         }
         
         this.renderer.render(this.scene, this.camera);
