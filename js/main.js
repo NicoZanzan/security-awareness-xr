@@ -102,10 +102,7 @@ class ARExperience {
         const loader = new THREE.GLTFLoader();
         
         try {
-            // TODO: Replace with your actual GLB models
-            // Uncomment and modify paths below:
-            
-            
+            // Load your actual GLB models
             const buttonGLB = await this.loadGLB(loader, './assets/models/button.glb');
             this.startButtonModel = buttonGLB.scene;
             
@@ -114,25 +111,8 @@ class ARExperience {
             
             const mendyGLB = await this.loadGLB(loader, './assets/models/mendy.glb');
             this.mendyModel = mendyGLB.scene;
-
             
-            // For now, using placeholder geometries
-            // Start button (placeholder)
-            const buttonGeometry = new THREE.BoxGeometry(0.3, 0.1, 0.1);
-            const buttonMaterial = new THREE.MeshPhongMaterial({ color: 0xff6b6b });
-            this.startButtonModel = new THREE.Mesh(buttonGeometry, buttonMaterial);
-            
-            // Wendy (placeholder)
-            const wendyGeometry = new THREE.CapsuleGeometry(0.2, 1.0, 8, 16);
-            const wendyMaterial = new THREE.MeshPhongMaterial({ color: 0x4ecdc4 });
-            this.wendyModel = new THREE.Mesh(wendyGeometry, wendyMaterial);
-            
-            // Mendy (placeholder)
-            const mendyGeometry = new THREE.CapsuleGeometry(0.2, 1.0, 8, 16);
-            const mendyMaterial = new THREE.MeshPhongMaterial({ color: 0x45b7d1 });
-            this.mendyModel = new THREE.Mesh(mendyGeometry, mendyMaterial);
-            
-            console.log('Models loaded (using placeholders)');
+            console.log('GLB models loaded successfully');
             
         } catch (error) {
             console.error('Error loading models:', error);
