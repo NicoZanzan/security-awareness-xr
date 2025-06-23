@@ -9,6 +9,9 @@ class ARExperience {
         this.wendyModel = null;
         this.mendyModel = null;
         
+        // Audio
+        this.wendyAudio = null;
+        
         // State
         this.experienceStarted = false;
         
@@ -58,6 +61,9 @@ class ARExperience {
         // Load models
         await this.loadModels();
         
+        // Load audio
+        this.loadAudio();
+        
         // Position camera
         this.camera.position.set(0, 1.6, 0);
         
@@ -83,6 +89,19 @@ class ARExperience {
         this.mendyModel = mendyGLB.scene;
         
         console.log('All models loaded');
+    }
+    
+    loadAudio() {
+        this.wendyAudio = new Audio('./assets/audio/ElevenLabs_audio.mp3');
+        this.wendyAudio.preload = 'auto';
+        
+        // When audio ends, automatically proceed to next step
+        this.wendyAudio.addEventListener('ended', () => {
+            console.log('Wendy audio finished');
+            this.endWendySpeech();
+        });
+        
+        console.log('Audio loaded');
     }
     
     loadGLB(loader, path) {
@@ -154,10 +173,16 @@ class ARExperience {
         document.getElementById('arInstructions').textContent = 
             'Wendy is talking about cybersecurity. Listen carefully!';
         
-        // After 5 seconds, end Wendy's speech
-        setTimeout(() => {
-            this.endWendySpeech();
-        }, 5000);
+        // Play Wendy's audio
+        this.wendyAudio.play().catch(error => {
+            console.error('Failed to play audio:', error);
+            // Fallback: use timer if audio fails
+            setTimeout(() => {
+                this.endWendySpeech();
+            }, 5000);
+        });
+        
+        console.log('Wendy is now speaking...');
     }
     
     endWendySpeech() {
