@@ -255,7 +255,6 @@ class ARExperience {
         this.pauseButtonModel = group;
         console.log('Pause button placeholder created');
     }   
- 
     
     loadGLB(loader, path) {
         return new Promise((resolve, reject) => {
@@ -502,22 +501,120 @@ class ARExperience {
     }
     
     resetExperience() {
-        console.log('Resetting experience');
+        console.log('Resetting experience - clearing everything');
+        
+        // Stop any audio that might be playing
+        if (this.wendyAudio) {
+            this.wendyAudio.pause();
+            this.wendyAudio.currentTime = 0;
+        }
+        
+        // Remove all models from scene
+        if (this.scene) {
+            // Remove all objects from the scene
+            while (this.scene.children.length > 0) {
+                const object = this.scene.children[0];
+                this.scene.remove(object);
+            }
+        }
+        
+        // Dispose of all resources to prevent memory leaks
+        if (this.startButtonModel) this.disposeObject(this.startButtonModel);
+        if (this.pauseButtonModel) this.disposeObject(this.pauseButtonModel);
+        if (this.nextButtonModel) this.disposeObject(this.nextButtonModel);
+        if (this.wendyModel) this.disposeObject(this.wendyModel);
+        if (this.mendyModel) this.disposeObject(this.mendyModel);
+        
+        // Clear all models
+        this.startButtonModel = null;
+        this.pauseButtonModel = null;
+        this.nextButtonModel = null;
+        this.wendyModel = null;
+        this.mendyModel = null;
+        
+        // End WebXR session if active
+        if (this.session) {
+            this.session.end().catch(error => console.error('Error ending XR session:', error));
+            this.session = null;
+        }
+        
+        // Stop animation loop
+        if (this.renderer) {
+            this.renderer.setAnimationLoop(null);
+        }
         
         // Reset state
         this.experienceStarted = false;
         this.isPaused = false;
+        this.isXRActive = false;
         
-        // Show landing page again
+        // Reset UI
         document.getElementById('arView').style.display = 'none';
+        document.getElementById('landingPage').style.display = 'none';
         document.getElementById('endPage').style.display = 'block';
         
-        // Reset start button
-        this.startButtonModel.visible = true;
+        // Set up restart button
+        const restartButton = document.getElementById('restartButton');
+        if (restartButton) {
+            // Remove any existing event listeners to avoid duplicates
+            const newButton = restartButton.cloneNode(true);
+            restartButton.parentNode.replaceChild(newButton, restartButton);
+            
+            // Add fresh event listener
+            newButton.addEventListener('click', () => {
+                // Clear display
+                document.getElementById('endPage').style.display = 'none';
+                document.getElementById('landingPage').style.display = 'block';
+                
+                // Start fresh
+                this.init();
+                //this.startARExperience();
+            });
+        }
         
-        // Reset audio
-        this.wendyAudio.currentTime = 0;
+        // Remove window resize listener
+        window.removeEventListener('resize', this.onWindowResize);
     }
+    
+    // Helper method to properly dispose of 3D objects
+    disposeObject(object) {
+        if (!object) return;
+        
+        // Recursively dispose of all children
+        if (object.children) {
+            while (object.children.length > 0) {
+                this.disposeObject(object.children[0]);
+                object.remove(object.children[0]);
+            }
+        }
+        
+        // Dispose of geometries and materials
+        if (object.geometry) object.geometry.dispose();
+        
+        if (object.material) {
+            if (Array.isArray(object.material)) {
+                object.material.forEach(material => this.disposeMaterial(material));
+            } else {
+                this.disposeMaterial(object.material);
+            }
+        }
+    }
+    
+    // Helper to dispose of materials
+    disposeMaterial(material) {
+        if (!material) return;
+        
+        // Dispose of material's textures
+        Object.keys(material).forEach(prop => {
+            if (!material[prop]) return;
+            if (material[prop].isTexture) {
+                material[prop].dispose();
+            }
+        });
+        
+        // Dispose of the material itself
+        material.dispose();
+    }    
     
     onWindowResize() {
         this.camera.aspect = window.innerWidth / window.innerHeight;
@@ -525,19 +622,7 @@ class ARExperience {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
     }
     
-    render(timestamp) {
-        // Rotate start button for visibility
-        if (this.startButtonModel && this.startButtonModel.visible) {
-            // Store the original y position if not yet stored
-            if (!this.startButtonModel.userData.originalY) {
-                this.startButtonModel.userData.originalY = this.startButtonModel.position.y;
-            }
-            
-            // Move up and down in a sine wave pattern
-            const originalY = this.startButtonModel.userData.originalY;
-            this.startButtonModel.position.y = originalY + Math.sin(timestamp * 0.001) * 0.05;
-        }
-        
+    render(timestamp) {            
         
        // Animate start button
         if (this.startButtonModel && this.startButtonModel.visible) {
@@ -573,33 +658,7 @@ class ARExperience {
             // Move up and down in a sine wave pattern
             const originalY = this.nextButtonModel.userData.originalY;
             this.nextButtonModel.position.y = originalY + Math.sin(timestamp * 0.001) * 0.05;
-        }
-
-        // if (this.isXRActive && this.controller) {
-        //     // Optional: Add visual feedback when pointing at interactive objects
-        //     const tempMatrix = new THREE.Matrix4();
-        //     tempMatrix.identity().extractRotation(this.controller.matrixWorld);
-            
-        //     const raycaster = new THREE.Raycaster();
-        //     raycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
-        //     raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
-            
-        //     // Change controller ray color when hitting something
-        //     const line = this.controller.getObjectByName('line');
-        //     if (line) {
-        //         const intersects = raycaster.intersectObjects([
-        //             this.startButtonModel, 
-        //             this.pauseButtonModel, 
-        //             this.nextButtonModel
-        //         ], true);
-                
-        //         if (intersects.length > 0) {
-        //             line.material.color.set(0x00ff00); // Green when hitting a button
-        //         } else {
-        //             line.material.color.set(0xffffff); // White otherwise
-        //         }
-        //     }
-        // }
+        }       
         
         this.renderer.render(this.scene, this.camera);
     }
