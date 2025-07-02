@@ -25,6 +25,7 @@ class ARExperience {
     
     init() {
         // Simple start button click
+        document.getElementById('endPage').style.display = 'none';
         document.getElementById('startButton').addEventListener('click', () => {
             this.startARExperience();
         });
@@ -38,6 +39,7 @@ class ARExperience {
             console.log('Starting AR experience...');
             
             // Hide landing page, show AR view
+            
             document.getElementById('landingPage').style.display = 'none';
             document.getElementById('arView').style.display = 'block';
             
@@ -121,7 +123,7 @@ class ARExperience {
                     this.isXRActive = true;
                     
                     // Position for AR
-                    this.setupARPositioning();
+                    //this.setupARPositioning();
                     
                 } else {
                     console.log('AR not supported, using fallback 3D mode');
@@ -142,17 +144,12 @@ class ARExperience {
             this.render(timestamp, frame);
         });
     }
-    
-    setupARPositioning() {
-        // For AR devices - models appear in real space
-        console.log('Setting up AR positioning');
-        // Camera is controlled by WebXR
-    }
+   
     
     setupFallbackMode() {
         // For non-AR devices - position camera manually
         console.log('Setting up fallback 3D mode');
-        this.camera.position.set(0, 1.6, 0);
+        this.camera.position.set(0, 0, 0);
         
         // Add mouse/touch controls for fallback
         this.addFallbackControls();
@@ -224,7 +221,6 @@ class ARExperience {
         } catch (error) {
             console.error('Model loading failed:', error);
             // Create fallback models
-            this.createFallbackModels();
         }
     }
     
@@ -259,34 +255,8 @@ class ARExperience {
         
         this.pauseButtonModel = group;
         console.log('Pause button placeholder created');
-    }
-    
-    createFallbackModels() {
-        console.log('Creating fallback models');
-        
-        // Fallback button
-        const buttonGeometry = new THREE.BoxGeometry(0.3, 0.1, 0.05);
-        const buttonMaterial = new THREE.MeshPhongMaterial({ color: 0xff4444 });
-        this.startButtonModel = new THREE.Mesh(buttonGeometry, buttonMaterial);
-        
-        // Fallback pause button
-        this.createPauseButtonPlaceholder();
-        
-        // Fallback next button
-        const nextGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.05, 6);
-        const nextMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
-        this.nextButtonModel = new THREE.Mesh(nextGeometry, nextMaterial);
-        
-        // Fallback Wendy
-        const wendyGeometry = new THREE.CapsuleGeometry(0.3, 1.5);
-        const wendyMaterial = new THREE.MeshPhongMaterial({ color: 0x44ff44 });
-        this.wendyModel = new THREE.Mesh(wendyGeometry, wendyMaterial);
-        
-        // Fallback Mendy
-        const mendyGeometry = new THREE.CapsuleGeometry(0.3, 1.5);
-        const mendyMaterial = new THREE.MeshPhongMaterial({ color: 0x4444ff });
-        this.mendyModel = new THREE.Mesh(mendyGeometry, mendyMaterial);
-    }
+    }   
+ 
     
     loadGLB(loader, path) {
         return new Promise((resolve, reject) => {
@@ -308,7 +278,7 @@ class ARExperience {
     }
     
     loadAudio() {
-        this.wendyAudio = new Audio('./assets/audio/ElevenLabs_audio.mp3');
+        this.wendyAudio = new Audio('./assets/audio/voice_placeholder.mp3');
         this.wendyAudio.preload = 'auto';
         
         this.wendyAudio.addEventListener('ended', () => {
@@ -330,7 +300,7 @@ class ARExperience {
         
         // Prepare other models (hidden)
         this.wendyModel.visible = false;
-        this.wendyModel.position.set(-1.5, 0, -2);
+        this.wendyModel.position.set(0, 0, -2);
         this.scene.add(this.wendyModel);
         
         this.mendyModel.visible = false;
@@ -497,7 +467,7 @@ class ARExperience {
         
         // Show landing page again
         document.getElementById('arView').style.display = 'none';
-        document.getElementById('landingPage').style.display = 'flex';
+        document.getElementById('endPage').style.display = 'block';
         
         // Reset start button
         this.startButtonModel.visible = true;
