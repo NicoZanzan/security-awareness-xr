@@ -289,9 +289,149 @@ class ARExperience {
         });
         
         console.log('Audio loaded');
+    }    
+   
+  /**
+ * Creates a text plate with the specified text, automatically sizing to fit the text
+ * @param {string} text - The text to display on the plate
+ * @param {object} [options] - Optional configuration
+ */
+createTextPlate(text, options = {}) {
+    // Default options
+    const {
+        minWidth = 0.3,
+        height = 0.1,
+        posX = 0,
+        posY = 0.2,
+        posZ = -0.5,
+        color = '#ff0000',
+        opacity = 0.7,
+        font = '50px Arial',
+        padding = 0.05
+    } = options;
+
+    // First, dispose of any existing text plate
+    if (this.textPlate) {
+        // Make sure to dispose of the texture to avoid memory leaks
+        if (this.textPlate.userData.texture) {
+            this.textPlate.userData.texture.dispose();
+        }
+        
+        // Remove from scene and dispose
+        this.scene.remove(this.textPlate);
+        this.disposeObject(this.textPlate);
+        this.textPlate = null;
     }
     
+    // Create a temporary canvas to measure text width
+    const measureCanvas = document.createElement('canvas');
+    const measureContext = measureCanvas.getContext('2d');
+    measureContext.font = font;
+    const textMetrics = measureContext.measureText(text);
+    
+    // Calculate text width in pixels
+    const textWidth = textMetrics.width;
+    
+    // Get font size from the font string
+    const fontSize = parseInt(font.match(/\d+/)[0]);
+    const textHeight = fontSize * 1.2; // Approximate text height based on font size
+    
+    // Calculate the plate width based on text width, with minimum width constraint
+    const textScaleFactor = 200; // Scaling factor to convert from pixel width to meters
+    const plateWidth = Math.max(minWidth, textWidth / textScaleFactor + padding * 2);
+    
+    // Create a new text plate (background)
+    const planeGeometry = new THREE.PlaneGeometry(plateWidth, height);
+    const planeMaterial = new THREE.MeshBasicMaterial({ 
+        color: new THREE.Color(color),
+        transparent: true,
+        opacity: opacity,
+        side: THREE.DoubleSide
+    });
+    
+    this.textPlate = new THREE.Mesh(planeGeometry, planeMaterial);
+    this.textPlate.position.set(posX, posY, posZ);
+    
+    // Create text using canvas texture with CORRECT ASPECT RATIO
+    // Calculate canvas dimensions that match the text aspect ratio
+    const canvasAspectRatio = textWidth / textHeight;
+    let canvasWidth, canvasHeight;
+    
+    if (canvasAspectRatio > 1) {
+        // Wide text
+        canvasWidth = 512;
+        canvasHeight = Math.floor(512 / canvasAspectRatio);
+    } else {
+        // Tall or square text
+        canvasHeight = 256;
+        canvasWidth = Math.floor(256 * canvasAspectRatio);
+    }
+    
+    // Ensure minimum dimensions
+    canvasWidth = Math.max(canvasWidth, 256);
+    canvasHeight = Math.max(canvasHeight, 128);
+    
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    
+    // Set canvas size with the correct aspect ratio
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    
+    // Clear canvas (white background makes text more readable)
+    context.fillStyle = 'rgba(0,0,0,0)'; // transparent background
+    context.fillRect(0, 0, canvasWidth, canvasHeight);
+    
+    // Draw text
+    context.font = font;
+    context.fillStyle = 'white';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText(text, canvasWidth / 2, canvasHeight / 2);
+    
+    // Create texture from canvas
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    
+    // Use the same aspect ratio for the text geometry as the canvas
+    const textAspectRatio = canvasWidth / canvasHeight;
+    const textPlateHeight = height * 0.8; // 80% of background height
+    const textPlateWidth = textPlateHeight * textAspectRatio;
+    
+    // Create material with the texture
+    const textMaterial = new THREE.MeshBasicMaterial({
+        map: texture,
+        transparent: true,
+        opacity: 1.0
+    });
+    
+    // Create text plane with correct aspect ratio
+    const textGeometry = new THREE.PlaneGeometry(
+        Math.min(plateWidth * 0.95, textPlateWidth), // Don't exceed plate width
+        textPlateHeight
+    );
+    
+    const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+    textMesh.position.z = 0.001; // Slightly in front to avoid z-fighting
+    
+    // Add text as a child of the plate
+    this.textPlate.add(textMesh);
+    
+    // Add to scene
+    this.scene.add(this.textPlate);
+    console.log(`Text plate created with text: "${text}", width: ${plateWidth.toFixed(2)}m`);
+    
+    // Store reference to texture for proper disposal later
+    this.textPlate.userData.texture = texture;
+    
+    return this.textPlate; // Return the created plate for further manipulation
+}
+
+
     startScene() {
+
+        //this.createTextPlate("Halllhlkhjko!", this.color = '#ffaabb', this.opacity = 0.5);
+        
         // Position start button 1 meter in front of camera at eye level
         this.startButtonModel.position.set(0, -1, -1.0); // 1m in front
         this.scene.add(this.startButtonModel);
@@ -428,8 +568,10 @@ class ARExperience {
         this.pauseButtonModel.visible = true;
         
         // Update instructions
-        document.getElementById('arInstructions').textContent = 
-            'Wendy is talking about cybersecurity. Click the pause button or press P to pause.';
+        /* document.getElementById('arInstructions').textContent =
+            'Wendy is talking about cybersecurity. Click the pause button or press P to pause.'; */
+        
+        this.createTextPlate('Wendy is talking about cybersecurity. Click the pause button or press P to pause.');
         
         // Play audio
         this.wendyAudio.play().catch(error => {
@@ -444,15 +586,21 @@ class ARExperience {
             // Resume
             this.wendyAudio.play();
             this.isPaused = false;
-            document.getElementById('arInstructions').textContent = 
-                'Wendy is talking about cybersecurity. Click the pause button or press P to pause.';
+            
+            // document.getElementById('arInstructions').textContent = 
+            //     'Wendy is talking about cybersecurity. Click the pause button or press P to pause.';
+            
             console.log('Audio resumed');
         } else {
             // Pause
             this.wendyAudio.pause();
             this.isPaused = true;
-            document.getElementById('arInstructions').textContent = 
-                'Audio paused. Click the pause button or press P to resume.';
+            
+            // document.getElementById('arInstructions').textContent = 
+            //     'Audio paused. Click the pause button or press P to resume.';
+
+            this.createTextPlate('Wendy is talking about cybersecurity. Click the pause button or press P to pause.');
+            
             console.log('Audio paused');
         }
     }
@@ -464,8 +612,10 @@ class ARExperience {
         this.pauseButtonModel.visible = false;
         this.isPaused = false;
         
-        document.getElementById('arInstructions').textContent = 
-            'Turn around! Someone has been watching...';
+        // document.getElementById('arInstructions').textContent = 
+        //     'Turn around! Someone has been watching...';
+
+        this.createTextPlate('Turn around! Someone has been watching...');
         
         setTimeout(() => this.revealMendy(), 2000);
     }
