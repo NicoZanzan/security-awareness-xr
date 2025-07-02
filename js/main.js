@@ -540,31 +540,31 @@ class ARExperience {
             this.nextButtonModel.rotation.y = timestamp * 0.002;
         }
 
-        if (this.isXRActive && this.controller) {
-            // Optional: Add visual feedback when pointing at interactive objects
-            const tempMatrix = new THREE.Matrix4();
-            tempMatrix.identity().extractRotation(this.controller.matrixWorld);
+        // if (this.isXRActive && this.controller) {
+        //     // Optional: Add visual feedback when pointing at interactive objects
+        //     const tempMatrix = new THREE.Matrix4();
+        //     tempMatrix.identity().extractRotation(this.controller.matrixWorld);
             
-            const raycaster = new THREE.Raycaster();
-            raycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
-            raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+        //     const raycaster = new THREE.Raycaster();
+        //     raycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
+        //     raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
             
-            // Change controller ray color when hitting something
-            const line = this.controller.getObjectByName('line');
-            if (line) {
-                const intersects = raycaster.intersectObjects([
-                    this.startButtonModel, 
-                    this.pauseButtonModel, 
-                    this.nextButtonModel
-                ], true);
+        //     // Change controller ray color when hitting something
+        //     const line = this.controller.getObjectByName('line');
+        //     if (line) {
+        //         const intersects = raycaster.intersectObjects([
+        //             this.startButtonModel, 
+        //             this.pauseButtonModel, 
+        //             this.nextButtonModel
+        //         ], true);
                 
-                if (intersects.length > 0) {
-                    line.material.color.set(0x00ff00); // Green when hitting a button
-                } else {
-                    line.material.color.set(0xffffff); // White otherwise
-                }
-            }
-        }
+        //         if (intersects.length > 0) {
+        //             line.material.color.set(0x00ff00); // Green when hitting a button
+        //         } else {
+        //             line.material.color.set(0xffffff); // White otherwise
+        //         }
+        //     }
+        // }
         
         this.renderer.render(this.scene, this.camera);
     }
