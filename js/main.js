@@ -115,7 +115,7 @@ class ARExperience {
                 if (isARSupported) {
                     console.log('Starting immersive AR session');
                     this.session = await navigator.xr.requestSession('immersive-ar', {
-                        requiredFeatures: ['local'],
+                        requiredFeatures: ['local', 'hit-test'],  // Add hit-test
                         optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking']
                     });
                     
@@ -143,8 +143,7 @@ class ARExperience {
         this.renderer.setAnimationLoop((timestamp, frame) => {
             this.render(timestamp, frame);
         });
-    }
-   
+    }   
     
     setupFallbackMode() {
         // For non-AR devices - position camera manually
@@ -361,6 +360,49 @@ class ARExperience {
         
         // Support both mouse and touch
         document.addEventListener('pointerdown', onPointerDown);
+
+        // ADD THIS: WebXR controller support
+        this.controller = this.renderer.xr.getController(0);
+        this.controller.addEventListener('select', () => {
+            // Handle XR selection
+            if (this.isXRActive) {
+                const tempMatrix = new THREE.Matrix4();
+                tempMatrix.identity().extractRotation(this.controller.matrixWorld);
+                
+                raycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
+                raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+                
+                // Check interactions just like in the pointer handler
+                if (!this.experienceStarted) {
+                    const startIntersects = raycaster.intersectObject(this.startButtonModel, true);
+                    if (startIntersects.length > 0) {
+                        console.log('Start button clicked in XR!');
+                        this.beginCybersecurityExperience();
+                    }
+                } else if (this.pauseButtonModel.visible) {
+                    const pauseIntersects = raycaster.intersectObject(this.pauseButtonModel, true);
+                    if (pauseIntersects.length > 0) {
+                        this.togglePause();
+                    }
+                } else if (this.nextButtonModel.visible) {
+                    const nextIntersects = raycaster.intersectObject(this.nextButtonModel, true);
+                    if (nextIntersects.length > 0) {
+                        this.handleNext();
+                    }
+                }
+            }
+        });
+        this.scene.add(this.controller);
+        
+        // Optional: Add visual ray for better user feedback
+        const geometry = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(0, 0, -1)
+        ]);
+        const line = new THREE.Line(geometry);
+        line.name = 'line';
+        line.scale.z = 5;
+        this.controller.add(line);
         
         // Keyboard backup
         document.addEventListener('keydown', (event) => {
@@ -496,6 +538,32 @@ class ARExperience {
         // Animate next button
         if (this.nextButtonModel && this.nextButtonModel.visible) {
             this.nextButtonModel.rotation.y = timestamp * 0.002;
+        }
+
+        if (this.isXRActive && this.controller) {
+            // Optional: Add visual feedback when pointing at interactive objects
+            const tempMatrix = new THREE.Matrix4();
+            tempMatrix.identity().extractRotation(this.controller.matrixWorld);
+            
+            const raycaster = new THREE.Raycaster();
+            raycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
+            raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+            
+            // Change controller ray color when hitting something
+            const line = this.controller.getObjectByName('line');
+            if (line) {
+                const intersects = raycaster.intersectObjects([
+                    this.startButtonModel, 
+                    this.pauseButtonModel, 
+                    this.nextButtonModel
+                ], true);
+                
+                if (intersects.length > 0) {
+                    line.material.color.set(0x00ff00); // Green when hitting a button
+                } else {
+                    line.material.color.set(0xffffff); // White otherwise
+                }
+            }
         }
         
         this.renderer.render(this.scene, this.camera);
