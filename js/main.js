@@ -576,6 +576,20 @@ class ARExperience {
         window.removeEventListener('resize', this.onWindowResize);
     }
     
+    idleMove(model, timestamp, amplitude = 0.05, speed = 0.001, axis = 'y') {
+        if (!model || !model.visible) return;
+        
+        // Store the original position if not yet stored
+        const positionKey = `original${axis.toUpperCase()}`;
+        if (!model.userData[positionKey]) {
+            model.userData[positionKey] = model.position[axis];
+        }
+        
+        // Move along the specified axis in a sine wave pattern
+        const originalPos = model.userData[positionKey];
+        model.position[axis] = originalPos + Math.sin(timestamp * speed) * amplitude;
+    }
+
     // Helper method to properly dispose of 3D objects
     disposeObject(object) {
         if (!object) return;
@@ -624,41 +638,26 @@ class ARExperience {
     
     render(timestamp) {            
         
-       // Animate start button
-        if (this.startButtonModel && this.startButtonModel.visible) {
-            // Store the original y position if not yet stored
-            if (!this.startButtonModel.userData.originalY) {
-                this.startButtonModel.userData.originalY = this.startButtonModel.position.y;
-            }
-            
-            // Move up and down in a sine wave pattern
-            const originalY = this.startButtonModel.userData.originalY;
-            this.startButtonModel.position.y = originalY + Math.sin(timestamp * 0.001) * 0.05;
+        if (this.startButtonModel) {
+            this.idleMove(this.startButtonModel, timestamp);
         }
-
-        // Animate pause button
-        if (this.pauseButtonModel && this.pauseButtonModel.visible) {
-            // Store the original y position if not yet stored
-            if (!this.pauseButtonModel.userData.originalY) {
-                this.pauseButtonModel.userData.originalY = this.pauseButtonModel.position.y;
-            }
-            
-            // Move up and down in a sine wave pattern
-            const originalY = this.pauseButtonModel.userData.originalY;
-            this.pauseButtonModel.position.y = originalY + Math.sin(timestamp * 0.001) * 0.05;
+        
+        if (this.pauseButtonModel) {
+            this.idleMove(this.pauseButtonModel, timestamp);
         }
-
-        // Animate next button
-        if (this.nextButtonModel && this.nextButtonModel.visible) {
-            // Store the original y position if not yet stored
-            if (!this.nextButtonModel.userData.originalY) {
-                this.nextButtonModel.userData.originalY = this.nextButtonModel.position.y;
-            }
-            
-            // Move up and down in a sine wave pattern
-            const originalY = this.nextButtonModel.userData.originalY;
-            this.nextButtonModel.position.y = originalY + Math.sin(timestamp * 0.001) * 0.05;
-        }       
+        
+        if (this.nextButtonModel) {
+            this.idleMove(this.nextButtonModel, timestamp);
+        }
+        
+        // You can also animate Wendy and Mendy with different parameters
+        if (this.wendyModel && this.wendyModel.visible) {
+            this.idleMove(this.wendyModel, timestamp, 0.03, 0.001); // Slower, smaller movement
+        }
+        
+        if (this.mendyModel && this.mendyModel.visible) {
+            this.idleMove(this.mendyModel, timestamp, 0.03, 0.0001); // Slower, smaller movement
+        }
         
         this.renderer.render(this.scene, this.camera);
     }
