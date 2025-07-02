@@ -293,34 +293,35 @@ class ARExperience {
     }
     
     startScene() {
-        // Position start button in front of user
-        this.startButtonModel.position.set(0, 1.6, -2);
+        // Position start button 1 meter in front of camera at eye level
+        this.startButtonModel.position.set(0, -1, -1.0); // 1m in front
         this.scene.add(this.startButtonModel);
         
-        // Prepare other models (hidden)
+        // Position Wendy 1 meter in front of camera
         this.wendyModel.visible = false;
-        this.wendyModel.position.set(0, 0, -2);
+        this.wendyModel.position.set(0, -1, -1.5); // 1m in front
         this.scene.add(this.wendyModel);
         
+        // Position Mendy 1 meter behind camera
         this.mendyModel.visible = false;
-        this.mendyModel.position.set(0, 0, 2);
+        this.mendyModel.position.set(0, -1, 1.5); // 1m behind
         this.scene.add(this.mendyModel);
         
-        // Add pause button to scene (hidden initially)
+        // Position pause button to top right area, 1m in front
         this.pauseButtonModel.visible = false;
-        this.pauseButtonModel.position.set(1, 1.8, -2); // Top right area
+        this.pauseButtonModel.position.set(0, -1.5, -1.0); // Top right, 1m in front
         this.scene.add(this.pauseButtonModel);
         
-        // Add next button to scene (hidden initially)
+        // Position next button slightly below eye level, 1m in front
         this.nextButtonModel.visible = false;
-        this.nextButtonModel.position.set(0, 1.2, -2); // Center-bottom area
+        this.nextButtonModel.position.set(0.5, -1, -1.0); // Center-bottom, 1m in front
         this.scene.add(this.nextButtonModel);
         
         // Setup interaction
         this.setupInteraction();
         
         console.log('Scene ready - button should be visible');
-    }
+    }    
     
     setupInteraction() {
         const raycaster = new THREE.Raycaster();
@@ -524,20 +525,54 @@ class ARExperience {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
     }
     
-    render(timestamp, frame) {
+    render(timestamp) {
         // Rotate start button for visibility
         if (this.startButtonModel && this.startButtonModel.visible) {
-            this.startButtonModel.rotation.y = timestamp * 0.001;
+            // Store the original y position if not yet stored
+            if (!this.startButtonModel.userData.originalY) {
+                this.startButtonModel.userData.originalY = this.startButtonModel.position.y;
+            }
+            
+            // Move up and down in a sine wave pattern
+            const originalY = this.startButtonModel.userData.originalY;
+            this.startButtonModel.position.y = originalY + Math.sin(timestamp * 0.001) * 0.05;
         }
         
+        
+       // Animate start button
+        if (this.startButtonModel && this.startButtonModel.visible) {
+            // Store the original y position if not yet stored
+            if (!this.startButtonModel.userData.originalY) {
+                this.startButtonModel.userData.originalY = this.startButtonModel.position.y;
+            }
+            
+            // Move up and down in a sine wave pattern
+            const originalY = this.startButtonModel.userData.originalY;
+            this.startButtonModel.position.y = originalY + Math.sin(timestamp * 0.001) * 0.05;
+        }
+
         // Animate pause button
         if (this.pauseButtonModel && this.pauseButtonModel.visible) {
-            this.pauseButtonModel.rotation.y = Math.sin(timestamp * 0.003) * 0.2;
+            // Store the original y position if not yet stored
+            if (!this.pauseButtonModel.userData.originalY) {
+                this.pauseButtonModel.userData.originalY = this.pauseButtonModel.position.y;
+            }
+            
+            // Move up and down in a sine wave pattern
+            const originalY = this.pauseButtonModel.userData.originalY;
+            this.pauseButtonModel.position.y = originalY + Math.sin(timestamp * 0.001) * 0.05;
         }
-        
+
         // Animate next button
         if (this.nextButtonModel && this.nextButtonModel.visible) {
-            this.nextButtonModel.rotation.y = timestamp * 0.002;
+            // Store the original y position if not yet stored
+            if (!this.nextButtonModel.userData.originalY) {
+                this.nextButtonModel.userData.originalY = this.nextButtonModel.position.y;
+            }
+            
+            // Move up and down in a sine wave pattern
+            const originalY = this.nextButtonModel.userData.originalY;
+            this.nextButtonModel.position.y = originalY + Math.sin(timestamp * 0.001) * 0.05;
         }
 
         // if (this.isXRActive && this.controller) {
