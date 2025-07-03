@@ -23,127 +23,116 @@ class ARExperience {
         this.init();
     }
     
-    init() {
-        // Simple start button click
+    async init() {
+        // Hide end page initially
         document.getElementById('endPage').style.display = 'none';
-        document.getElementById('startButton').addEventListener('click', () => {
-            this.startARExperience();
+        
+        // Add start button event listener
+        document.getElementById('startButton').addEventListener('click', async () => {
+            try {
+                console.log('Starting AR experience...');
+                
+                // Hide landing page, show AR view
+                document.getElementById('landingPage').style.display = 'none';
+                document.getElementById('arView').style.display = 'block';
+                
+                // Initialize Three.js
+                // Scene
+                this.scene = new THREE.Scene();
+                
+                // Camera - responsive setup
+                this.camera = new THREE.PerspectiveCamera(
+                    70, // FOV - good for mobile
+                    window.innerWidth / window.innerHeight,
+                    0.01, // Near plane - close objects
+                    100   // Far plane
+                );
+                
+                // Renderer - mobile optimized
+                const canvas = document.getElementById('arCanvas');
+                this.renderer = new THREE.WebGLRenderer({ 
+                    canvas: canvas, 
+                    antialias: true,
+                    alpha: true,
+                    precision: 'mediump' // Better mobile performance
+                });
+                
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance
+                this.renderer.outputEncoding = THREE.sRGBEncoding;
+                this.renderer.shadowMap.enabled = false; // Disable shadows for performance
+                
+                // Comprehensive lighting for all devices
+                const ambientLight = new THREE.AmbientLight(0xffffff, 1.0); // Bright ambient
+                this.scene.add(ambientLight);
+                
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+                directionalLight.position.set(1, 1, 1);
+                this.scene.add(directionalLight);
+                
+                const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
+                directionalLight2.position.set(-1, -1, -1);
+                this.scene.add(directionalLight2);
+                
+                // Load models and audio
+                await this.loadModels();
+                this.loadAudio();
+                
+                console.log('Three.js initialized');
+                
+                // Initialize WebXR
+                // Enable XR
+                this.renderer.xr.enabled = true;
+                
+                if (navigator.xr) {
+                    try {
+                        // Check for immersive AR support
+                        const isARSupported = await navigator.xr.isSessionSupported('immersive-ar');
+                        
+                        if (isARSupported) {
+                            console.log('Starting immersive AR session');
+                            this.session = await navigator.xr.requestSession('immersive-ar', {
+                                requiredFeatures: ['local', 'hit-test'],  // Add hit-test
+                                optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking']
+                            });
+                            
+                            await this.renderer.xr.setSession(this.session);
+                            this.isXRActive = true;
+                            
+                            // Position for AR
+                            //this.setupARPositioning();
+                            
+                        } else {
+                            console.log('AR not supported, using fallback 3D mode');
+                            this.setupFallbackMode();
+                        }
+                        
+                    } catch (error) {
+                        console.log('WebXR failed, using fallback:', error.message);
+                        this.setupFallbackMode();
+                    }
+                } else {
+                    console.log('WebXR not available, using fallback mode');
+                    this.setupFallbackMode();
+                }
+                
+                // Start render loop
+                this.renderer.setAnimationLoop((timestamp, frame) => {
+                    this.render(timestamp, frame);
+                });
+                
+                // Start the experience
+                this.startScene();
+                
+            } catch (error) {
+                console.error('Failed to start:', error);
+                alert('Failed to start AR experience: ' + error.message);
+            }
         });
         
         // Handle window resize
         window.addEventListener('resize', () => this.onWindowResize());
-    }
-    
-    async startARExperience() {
-        try {
-            console.log('Starting AR experience...');
-            
-            // Hide landing page, show AR view
-            
-            document.getElementById('landingPage').style.display = 'none';
-            document.getElementById('arView').style.display = 'block';
-            
-            // Initialize Three.js
-            await this.initThreeJS();
-            
-            // Try to start WebXR, fallback to regular 3D
-            await this.initWebXR();
-            
-            // Start the experience
-            this.startScene();
-            
-        } catch (error) {
-            console.error('Failed to start:', error);
-            alert('Failed to start AR experience: ' + error.message);
-        }
-    }
-    
-    async initThreeJS() {
-        // Scene
-        this.scene = new THREE.Scene();
-        
-        // Camera - responsive setup
-        this.camera = new THREE.PerspectiveCamera(
-            70, // FOV - good for mobile
-            window.innerWidth / window.innerHeight,
-            0.01, // Near plane - close objects
-            100   // Far plane
-        );
-        
-        // Renderer - mobile optimized
-        const canvas = document.getElementById('arCanvas');
-        this.renderer = new THREE.WebGLRenderer({ 
-            canvas: canvas, 
-            antialias: true,
-            alpha: true,
-            precision: 'mediump' // Better mobile performance
-        });
-        
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance
-        this.renderer.outputEncoding = THREE.sRGBEncoding;
-        this.renderer.shadowMap.enabled = false; // Disable shadows for performance
-        
-        // Comprehensive lighting for all devices
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1.0); // Bright ambient
-        this.scene.add(ambientLight);
-        
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
-        directionalLight.position.set(1, 1, 1);
-        this.scene.add(directionalLight);
-        
-        const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
-        directionalLight2.position.set(-1, -1, -1);
-        this.scene.add(directionalLight2);
-        
-        // Load models and audio
-        await this.loadModels();
-        this.loadAudio();
-        
-        console.log('Three.js initialized');
-    }
-    
-    async initWebXR() {
-        // Enable XR
-        this.renderer.xr.enabled = true;
-        
-        if (navigator.xr) {
-            try {
-                // Check for immersive AR support
-                const isARSupported = await navigator.xr.isSessionSupported('immersive-ar');
-                
-                if (isARSupported) {
-                    console.log('Starting immersive AR session');
-                    this.session = await navigator.xr.requestSession('immersive-ar', {
-                        requiredFeatures: ['local', 'hit-test'],  // Add hit-test
-                        optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking']
-                    });
-                    
-                    await this.renderer.xr.setSession(this.session);
-                    this.isXRActive = true;
-                    
-                    // Position for AR
-                    //this.setupARPositioning();
-                    
-                } else {
-                    console.log('AR not supported, using fallback 3D mode');
-                    this.setupFallbackMode();
-                }
-                
-            } catch (error) {
-                console.log('WebXR failed, using fallback:', error.message);
-                this.setupFallbackMode();
-            }
-        } else {
-            console.log('WebXR not available, using fallback mode');
-            this.setupFallbackMode();
-        }
-        
-        // Start render loop
-        this.renderer.setAnimationLoop((timestamp, frame) => {
-            this.render(timestamp, frame);
-        });
-    }   
+    }    
     
     setupFallbackMode() {
         // For non-AR devices - position camera manually
@@ -151,10 +140,7 @@ class ARExperience {
         this.camera.position.set(0, 0, 0);
         
         // Add mouse/touch controls for fallback
-        this.addFallbackControls();
-    }
-    
-    addFallbackControls() {
+        // Setup pointer-based camera controls
         let isPointerDown = false;
         let pointerX = 0;
         let pointerY = 0;
@@ -181,37 +167,56 @@ class ARExperience {
         
         document.addEventListener('pointermove', onPointerMove);
         document.addEventListener('pointerup', () => { isPointerDown = false; });
-    }
+    }    
     
     async loadModels() {
-        const loader = new THREE.GLTFLoader();
-        
+        const loader = new THREE.GLTFLoader();        
         console.log('Loading models...');
+        
+        // Internal helper function to load GLB models
+        const loadGLB = (path) => {
+            return new Promise((resolve, reject) => {
+                loader.load(
+                    path,
+                    (gltf) => {
+                        console.log(`Loaded: ${path}`);
+                        resolve(gltf);
+                    },
+                    (progress) => {
+                        console.log(`Loading ${path}: ${(progress.loaded / progress.total * 100)}%`);
+                    },
+                    (error) => {
+                        console.error(`Failed to load ${path}:`, error);
+                        reject(error);
+                    }
+                );
+            });
+        };
         
         try {
             // Load button
-            const buttonGLB = await this.loadGLB(loader, './assets/models/button.glb');
+            const buttonGLB = await loadGLB('./assets/models/button.glb');
             this.startButtonModel = buttonGLB.scene;
             this.scaleModel(this.startButtonModel, 1.0);
             
             // TODO: Load pause button GLB when available
-            // const pauseGLB = await this.loadGLB(loader, './assets/models/pause.glb');
+            // const pauseGLB = await loadGLB('./assets/models/pause.glb');
             // this.pauseButtonModel = pauseGLB.scene;
             // For now, create placeholder pause button
             this.createPauseButtonPlaceholder();
             
             // Load next button
-            const nextGLB = await this.loadGLB(loader, './assets/models/next.glb');
+            const nextGLB = await loadGLB('./assets/models/next.glb');
             this.nextButtonModel = nextGLB.scene;
             this.scaleModel(this.nextButtonModel, 1.0);
             
             // Load Wendy
-            const wendyGLB = await this.loadGLB(loader, './assets/models/wendy.glb');
+            const wendyGLB = await loadGLB('./assets/models/wendy.glb');
             this.wendyModel = wendyGLB.scene;
             this.scaleModel(this.wendyModel, 1.0);
             
             // Load Mendy
-            const mendyGLB = await this.loadGLB(loader, './assets/models/mendy.glb');
+            const mendyGLB = await loadGLB('./assets/models/mendy.glb');
             this.mendyModel = mendyGLB.scene;
             this.scaleModel(this.mendyModel, 1.0);
             
@@ -219,9 +224,8 @@ class ARExperience {
             
         } catch (error) {
             console.error('Model loading failed:', error);
-            // Create fallback models
         }
-    }
+    }    
     
     scaleModel(model, targetSize) {
         // Auto-scale models to reasonable size
@@ -254,26 +258,7 @@ class ARExperience {
         
         this.pauseButtonModel = group;
         console.log('Pause button placeholder created');
-    }   
-    
-    loadGLB(loader, path) {
-        return new Promise((resolve, reject) => {
-            loader.load(
-                path,
-                (gltf) => {
-                    console.log(`Loaded: ${path}`);
-                    resolve(gltf);
-                },
-                (progress) => {
-                    console.log(`Loading ${path}: ${(progress.loaded / progress.total * 100)}%`);
-                },
-                (error) => {
-                    console.error(`Failed to load ${path}:`, error);
-                    reject(error);
-                }
-            );
-        });
-    }
+    }     
     
     loadAudio() {
         this.wendyAudio = new Audio('./assets/audio/voice_placeholder.mp3');
@@ -582,7 +567,6 @@ class ARExperience {
     }
 
     startScene() {
-
         //Initial textplate creation
         this.createTextPlate('Start!', {
             backgroundColor: 0x3366cc,
@@ -691,17 +675,7 @@ class ARExperience {
                 }
             }
         });
-        this.scene.add(this.controller);
-        
-        // Optional: Add visual ray for better user feedback
-        const geometry = new THREE.BufferGeometry().setFromPoints([
-            new THREE.Vector3(0, 0, 0),
-            new THREE.Vector3(0, 0, -1)
-        ]);
-        const line = new THREE.Line(geometry);
-        line.name = 'line';
-        line.scale.z = 5;
-        this.controller.add(line);
+        this.scene.add(this.controller);    
         
         // Keyboard backup
         document.addEventListener('keydown', (event) => {
@@ -891,7 +865,7 @@ class ARExperience {
                 
                 // Start fresh
                 this.init();
-                //this.startARExperience();
+                //this.startAR();
             });
         }
         
@@ -913,7 +887,7 @@ class ARExperience {
         model.position[axis] = originalPos + Math.sin(timestamp * speed) * amplitude;
     }
 
-    // Helper method to properly dispose of 3D objects
+   // Helper method to properly dispose of 3D objects
     disposeObject(object) {
         if (!object) return;
         
@@ -925,33 +899,32 @@ class ARExperience {
             }
         }
         
-        // Dispose of geometries and materials
+        // Dispose of geometries
         if (object.geometry) object.geometry.dispose();
         
+        // Dispose of materials
         if (object.material) {
+            const disposeMaterial = (material) => {
+                // Dispose of material's textures
+                Object.keys(material).forEach(prop => {
+                    if (!material[prop]) return;
+                    if (material[prop].isTexture) {
+                        material[prop].dispose();
+                    }
+                });
+                
+                // Dispose of the material itself
+                material.dispose();
+            };
+            
             if (Array.isArray(object.material)) {
-                object.material.forEach(material => this.disposeMaterial(material));
+                object.material.forEach(disposeMaterial);
             } else {
-                this.disposeMaterial(object.material);
+                disposeMaterial(object.material);
             }
         }
     }
-    
-    // Helper to dispose of materials
-    disposeMaterial(material) {
-        if (!material) return;
-        
-        // Dispose of material's textures
-        Object.keys(material).forEach(prop => {
-            if (!material[prop]) return;
-            if (material[prop].isTexture) {
-                material[prop].dispose();
-            }
-        });
-        
-        // Dispose of the material itself
-        material.dispose();
-    }    
+
     
     onWindowResize() {
         this.camera.aspect = window.innerWidth / window.innerHeight;
