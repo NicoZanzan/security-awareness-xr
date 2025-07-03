@@ -24,7 +24,7 @@ class ARExperience {
     }
     
     async init() {
-        // Hide end page initially
+        // UI setup
         document.getElementById('endPage').style.display = 'none';
         
         // Add start button event listener
@@ -36,7 +36,7 @@ class ARExperience {
                 document.getElementById('landingPage').style.display = 'none';
                 document.getElementById('arView').style.display = 'block';
                 
-                // Initialize Three.js
+                // -------- THREE.JS INITIALIZATION --------
                 // Scene
                 this.scene = new THREE.Scene();
                 
@@ -58,12 +58,12 @@ class ARExperience {
                 });
                 
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
-                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
                 this.renderer.outputEncoding = THREE.sRGBEncoding;
                 this.renderer.shadowMap.enabled = false; // Disable shadows for performance
                 
                 // Comprehensive lighting for all devices
-                const ambientLight = new THREE.AmbientLight(0xffffff, 1.0); // Bright ambient
+                const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
                 this.scene.add(ambientLight);
                 
                 const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
@@ -74,14 +74,81 @@ class ARExperience {
                 directionalLight2.position.set(-1, -1, -1);
                 this.scene.add(directionalLight2);
                 
-                // Load models and audio
-                await this.loadModels();
-                this.loadAudio();
+                // -------- RESOURCE LOADING --------
+                // Load models
+                const loader = new THREE.GLTFLoader();
+                console.log('Loading models...');
                 
-                console.log('Three.js initialized');
+                // Internal helper function to load GLB models
+                const loadGLB = (path) => {
+                    return new Promise((resolve, reject) => {
+                        loader.load(
+                            path,
+                            (gltf) => {
+                                console.log(`Loaded: ${path}`);
+                                resolve(gltf);
+                            },
+                            (progress) => {
+                                console.log(`Loading ${path}: ${(progress.loaded / progress.total * 100)}%`);
+                            },
+                            (error) => {
+                                console.error(`Failed to load ${path}:`, error);
+                                reject(error);
+                            }
+                        );
+                    });
+                };
                 
-                // Initialize WebXR
-                // Enable XR
+                try {
+                    // Load button
+                    const buttonGLB = await loadGLB('./assets/models/button.glb');
+                    this.startButtonModel = buttonGLB.scene;
+                    this.scaleModel(this.startButtonModel, 1.0);
+                    
+                    // TODO: Load pause button GLB when available
+                    // const pauseGLB = await loadGLB('./assets/models/pause.glb');
+                    // this.pauseButtonModel = pauseGLB.scene;
+                    // For now, create placeholder pause button
+                    this.createPauseButtonPlaceholder();
+                    
+                    // Load next button
+                    const nextGLB = await loadGLB('./assets/models/next.glb');
+                    this.nextButtonModel = nextGLB.scene;
+                    this.scaleModel(this.nextButtonModel, 1.0);
+                    
+                    // Load Wendy
+                    const wendyGLB = await loadGLB('./assets/models/wendy.glb');
+                    this.wendyModel = wendyGLB.scene;
+                    this.scaleModel(this.wendyModel, 1.0);
+                    
+                    // Load Mendy
+                    const mendyGLB = await loadGLB('./assets/models/mendy.glb');
+                    this.mendyModel = mendyGLB.scene;
+                    this.scaleModel(this.mendyModel, 1.0);
+                    
+                    console.log('All models loaded successfully');
+                    
+                } catch (error) {
+                    console.error('Model loading failed:', error);
+                    throw error;
+                }
+                
+                // Load audio
+                this.wendyAudio = new Audio('./assets/audio/voice_placeholder.mp3');
+                this.wendyAudio.preload = 'auto';
+                
+                this.wendyAudio.addEventListener('ended', () => {
+                    console.log('Wendy audio finished');
+                    this.endWendySpeech();
+                });
+                
+                this.wendyAudio.addEventListener('error', (e) => {
+                    console.error('Audio error:', e);
+                });
+                
+                console.log('Audio loaded');
+                
+                // -------- WEBXR INITIALIZATION --------
                 this.renderer.xr.enabled = true;
                 
                 if (navigator.xr) {
@@ -104,16 +171,103 @@ class ARExperience {
                             
                         } else {
                             console.log('AR not supported, using fallback 3D mode');
-                            this.setupFallbackMode();
+                            // Setup fallback mode
+                            this.camera.position.set(0, 0, 0);
+                            
+                            // Add mouse/touch controls for fallback
+                            let isPointerDown = false;
+                            let pointerX = 0;
+                            let pointerY = 0;
+                            
+                            const onPointerMove = (event) => {
+                                if (!isPointerDown) return;
+                                
+                                const deltaX = event.clientX - pointerX;
+                                const deltaY = event.clientY - pointerY;
+                                
+                                this.camera.rotation.y -= deltaX * 0.005;
+                                this.camera.rotation.x -= deltaY * 0.005;
+                                this.camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, this.camera.rotation.x));
+                                
+                                pointerX = event.clientX;
+                                pointerY = event.clientY;
+                            };
+                            
+                            document.addEventListener('pointerdown', (event) => {
+                                isPointerDown = true;
+                                pointerX = event.clientX;
+                                pointerY = event.clientY;
+                            });
+                            
+                            document.addEventListener('pointermove', onPointerMove);
+                            document.addEventListener('pointerup', () => { isPointerDown = false; });
                         }
                         
                     } catch (error) {
                         console.log('WebXR failed, using fallback:', error.message);
-                        this.setupFallbackMode();
+                        // Setup fallback mode
+                        this.camera.position.set(0, 0, 0);
+                        
+                        // Add mouse/touch controls for fallback
+                        let isPointerDown = false;
+                        let pointerX = 0;
+                        let pointerY = 0;
+                        
+                        const onPointerMove = (event) => {
+                            if (!isPointerDown) return;
+                            
+                            const deltaX = event.clientX - pointerX;
+                            const deltaY = event.clientY - pointerY;
+                            
+                            this.camera.rotation.y -= deltaX * 0.005;
+                            this.camera.rotation.x -= deltaY * 0.005;
+                            this.camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, this.camera.rotation.x));
+                            
+                            pointerX = event.clientX;
+                            pointerY = event.clientY;
+                        };
+                        
+                        document.addEventListener('pointerdown', (event) => {
+                            isPointerDown = true;
+                            pointerX = event.clientX;
+                            pointerY = event.clientY;
+                        });
+                        
+                        document.addEventListener('pointermove', onPointerMove);
+                        document.addEventListener('pointerup', () => { isPointerDown = false; });
                     }
                 } else {
                     console.log('WebXR not available, using fallback mode');
-                    this.setupFallbackMode();
+                    // Setup fallback mode
+                    this.camera.position.set(0, 0, 0);
+                    
+                    // Add mouse/touch controls for fallback
+                    let isPointerDown = false;
+                    let pointerX = 0;
+                    let pointerY = 0;
+                    
+                    const onPointerMove = (event) => {
+                        if (!isPointerDown) return;
+                        
+                        const deltaX = event.clientX - pointerX;
+                        const deltaY = event.clientY - pointerY;
+                        
+                        this.camera.rotation.y -= deltaX * 0.005;
+                        this.camera.rotation.x -= deltaY * 0.005;
+                        this.camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, this.camera.rotation.x));
+                        
+                        pointerX = event.clientX;
+                        pointerY = event.clientY;
+                    };
+                    
+                    document.addEventListener('pointerdown', (event) => {
+                        isPointerDown = true;
+                        pointerX = event.clientX;
+                        pointerY = event.clientY;
+                    });
+                    
+                    document.addEventListener('pointermove', onPointerMove);
+                    document.addEventListener('pointerup', () => { isPointerDown = false; });
                 }
                 
                 // Start render loop
@@ -121,7 +275,7 @@ class ARExperience {
                     this.render(timestamp, frame);
                 });
                 
-                // Start the experience
+                // Start the interactive scene
                 this.startScene();
                 
             } catch (error) {
@@ -132,7 +286,49 @@ class ARExperience {
         
         // Handle window resize
         window.addEventListener('resize', () => this.onWindowResize());
-    }    
+    }
+    
+    startScene() {
+        // Initial text plate creation
+        this.createTextPlate('Start!', {
+            backgroundColor: 0x3366cc,
+            width: 0.5,
+            height: 0.2,
+            yOffset: -0.29  // Slightly below center
+        });
+        
+        // Position and add models to scene
+        
+        // Start button
+        this.startButtonModel.position.set(0, -1, -1.0); // 1m in front
+        this.scene.add(this.startButtonModel);
+        
+        // Wendy model
+        this.wendyModel.visible = false;
+        this.wendyModel.position.set(0, -1, -1.5); // 1m in front
+        this.scene.add(this.wendyModel);
+        
+        // Mendy model
+        this.mendyModel.visible = false;
+        this.mendyModel.position.set(0, -1, 1.5); // 1m behind
+        this.scene.add(this.mendyModel);
+        
+        // Pause button
+        this.pauseButtonModel.visible = false;
+        this.pauseButtonModel.position.set(0, -1.5, -1.0); // Top right, 1m in front
+        this.scene.add(this.pauseButtonModel);
+        
+        // Next button
+        this.nextButtonModel.visible = false;
+        this.nextButtonModel.position.set(0.5, -1, -1.0); // Center-bottom, 1m in front
+        this.scene.add(this.nextButtonModel);
+        
+        // Setup interaction for interactive elements
+        this.setupInteraction();
+        
+        console.log('Scene ready - button should be visible');
+    }
+   
     
     setupFallbackMode() {
         // For non-AR devices - position camera manually
@@ -565,45 +761,6 @@ class ARExperience {
         
         return this.textPlate;
     }
-
-    startScene() {
-        //Initial textplate creation
-        this.createTextPlate('Start!', {
-            backgroundColor: 0x3366cc,
-            width: 0.5,
-            height: 0.2,
-            yOffset: -0.29  // Slightly below center
-        });
-        
-        // Position start button 1 meter in front of camera at eye level
-        this.startButtonModel.position.set(0, -1, -1.0); // 1m in front
-        this.scene.add(this.startButtonModel);
-        
-        // Position Wendy 1 meter in front of camera
-        this.wendyModel.visible = false;
-        this.wendyModel.position.set(0, -1, -1.5); // 1m in front
-        this.scene.add(this.wendyModel);
-        
-        // Position Mendy 1 meter behind camera
-        this.mendyModel.visible = false;
-        this.mendyModel.position.set(0, -1, 1.5); // 1m behind
-        this.scene.add(this.mendyModel);
-        
-        // Position pause button to top right area, 1m in front
-        this.pauseButtonModel.visible = false;
-        this.pauseButtonModel.position.set(0, -1.5, -1.0); // Top right, 1m in front
-        this.scene.add(this.pauseButtonModel);
-        
-        // Position next button slightly below eye level, 1m in front
-        this.nextButtonModel.visible = false;
-        this.nextButtonModel.position.set(0.5, -1, -1.0); // Center-bottom, 1m in front
-        this.scene.add(this.nextButtonModel);
-        
-        // Setup interaction
-        this.setupInteraction();
-        
-        console.log('Scene ready - button should be visible');
-    }    
     
     setupInteraction() {
         const raycaster = new THREE.Raycaster();
@@ -924,7 +1081,6 @@ class ARExperience {
             }
         }
     }
-
     
     onWindowResize() {
         this.camera.aspect = window.innerWidth / window.innerHeight;
