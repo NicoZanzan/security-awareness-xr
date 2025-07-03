@@ -304,7 +304,7 @@ class ARExperience {
             fontSize = 32,
             padding = 0.02
         } = options;
-    
+
         // First, dispose of any existing text plate
         if (this.textPlate) {
             // If the text plate was previously attached to the camera
@@ -321,7 +321,7 @@ class ARExperience {
             this.disposeObject(this.textPlate);
             this.textPlate = null;
         }
-    
+
         // Create or ensure UI group exists (attached to camera)
         if (!this.uiGroup) {
             this.uiGroup = new THREE.Group();
@@ -334,113 +334,242 @@ class ARExperience {
             this.camera.add(this.uiGroup);
         }
         
-        // Create canvas for text
+        // Create high-resolution canvas for sharp text
+        const pixelRatio = Math.min(window.devicePixelRatio, 3); // Cap at 3x for performance
+        const baseWidth = 1024; // Double the previous resolution
+        const baseHeight = 392;
+        
         const canvas = document.createElement('canvas');
-        canvas.width = 512;
-        canvas.height = 256;
+        canvas.width = baseWidth * pixelRatio;
+        canvas.height = baseHeight * pixelRatio;
         
         // Get context and set text properties
         const context = canvas.getContext('2d');
-        context.fillStyle = 'rgba(0, 0, 0, 0)';
-        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.scale(pixelRatio, pixelRatio); // Scale context to account for device pixel ratio
         
-        // Draw rounded rectangle background
+        // Clear canvas with transparent background
+        context.fillStyle = 'rgba(0, 0, 0, 0)';
+        context.fillRect(0, 0, baseWidth, baseHeight);
+        
+        // Set font with higher resolution
+        const scaledFontSize = fontSize * 1.5; // Increase font size for sharper text
+        const fontWeight = 500; // Use a slightly bolder weight
+        context.font = `${fontWeight} ${scaledFontSize}px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif`;
+        
+        // Enable font smoothing
+        context.imageSmoothingEnabled = true;
+        context.imageSmoothingQuality = 'high';
+        
+        // Text measurement helpers
+        const calculateWrappedText = (ctx, txt, maxWidth) => {
+            if (!txt) return [];
+            
+            const words = txt.split(' ');
+            let lines = [];
+            let currentLine = '';
+            
+            for (let n = 0; n < words.length; n++) {
+                const testLine = currentLine + words[n] + ' ';
+                const metrics = ctx.measureText(testLine);
+                const testWidth = metrics.width;
+                
+                if (testWidth > maxWidth && n > 0) {
+                    lines.push(currentLine.trim());
+                    currentLine = words[n] + ' ';
+                } else {
+                    currentLine = testLine;
+                }
+            }
+            
+            if (currentLine.trim() !== '') {
+                lines.push(currentLine.trim());
+            }
+            
+            return lines;
+        };
+        
+        const getMaxLineWidth = (ctx, lines) => {
+            let maxWidth = 0;
+            lines.forEach(line => {
+                const metrics = ctx.measureText(line);
+                maxWidth = Math.max(maxWidth, metrics.width);
+            });
+            return maxWidth;
+        };
+        
+        const drawRoundedRect = (ctx, x, y, width, height, radius) => {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        };
+        
+        // Calculate layout parameters
+        const paddingX = 40;
+        const paddingY = 25;
         const cornerRadius = 20;
+        const maxTextWidth = baseWidth - (paddingX * 2);
+        const lineHeight = scaledFontSize * 1.1;
+        
+        // Wrap and measure text
+        const wrappedLines = calculateWrappedText(context, text, maxTextWidth);
+        const totalTextHeight = wrappedLines.length * lineHeight;
+        
+        // Calculate background dimensions for a tight fit
+        const bgWidth = Math.min(
+            baseWidth - 20,
+            getMaxLineWidth(context, wrappedLines) + (paddingX * 2)
+        );
+        const bgHeight = totalTextHeight + (paddingY * 2);
+        
+        // Position background
+        const bgX = (baseWidth - bgWidth) / 2;
+        const bgY = (baseHeight - bgHeight) / 2;
+        
+        // Draw background with anti-aliased edges
         context.fillStyle = `rgba(${(backgroundColor >> 16) & 0xff}, 
-                                 ${(backgroundColor >> 8) & 0xff}, 
-                                 ${backgroundColor & 0xff}, 
-                                 ${backgroundOpacity})`;
-                                 
-        // Rounded rectangle function
-        context.beginPath();
-        context.moveTo(cornerRadius, 0);
-        context.lineTo(canvas.width - cornerRadius, 0);
-        context.quadraticCurveTo(canvas.width, 0, canvas.width, cornerRadius);
-        context.lineTo(canvas.width, canvas.height - cornerRadius);
-        context.quadraticCurveTo(canvas.width, canvas.height, canvas.width - cornerRadius, canvas.height);
-        context.lineTo(cornerRadius, canvas.height);
-        context.quadraticCurveTo(0, canvas.height, 0, canvas.height - cornerRadius);
-        context.lineTo(0, cornerRadius);
-        context.quadraticCurveTo(0, 0, cornerRadius, 0);
-        context.closePath();
+                                ${(backgroundColor >> 8) & 0xff}, 
+                                ${backgroundColor & 0xff}, 
+                                ${backgroundOpacity})`;
+        
+        // Use a slightly larger radius for smoother corners
+        drawRoundedRect(context, bgX, bgY, bgWidth, bgHeight, cornerRadius);
         context.fill();
         
-        // Text settings
-        context.font = `${fontSize}px Arial, sans-serif`;
+        // Apply slight shadow for depth and better readability
+        context.shadowColor = 'rgba(0, 0, 0, 0.3)';
+        context.shadowBlur = 4;
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 1;
+        
+        // Draw text with anti-aliasing
         context.textAlign = 'center';
         context.textBaseline = 'middle';
         context.fillStyle = `rgba(${(textColor >> 16) & 0xff}, 
-                                 ${(textColor >> 8) & 0xff}, 
-                                 ${textColor & 0xff}, 
-                                 1.0)`;
-                                 
-        // Handle text wrapping for longer messages
-        this.wrapText(context, text, canvas.width/2, canvas.height/2, canvas.width - 40, fontSize * 1.2);
+                            ${(textColor >> 8) & 0xff}, 
+                            ${textColor & 0xff}, 
+                            1.0)`;
         
-        // Create texture and material
+        // For extremely crisp text, draw with subpixel positioning
+        const textX = baseWidth / 2;
+        let textY = bgY + paddingY + (lineHeight / 2);
+        
+        wrappedLines.forEach(line => {
+            // For very sharp text, render on exact pixel boundaries
+            const pixelAlignedY = Math.round(textY);
+            context.fillText(line, textX, pixelAlignedY);
+            textY += lineHeight;
+        });
+        
+        // Clear shadow settings to prevent affecting other elements
+        context.shadowColor = 'rgba(0, 0, 0, 0)';
+        context.shadowBlur = 0;
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
+        
+        // Create texture with optimal settings for text clarity
         const texture = new THREE.CanvasTexture(canvas);
         texture.needsUpdate = true;
+        texture.minFilter = THREE.LinearFilter; // Better for text
+        texture.magFilter = THREE.LinearFilter;
+        texture.anisotropy = 16; // Improve texture clarity at angles (check max supported first)
+        texture.encoding = THREE.sRGBEncoding; // Better color handling
+        texture.generateMipmaps = false; // Disable for text clarity
         
+        // Create material with appropriate settings
         const material = new THREE.MeshBasicMaterial({
             map: texture,
             transparent: true,
-            depthTest: false,  // Important for UI elements
-            depthWrite: false  // Important for UI elements
+            depthTest: false,
+            depthWrite: false,
+            premultipliedAlpha: true // Improves text edge quality
         });
         
-        // Create geometry and mesh
-        const geometry = new THREE.PlaneGeometry(width, height);
+        // Create geometry with proper aspect ratio
+        const aspectRatio = canvas.width / canvas.height;
+        const adjustedHeight = width / aspectRatio;
+        
+        const geometry = new THREE.PlaneGeometry(width, adjustedHeight);
         this.textPlate = new THREE.Mesh(geometry, material);
         
         // Position in front of camera
         this.textPlate.position.set(0, yOffset, -distance);
         
-        // Add to UI group (which is attached to the camera)
+        // Add to UI group attached to camera
         this.uiGroup.add(this.textPlate);
         
-        console.log(`Text plate created with text: "${text}"`);
+        console.log(`High-resolution text plate created with text: "${text}"`);
         
-        // Store reference to texture for proper disposal later
+        // Store references for disposal
         this.textPlate.userData.texture = texture;
-        
-        // Store the text for later access
         this.textPlate.userData.text = text;
         
-        // Add a method to update the text
+        // Add update method
         this.textPlate.updateText = (newText) => {
+            // Reset context scale for clearing
+            context.setTransform(1, 0, 0, 1, 0, 0);
             context.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Restore scaled context
+            context.scale(pixelRatio, pixelRatio);
+            
+            // Recalculate for new text
+            const wrappedLines = calculateWrappedText(context, newText, maxTextWidth);
+            const totalTextHeight = wrappedLines.length * lineHeight;
+            
+            const bgWidth = Math.min(
+                baseWidth - 20,
+                getMaxLineWidth(context, wrappedLines) + (paddingX * 2)
+            );
+            const bgHeight = totalTextHeight + (paddingY * 2);
+            
+            const bgX = (baseWidth - bgWidth) / 2;
+            const bgY = (baseHeight - bgHeight) / 2;
             
             // Redraw background
             context.fillStyle = `rgba(${(backgroundColor >> 16) & 0xff}, 
-                                 ${(backgroundColor >> 8) & 0xff}, 
-                                 ${backgroundColor & 0xff}, 
-                                 ${backgroundOpacity})`;
-                                 
-            // Redraw rounded rectangle
-            context.beginPath();
-            context.moveTo(cornerRadius, 0);
-            context.lineTo(canvas.width - cornerRadius, 0);
-            context.quadraticCurveTo(canvas.width, 0, canvas.width, cornerRadius);
-            context.lineTo(canvas.width, canvas.height - cornerRadius);
-            context.quadraticCurveTo(canvas.width, canvas.height, canvas.width - cornerRadius, canvas.height);
-            context.lineTo(cornerRadius, canvas.height);
-            context.quadraticCurveTo(0, canvas.height, 0, canvas.height - cornerRadius);
-            context.lineTo(0, cornerRadius);
-            context.quadraticCurveTo(0, 0, cornerRadius, 0);
-            context.closePath();
+                                ${(backgroundColor >> 8) & 0xff}, 
+                                ${backgroundColor & 0xff}, 
+                                ${backgroundOpacity})`;
+            
+            drawRoundedRect(context, bgX, bgY, bgWidth, bgHeight, cornerRadius);
             context.fill();
             
-            // Update text
-            context.font = `${fontSize}px Arial, sans-serif`;
+            // Apply shadow for depth
+            context.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            context.shadowBlur = 4;
+            context.shadowOffsetX = 0;
+            context.shadowOffsetY = 1;
+            
+            // Draw new text
+            context.font = `${fontWeight} ${scaledFontSize}px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif`;
             context.textAlign = 'center';
             context.textBaseline = 'middle';
             context.fillStyle = `rgba(${(textColor >> 16) & 0xff}, 
-                                     ${(textColor >> 8) & 0xff}, 
-                                     ${textColor & 0xff}, 
-                                     1.0)`;
-                                     
-            // Handle text wrapping
-            this.wrapText(context, newText, canvas.width/2, canvas.height/2, canvas.width - 40, fontSize * 1.2);
+                                ${(textColor >> 8) & 0xff}, 
+                                ${textColor & 0xff}, 
+                                1.0)`;
+            
+            let textY = bgY + paddingY + (lineHeight / 2);
+            
+            wrappedLines.forEach(line => {
+                const pixelAlignedY = Math.round(textY);
+                context.fillText(line, textX, pixelAlignedY);
+                textY += lineHeight;
+            });
+            
+            // Clear shadow settings
+            context.shadowColor = 'rgba(0, 0, 0, 0)';
+            context.shadowBlur = 0;
+            context.shadowOffsetX = 0;
+            context.shadowOffsetY = 0;
             
             // Update texture
             texture.needsUpdate = true;
@@ -450,45 +579,6 @@ class ARExperience {
         };
         
         return this.textPlate;
-    }
-    
-    wrapText(context, text, x, y, maxWidth, lineHeight) {
-        if (!text) return;
-        
-        const words = text.split(' ');
-        let line = '';
-        
-        // Calculate how many lines we'll need to properly center vertically
-        let testLine = '';
-        let lineCount = 1;
-        for (let n = 0; n < words.length; n++) {
-            testLine += words[n] + ' ';
-            const metrics = context.measureText(testLine);
-            if (metrics.width > maxWidth && n > 0) {
-                testLine = words[n] + ' ';
-                lineCount++;
-            }
-        }
-        
-        // Start position adjusted for number of lines
-        let yPos = y - ((lineHeight * (lineCount - 1)) / 2);
-        
-        // Actually render the text
-        for (let n = 0; n < words.length; n++) {
-            const testLine = line + words[n] + ' ';
-            const metrics = context.measureText(testLine);
-            const testWidth = metrics.width;
-            
-            if (testWidth > maxWidth && n > 0) {
-                context.fillText(line, x, yPos);
-                line = words[n] + ' ';
-                yPos += lineHeight;
-            } else {
-                line = testLine;
-            }
-        }
-        
-        context.fillText(line, x, yPos);
     }
 
     startScene() {
