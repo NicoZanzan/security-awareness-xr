@@ -385,15 +385,15 @@ class ARExperience {
         });
     }   
     
-     // Updated setupInteraction to use the new makeModelClickable method
-    //  setupInteraction() {
-    //          // Setup WebXR controller
-    //     this.controller = this.renderer.xr.getController(0);
-    //     this.scene.add(this.controller);
+     //Updated setupInteraction to use the new makeModelClickable method
+     setupInteraction() {
+             // Setup WebXR controller
+        this.controller = this.renderer.xr.getController(0);
+        this.scene.add(this.controller);
         
-    //     // Keyboard backup controls remain unchanged
+        // Keyboard backup controls remain unchanged
     
-    // }  
+    }  
     
     makeModelClickable(model, callback, once = false) {
         if (!model || typeof callback !== 'function') {
