@@ -387,13 +387,59 @@ class ARExperience {
     
      //Updated setupInteraction to use the new makeModelClickable method
      setupInteraction() {
-             // Setup WebXR controller
+        // Setup WebXR controller
         this.controller = this.renderer.xr.getController(0);
         this.scene.add(this.controller);
         
-        // Keyboard backup controls remain unchanged
-    
-    }  
+        // Now attach XR event handlers if available
+        if (this.controller && this.interactionHandlers && this.interactionHandlers.xrSelect) {
+            console.log("Adding XR controller select event listener");
+            this.controller.addEventListener('select', this.interactionHandlers.xrSelect);
+        } else {
+            console.warn("Could not attach XR controller event - controller or handler not available");
+        }
+        
+        // Keyboard backup controls
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Space') {
+                // Find an active start button
+                const startButton = Array.from(this.modelInteractions.keys())
+                    .find(model => 
+                        model === this.startButtonModel && 
+                        model.visible && 
+                        this.modelInteractions.get(model).active
+                    );
+                
+                if (startButton) {
+                    this.modelInteractions.get(startButton).callback(startButton);
+                }
+            } else if (event.code === 'KeyP') {
+                // Find an active pause button
+                const pauseButton = Array.from(this.modelInteractions.keys())
+                    .find(model => 
+                        model === this.pauseButtonModel && 
+                        model.visible && 
+                        this.modelInteractions.get(model).active
+                    );
+                
+                if (pauseButton) {
+                    this.modelInteractions.get(pauseButton).callback(pauseButton);
+                }
+            } else if (event.code === 'KeyN') {
+                // Find an active next button
+                const nextButton = Array.from(this.modelInteractions.keys())
+                    .find(model => 
+                        model === this.nextButtonModel && 
+                        model.visible && 
+                        this.modelInteractions.get(model).active
+                    );
+                
+                if (nextButton) {
+                    this.modelInteractions.get(nextButton).callback(nextButton);
+                }
+            }
+        });
+    }
     
     makeModelClickable(model, callback, once = false) {
         if (!model || typeof callback !== 'function') {
@@ -453,7 +499,7 @@ class ARExperience {
                     pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
                     raycaster.setFromCamera(pointer, this.camera);
                     
-                    // Process the click using our checkIntersections helper
+                    // Process the click
                     checkIntersections(raycaster);
                 }
             };
@@ -462,6 +508,8 @@ class ARExperience {
             const checkIntersections = (raycaster) => {
                 if (!this.modelInteractions || this.modelInteractions.size === 0) return;
                 
+                console.log("Checking intersections");
+                
                 // Get all active, visible interactive models
                 const interactiveModels = Array.from(this.modelInteractions.keys())
                     .filter(model => {
@@ -469,10 +517,19 @@ class ARExperience {
                         return data.active && model.visible && (!data.once || !data.triggered);
                     });
                 
-                if (interactiveModels.length === 0) return;
+                if (interactiveModels.length === 0) {
+                    console.log("No active models to interact with");
+                    return;
+                }
+                
+                // Log models being checked
+                console.log(`Checking intersections with ${interactiveModels.length} models`);
+                interactiveModels.forEach(model => console.log(`- Model: ${model.name || 'unnamed'}`));
                 
                 // Check for intersections
                 const intersects = raycaster.intersectObjects(interactiveModels, true);
+                
+                console.log(`Found ${intersects.length} intersections`);
                 
                 if (intersects.length > 0) {
                     const intersect = intersects[0];
@@ -504,78 +561,34 @@ class ARExperience {
             document.addEventListener('pointermove', handlePointerMove);
             document.addEventListener('pointerup', handlePointerUp);
             
-            // Set up XR controller handler if available
-            if (this.controller) {
-                const handleXRSelect = () => {
-                    if (!this.isXRActive) return;
-                    
-                    // Set up raycaster from controller
-                    const tempMatrix = new THREE.Matrix4();
-                    tempMatrix.identity().extractRotation(this.controller.matrixWorld);
-                    
-                    raycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
-                    raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
-                    
-                    // Process the XR selection
-                    checkIntersections(raycaster);
-                };
+            // Create XR controller handler (will be attached in setupInteraction)
+            const handleXRSelect = (event) => {
+                console.log("XR Select event received");
                 
-                this.controller.addEventListener('select', handleXRSelect);
-            }
+                // Set up raycaster from controller
+                const tempMatrix = new THREE.Matrix4();
+                tempMatrix.identity().extractRotation(event.target.matrixWorld);
+                
+                const controllerRaycaster = new THREE.Raycaster();
+                controllerRaycaster.ray.origin.setFromMatrixPosition(event.target.matrixWorld);
+                controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+                
+                // Process the XR selection
+                checkIntersections(controllerRaycaster);
+            };
             
-            // Set up keyboard controls as fallback
-            document.addEventListener('keydown', (event) => {
-                if (event.code === 'Space') {
-                    // Find an active start button
-                    const startButton = Array.from(this.modelInteractions.keys())
-                        .find(model => 
-                            model === this.startButtonModel && 
-                            model.visible && 
-                            this.modelInteractions.get(model).active
-                        );
-                    
-                    if (startButton) {
-                        this.modelInteractions.get(startButton).callback(startButton);
-                    }
-                } else if (event.code === 'KeyP') {
-                    // Find an active pause button
-                    const pauseButton = Array.from(this.modelInteractions.keys())
-                        .find(model => 
-                            model === this.pauseButtonModel && 
-                            model.visible && 
-                            this.modelInteractions.get(model).active
-                        );
-                    
-                    if (pauseButton) {
-                        this.modelInteractions.get(pauseButton).callback(pauseButton);
-                    }
-                } else if (event.code === 'KeyN') {
-                    // Find an active next button
-                    const nextButton = Array.from(this.modelInteractions.keys())
-                        .find(model => 
-                            model === this.nextButtonModel && 
-                            model.visible && 
-                            this.modelInteractions.get(model).active
-                        );
-                    
-                    if (nextButton) {
-                        this.modelInteractions.get(nextButton).callback(nextButton);
-                    }
-                }
-            });
-            
-            // Store handlers for cleanup
+            // Store handlers for later attachment and cleanup
             this.interactionHandlers = {
                 pointerDown: handlePointerDown,
                 pointerMove: handlePointerMove,
                 pointerUp: handlePointerUp,
+                xrSelect: handleXRSelect,
                 checkIntersections
             };
             
             this.modelInteractionHandlerActive = true;
         }
         
-        // Return simple methods for managing this interaction
         return {
             disable: () => {
                 if (this.modelInteractions.has(model)) {
@@ -595,8 +608,7 @@ class ARExperience {
                 }
             }
         };
-    }
-      
+    }      
    
     setupFallbackMode() {
         // For non-AR devices - position camera manually
@@ -988,10 +1000,7 @@ class ARExperience {
         };
         
         return this.textPlate;
-    }
-    
- 
-  
+    } 
 
     togglePause() {
         if (this.isPaused) {
@@ -1085,9 +1094,14 @@ class ARExperience {
         // Remove interaction handlers
         if (this.interactionHandlers) {
             document.removeEventListener('pointerdown', this.interactionHandlers.pointerDown);
-            if (this.controller) {
-                this.controller.removeEventListener('select', this.interactionHandlers.checkIntersections);
+            document.removeEventListener('pointermove', this.interactionHandlers.pointerMove);
+            document.removeEventListener('pointerup', this.interactionHandlers.pointerUp);
+            
+            if (this.controller && this.interactionHandlers.xrSelect) {
+                console.log("Removing XR controller event listener");
+                this.controller.removeEventListener('select', this.interactionHandlers.xrSelect);
             }
+            
             this.interactionHandlers = null;
             this.modelInteractionHandlerActive = false;
         }
@@ -1145,11 +1159,6 @@ class ARExperience {
         this.wendy = null;
         this.mendy = null;
         
-        // Clean up interactions
-        if (this.modelInteractions) {
-            this.modelInteractions.clear();
-        }
-        
         // End WebXR session if active
         if (this.session) {
             this.session.end().catch(error => console.error('Error ending XR session:', error));
@@ -1191,7 +1200,7 @@ class ARExperience {
         
         // Remove window resize listener
         window.removeEventListener('resize', this.onWindowResize);
-    }
+    }    
     
     
     idleMove(model, timestamp, amplitude = 0.05, speed = 0.001, axis = 'y') {
