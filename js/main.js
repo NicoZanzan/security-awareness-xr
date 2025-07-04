@@ -420,16 +420,47 @@ class ARExperience {
             const raycaster = new THREE.Raycaster();
             const pointer = new THREE.Vector2();
             
-            // Handler function that does the actual intersection checking
-            const checkIntersections = (usingPointer = false, event = null) => {
-                if (!this.modelInteractions || this.modelInteractions.size === 0) return;
-                
-                // For pointer events, update raycaster with screen coordinates
-                if (usingPointer && event) {
+            // Track pointer start position to distinguish between clicks and drags
+            let pointerStartX = 0;
+            let pointerStartY = 0;
+            let isDragging = false;
+            
+            // On pointer down, record start position
+            const handlePointerDown = (event) => {
+                pointerStartX = event.clientX;
+                pointerStartY = event.clientY;
+                isDragging = false;
+            };
+            
+            // On pointer move, check if we're dragging
+            const handlePointerMove = (event) => {
+                if (!isDragging) {
+                    // Check if moved more than threshold (5px) to count as drag
+                    const deltaX = Math.abs(event.clientX - pointerStartX);
+                    const deltaY = Math.abs(event.clientY - pointerStartY);
+                    if (deltaX > 5 || deltaY > 5) {
+                        isDragging = true;
+                    }
+                }
+            };
+            
+            // On pointer up, check for clicks (not drags)
+            const handlePointerUp = (event) => {
+                // Only process as a click if not dragging
+                if (!isDragging) {
+                    // Calculate pointer position for raycaster
                     pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
                     pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
                     raycaster.setFromCamera(pointer, this.camera);
-                } 
+                    
+                    // Process the click using our checkIntersections helper
+                    checkIntersections(raycaster);
+                }
+            };
+            
+            // Helper function that does the actual intersection checking
+            const checkIntersections = (raycaster) => {
+                if (!this.modelInteractions || this.modelInteractions.size === 0) return;
                 
                 // Get all active, visible interactive models
                 const interactiveModels = Array.from(this.modelInteractions.keys())
@@ -454,6 +485,7 @@ class ARExperience {
                             // Get interaction data and execute callback
                             const data = this.modelInteractions.get(currentObj);
                             if (data.active && (!data.once || !data.triggered)) {
+                                console.log(`Model clicked: ${currentObj.name || 'unnamed'}`);
                                 data.callback(currentObj, intersect);
                                 
                                 if (data.once) {
@@ -467,9 +499,10 @@ class ARExperience {
                 }
             };
             
-            // Set up pointer handler
-            const handlePointerDown = (event) => checkIntersections(true, event);
+            // Set up touch event handlers
             document.addEventListener('pointerdown', handlePointerDown);
+            document.addEventListener('pointermove', handlePointerMove);
+            document.addEventListener('pointerup', handlePointerUp);
             
             // Set up XR controller handler if available
             if (this.controller) {
@@ -483,15 +516,59 @@ class ARExperience {
                     raycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
                     raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
                     
-                    checkIntersections(false);
+                    // Process the XR selection
+                    checkIntersections(raycaster);
                 };
                 
                 this.controller.addEventListener('select', handleXRSelect);
             }
             
+            // Set up keyboard controls as fallback
+            document.addEventListener('keydown', (event) => {
+                if (event.code === 'Space') {
+                    // Find an active start button
+                    const startButton = Array.from(this.modelInteractions.keys())
+                        .find(model => 
+                            model === this.startButtonModel && 
+                            model.visible && 
+                            this.modelInteractions.get(model).active
+                        );
+                    
+                    if (startButton) {
+                        this.modelInteractions.get(startButton).callback(startButton);
+                    }
+                } else if (event.code === 'KeyP') {
+                    // Find an active pause button
+                    const pauseButton = Array.from(this.modelInteractions.keys())
+                        .find(model => 
+                            model === this.pauseButtonModel && 
+                            model.visible && 
+                            this.modelInteractions.get(model).active
+                        );
+                    
+                    if (pauseButton) {
+                        this.modelInteractions.get(pauseButton).callback(pauseButton);
+                    }
+                } else if (event.code === 'KeyN') {
+                    // Find an active next button
+                    const nextButton = Array.from(this.modelInteractions.keys())
+                        .find(model => 
+                            model === this.nextButtonModel && 
+                            model.visible && 
+                            this.modelInteractions.get(model).active
+                        );
+                    
+                    if (nextButton) {
+                        this.modelInteractions.get(nextButton).callback(nextButton);
+                    }
+                }
+            });
+            
             // Store handlers for cleanup
             this.interactionHandlers = {
                 pointerDown: handlePointerDown,
+                pointerMove: handlePointerMove,
+                pointerUp: handlePointerUp,
                 checkIntersections
             };
             
@@ -518,7 +595,8 @@ class ARExperience {
                 }
             }
         };
-    }   
+    }
+      
    
     setupFallbackMode() {
         // For non-AR devices - position camera manually
