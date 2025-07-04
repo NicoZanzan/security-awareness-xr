@@ -9,8 +9,8 @@ class ARExperience {
         this.startButtonModel = null;
         this.pauseButtonModel = null;
         this.nextButtonModel = null;
-        this.wendyModel = null;
-        this.mendyModel = null;
+        this.wendy = null;
+        this.mendy = null;
         
         // Audio
         this.wendyAudio = null;
@@ -19,6 +19,9 @@ class ARExperience {
         this.experienceStarted = false;
         this.isXRActive = false;
         this.isPaused = false;
+        
+        // For managing interactive objects
+        this.modelInteractions = new Map();
         
         this.init();
     }
@@ -118,13 +121,13 @@ class ARExperience {
                     
                     // Load Wendy
                     const wendyGLB = await loadGLB('./assets/models/wendy.glb');
-                    this.wendyModel = wendyGLB.scene;
-                    this.scaleModel(this.wendyModel, 1.0);
+                    this.wendy = wendyGLB.scene;
+                    this.scaleModel(this.wendy, 1.0);
                     
                     // Load Mendy
                     const mendyGLB = await loadGLB('./assets/models/mendy.glb');
-                    this.mendyModel = mendyGLB.scene;
-                    this.scaleModel(this.mendyModel, 1.0);
+                    this.mendy = mendyGLB.scene;
+                    this.scaleModel(this.mendy, 1.0);
                     
                     console.log('All models loaded successfully');
                     
@@ -288,6 +291,247 @@ class ARExperience {
         window.addEventListener('resize', () => this.onWindowResize());
     }
     
+    
+    makeModelClickable(model, callback, once = false) {
+        if (!model || typeof callback !== 'function') {
+            console.error('makeModelClickable requires a valid model and callback function');
+            return null;
+        }
+        
+        // Store the original model name for logging
+        const modelName = model.name || 'unnamed model';
+        
+        console.log(`Making model "${modelName}" clickable`);
+        
+        // Create a unique ID for this interaction
+        const interactionId = Date.now().toString() + Math.random().toString(36).substring(2, 10);
+        
+        // If we don't have an interactions map, create one
+        if (!this.modelInteractions) {
+            this.modelInteractions = new Map();
+        }
+        
+        // Store the interaction details
+        const interactionData = {
+            model,
+            callback,
+            once,
+            active: true,
+            triggered: false
+        };
+        
+        this.modelInteractions.set(interactionId, interactionData);
+        
+        // Make sure the model has userData (for debugging)
+        if (!model.userData) {
+            model.userData = {};
+        }
+        
+        // Add this interaction to the model's userData
+        if (!model.userData.clickInteractions) {
+            model.userData.clickInteractions = [];
+        }
+        model.userData.clickInteractions.push(interactionId);
+        
+        // Set up the interaction handler if it's not already active
+        if (!this.modelInteractionHandlerActive) {
+            this.setupModelInteractions();
+        }
+        
+        // Return an object with methods to manage this interaction
+        return {
+            id: interactionId,
+            
+            // Remove this interaction
+            remove: () => {
+                if (this.modelInteractions && this.modelInteractions.has(interactionId)) {
+                    this.modelInteractions.delete(interactionId);
+                    
+                    // Remove from model userData
+                    if (model.userData && model.userData.clickInteractions) {
+                        const index = model.userData.clickInteractions.indexOf(interactionId);
+                        if (index !== -1) {
+                            model.userData.clickInteractions.splice(index, 1);
+                        }
+                    }
+                    
+                    console.log(`Click interaction removed from "${modelName}"`);
+                }
+            }
+        };
+    }
+    
+
+   /**
+ * Sets up global event handlers for model interactions and handles raycasting
+ * This function both sets up the listeners and provides the handler functionality
+ */
+setupModelInteractions() {
+    // If already set up, don't duplicate
+    if (this.modelInteractionHandlerActive) return;
+    
+    console.log('Setting up model interaction system');
+    
+    // Create shared raycaster for all interactions
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    
+    // Handler function that does the actual intersection checking
+    const checkIntersections = (usingPointer = false, event = null) => {
+        // If we have no interactions, exit early
+        if (!this.modelInteractions || this.modelInteractions.size === 0) return;
+        
+        // For pointer events, update raycaster with screen coordinates
+        if (usingPointer && event) {
+            pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+            pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(pointer, this.camera);
+        } 
+        // For XR, raycaster should already be set up before calling
+        
+        // Get all active, visible interactive models
+        const interactiveModels = Array.from(this.modelInteractions.values())
+            .filter(data => data.active && data.model.visible && (!data.once || !data.triggered))
+            .map(data => data.model);
+        
+        // If no active models, exit early
+        if (interactiveModels.length === 0) return;
+        
+        // Check for intersections
+        const intersects = raycaster.intersectObjects(interactiveModels, true);
+        
+        if (intersects.length > 0) {
+            // Process the first intersection
+            const intersect = intersects[0];
+            
+            // Find the actual interactive model (might be a parent of the intersected object)
+            let currentObj = intersect.object;
+            let interactiveModel = null;
+            
+            // Traverse up the parent chain
+            while (currentObj) {
+                // Check if this is one of our registered models
+                const matchingData = Array.from(this.modelInteractions.values())
+                    .find(data => data.model === currentObj);
+                
+                if (matchingData) {
+                    interactiveModel = currentObj;
+                    break;
+                }
+                
+                currentObj = currentObj.parent;
+            }
+            
+            // If we found a match, execute its callback
+            if (interactiveModel) {
+                // Find all interactions for this model and execute their callbacks
+                this.modelInteractions.forEach((data, id) => {
+                    if (data.model === interactiveModel && data.active && (!data.once || !data.triggered)) {
+                        console.log(`Model "${interactiveModel.name || 'unnamed'}" clicked, executing callback`);
+                        
+                        // Execute the callback with the model and intersection data
+                        data.callback(interactiveModel, intersect);
+                        
+                        // If this is a one-time interaction, mark it as triggered
+                        if (data.once) {
+                            data.triggered = true;
+                        }
+                    }
+                });
+            }
+        }
+    };
+    
+    // Set up pointer (mouse/touch) handler
+    const handlePointerDown = (event) => checkIntersections(true, event);
+    document.addEventListener('pointerdown', handlePointerDown);
+    
+    // Set up XR controller handler if available
+    if (this.controller) {
+        const handleXRSelect = () => {
+            if (!this.isXRActive) return;
+            
+            // Set up raycaster from controller
+            const tempMatrix = new THREE.Matrix4();
+            tempMatrix.identity().extractRotation(this.controller.matrixWorld);
+            
+            raycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
+            raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+            
+            // Check for intersections using the configured raycaster
+            checkIntersections(false);
+        };
+        
+        this.controller.addEventListener('select', handleXRSelect);
+    }
+    
+    // Store handlers for cleanup
+    this.interactionHandlers = {
+        pointerDown: handlePointerDown,
+        checkIntersections
+    };
+    
+    // Mark as active
+    this.modelInteractionHandlerActive = true;
+}
+
+  
+    async loadModel(fileName, position = { x: 0, y: 0, z: 0 }, scale = 1.0) {
+        try {
+            // Ensure we have a loader
+            if (!this.loader) {
+                this.loader = new THREE.GLTFLoader();
+            }
+            
+            console.log(`Loading model: ${fileName}`);
+            
+            // Extract the model name from the file path without extension
+            // This handles both "./assets/models/wendy.glb" and "wendy.glb" formats
+            const modelName = fileName.split('/').pop().split('.')[0];
+            
+            // Load the model
+            const gltf = await new Promise((resolve, reject) => {
+                this.loader.load(
+                    fileName,
+                    (gltf) => {
+                        console.log(`Successfully loaded: ${fileName}`);
+                        resolve(gltf);
+                    },
+                    (progress) => {
+                        const percent = (progress.loaded / progress.total * 100).toFixed(2);
+                        console.log(`Loading ${fileName}: ${percent}%`);
+                    },
+                    (error) => {
+                        console.error(`Failed to load ${fileName}:`, error);
+                        reject(error);
+                    }
+                );
+            });
+            
+            // Get the model from the loaded data
+            const model = gltf.scene;
+            
+            // Name the model based on the file name
+            model.name = modelName;
+            
+            // Scale the model
+            this.scaleModel(model, scale);
+            
+            // Position the model
+            model.position.set(position.x, position.y, position.z);
+            
+            // Add to scene
+            this.scene.add(model);
+            
+            console.log(`Model "${modelName}" added to scene at position:`, position);
+            
+            return model;
+        } catch (error) {
+            console.error(`Error loading model ${fileName}:`, error);
+            throw error;
+        }
+    }
+
     startScene() {
         // Initial text plate creation
         this.createTextPlate('Start!', {
@@ -295,7 +539,7 @@ class ARExperience {
             width: 0.5,
             height: 0.2,
             yOffset: -0.29  // Slightly below center
-        });
+        });        
         
         // Position and add models to scene
         
@@ -304,21 +548,21 @@ class ARExperience {
         this.scene.add(this.startButtonModel);
         
         // Wendy model
-        this.wendyModel.visible = false;
-        this.wendyModel.position.set(0, -1, -1.5); // 1m in front
-        this.scene.add(this.wendyModel);
+        this.wendy.visible = false;
+        this.wendy.position.set(0, -1, -1.5); // 1m in front
+        this.scene.add(this.wendy);
         
         // Mendy model
-        this.mendyModel.visible = false;
-        this.mendyModel.position.set(0, -1, 1.5); // 1m behind
-        this.scene.add(this.mendyModel);
+        this.mendy.visible = false;
+        this.mendy.position.set(0, -1, 1.5); // 1m behind
+        this.scene.add(this.mendy);
         
         // Pause button
         this.pauseButtonModel.visible = false;
         this.pauseButtonModel.position.set(0, -1.5, -1.0); // Top right, 1m in front
         this.scene.add(this.pauseButtonModel);
         
-        // Next button
+        // Next button - fix variable name from nextModel to nextButtonModel
         this.nextButtonModel.visible = false;
         this.nextButtonModel.position.set(0.5, -1, -1.0); // Center-bottom, 1m in front
         this.scene.add(this.nextButtonModel);
@@ -326,10 +570,9 @@ class ARExperience {
         // Setup interaction for interactive elements
         this.setupInteraction();
         
-        console.log('Scene ready - button should be visible');
+        console.log('Scene ready - should be visible');
     }
    
-    
     setupFallbackMode() {
         // For non-AR devices - position camera manually
         console.log('Setting up fallback 3D mode');
@@ -408,13 +651,13 @@ class ARExperience {
             
             // Load Wendy
             const wendyGLB = await loadGLB('./assets/models/wendy.glb');
-            this.wendyModel = wendyGLB.scene;
-            this.scaleModel(this.wendyModel, 1.0);
+            this.wendy = wendyGLB.scene;
+            this.scaleModel(this.wendy, 1.0);
             
             // Load Mendy
             const mendyGLB = await loadGLB('./assets/models/mendy.glb');
-            this.mendyModel = mendyGLB.scene;
-            this.scaleModel(this.mendyModel, 1.0);
+            this.mendy = mendyGLB.scene;
+            this.scaleModel(this.mendy, 1.0);
             
             console.log('All models loaded successfully');
             
@@ -471,7 +714,7 @@ class ARExperience {
         
         console.log('Audio loaded');
     }    
-   
+
     createTextPlate(text, options = {}) {
         // Default options
         const {
@@ -485,6 +728,24 @@ class ARExperience {
             fontSize = 32,
             padding = 0.02
         } = options;
+
+        if (!this.camera) {
+            console.error("Cannot create text plate: camera not initialized");
+            return null;
+        }
+        
+        // Create or ensure UI group exists (attached to camera)
+        if (!this.uiGroup) {
+            console.log("Creating new UI group for text plates");
+            this.uiGroup = new THREE.Group();
+            
+            // Make sure the camera is added to the scene
+            if (this.scene && !this.camera.parent) {
+                this.scene.add(this.camera);
+            }
+            
+            this.camera.add(this.uiGroup);
+        }
 
         // First, dispose of any existing text plate
         if (this.textPlate) {
@@ -762,79 +1023,51 @@ class ARExperience {
         return this.textPlate;
     }
     
+    // Updated setupInteraction to use the new makeModelClickable method
     setupInteraction() {
-        const raycaster = new THREE.Raycaster();
-        const pointer = new THREE.Vector2();
+        console.log('Setting up interactions using makeModelClickable');
         
-        const onPointerDown = (event) => {
-            // Get pointer position
-            pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-            pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
-            
-            // Raycast
-            raycaster.setFromCamera(pointer, this.camera);
-            
-            if (!this.experienceStarted) {
-                // Check for start button
-                const startIntersects = raycaster.intersectObject(this.startButtonModel, true);
-                if (startIntersects.length > 0) {
-                    console.log('Start button clicked!');
-                    this.beginCybersecurityExperience();
-                }
-            } else if (this.pauseButtonModel.visible) {
-                // Check for pause button
-                const pauseIntersects = raycaster.intersectObject(this.pauseButtonModel, true);
-                if (pauseIntersects.length > 0) {
-                    console.log('Pause button clicked!');
-                    this.togglePause();
-                }
-            } else if (this.nextButtonModel.visible) {
-                // Check for next button
-                const nextIntersects = raycaster.intersectObject(this.nextButtonModel, true);
-                if (nextIntersects.length > 0) {
-                    console.log('Next button clicked!');
-                    this.handleNext();
-                }
-            }
-        };
+        // Make start button clickable
+        this.makeModelClickable(this.startButtonModel, () => {
+            console.log('Start button clicked!');
+            this.beginCybersecurityExperience();
+        });
         
-        // Support both mouse and touch
-        document.addEventListener('pointerdown', onPointerDown);
-
-        // ADD THIS: WebXR controller support
-        this.controller = this.renderer.xr.getController(0);
-        this.controller.addEventListener('select', () => {
-            // Handle XR selection
-            if (this.isXRActive) {
-                const tempMatrix = new THREE.Matrix4();
-                tempMatrix.identity().extractRotation(this.controller.matrixWorld);
-                
-                raycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
-                raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
-                
-                // Check interactions just like in the pointer handler
-                if (!this.experienceStarted) {
-                    const startIntersects = raycaster.intersectObject(this.startButtonModel, true);
-                    if (startIntersects.length > 0) {
-                        console.log('Start button clicked in XR!');
-                        this.beginCybersecurityExperience();
-                    }
-                } else if (this.pauseButtonModel.visible) {
-                    const pauseIntersects = raycaster.intersectObject(this.pauseButtonModel, true);
-                    if (pauseIntersects.length > 0) {
-                        this.togglePause();
-                    }
-                } else if (this.nextButtonModel.visible) {
-                    const nextIntersects = raycaster.intersectObject(this.nextButtonModel, true);
-                    if (nextIntersects.length > 0) {
-                        this.handleNext();
-                    }
-                }
+        // Make pause button clickable
+        this.makeModelClickable(this.pauseButtonModel, () => {
+            console.log('Pause button clicked!');
+            this.togglePause();
+        });
+        
+        // Make next button clickable
+        this.makeModelClickable(this.nextButtonModel, () => {
+            console.log('Next button clicked!');
+            this.handleNext();
+        });
+        
+        // Make Wendy clickable - optional for additional interactions
+        this.makeModelClickable(this.wendy, (model) => {
+            console.log('Wendy was clicked!');
+            // You could add additional effects when Wendy is clicked
+            if (!this.isPaused && this.experienceStarted) {
+                model.rotation.y += Math.PI / 4; // Turn a bit
             }
         });
-        this.scene.add(this.controller);    
         
-        // Keyboard backup
+        // Make Mendy clickable - optional for additional interactions
+        this.makeModelClickable(this.mendy, (model) => {
+            console.log('Mendy was clicked!');
+            // You could add additional effects when Mendy is clicked
+            if (model.visible) {
+                model.rotation.y += Math.PI / 2; // Turn more dramatically
+            }
+        });
+        
+        // Setup WebXR controller
+        this.controller = this.renderer.xr.getController(0);
+        this.scene.add(this.controller);
+        
+        // Keyboard backup controls remain unchanged
         document.addEventListener('keydown', (event) => {
             if (event.code === 'Space' && !this.experienceStarted) {
                 this.beginCybersecurityExperience();
@@ -854,7 +1087,7 @@ class ARExperience {
         this.startButtonModel.visible = false;
         
         // Show Wendy and pause button
-        this.wendyModel.visible = true;
+        this.wendy.visible = true;
         this.pauseButtonModel.visible = true;
         
         // Update instructions
@@ -872,7 +1105,7 @@ class ARExperience {
             setTimeout(() => this.endWendySpeech(), 10000);
         });
     }
-    
+
     togglePause() {
         if (this.isPaused) {
             // Resume
@@ -920,7 +1153,7 @@ class ARExperience {
     revealMendy() {
         console.log('Revealing Mendy');
         
-        this.mendyModel.visible = true;
+        this.mendy.visible = true;
         
         // Show next button
         this.nextButtonModel.visible = true;
@@ -936,8 +1169,8 @@ class ARExperience {
         console.log('Next button clicked - experience complete!');
         
         // Hide all models
-        this.wendyModel.visible = false;
-        this.mendyModel.visible = false;
+        this.wendy.visible = false;
+        this.mendy.visible = false;
         this.nextButtonModel.visible = false;
         
         // Update instructions
@@ -950,18 +1183,57 @@ class ARExperience {
         
         // Optional: Return to landing page after a delay
         setTimeout(() => {
-            this.resetExperience();
+            this.resetScene();
         }, 3000);
     }
     
-    resetExperience() {
+    resetScene() {
         console.log('Resetting experience - clearing everything');
+    
+        // Clean up interactions
+        if (this.modelInteractions) {
+            this.modelInteractions.clear();
+        }
+    
+        // Remove interaction handlers
+        if (this.interactionHandlers) {
+            document.removeEventListener('pointerdown', this.interactionHandlers.pointerDown);
+            if (this.controller) {
+                this.controller.removeEventListener('select', this.interactionHandlers.checkIntersections);
+            }
+            this.interactionHandlers = null;
+            this.modelInteractionHandlerActive = false;
+        }
         
         // Stop any audio that might be playing
         if (this.wendyAudio) {
             this.wendyAudio.pause();
             this.wendyAudio.currentTime = 0;
         }
+        
+        // Remove text plate from camera or scene before clearing everything
+        if (this.textPlate) {
+            if (this.uiGroup && this.textPlate.parent === this.uiGroup) {
+                this.uiGroup.remove(this.textPlate);
+            } else if (this.scene) {
+                this.scene.remove(this.textPlate);
+            }
+            
+            // Dispose text plate resources
+            if (this.textPlate.material && this.textPlate.material.map) {
+                this.textPlate.material.map.dispose();
+            }
+            this.disposeObject(this.textPlate);
+        }
+        
+        // Remove UI group from camera if it exists
+        if (this.uiGroup && this.camera) {
+            this.camera.remove(this.uiGroup);
+        }
+        
+        // Clear UI references to ensure they're recreated
+        this.textPlate = null;
+        this.uiGroup = null;
         
         // Remove all models from scene
         if (this.scene) {
@@ -976,15 +1248,20 @@ class ARExperience {
         if (this.startButtonModel) this.disposeObject(this.startButtonModel);
         if (this.pauseButtonModel) this.disposeObject(this.pauseButtonModel);
         if (this.nextButtonModel) this.disposeObject(this.nextButtonModel);
-        if (this.wendyModel) this.disposeObject(this.wendyModel);
-        if (this.mendyModel) this.disposeObject(this.mendyModel);
+        if (this.wendy) this.disposeObject(this.wendy);
+        if (this.mendy) this.disposeObject(this.mendy);
         
         // Clear all models
         this.startButtonModel = null;
         this.pauseButtonModel = null;
         this.nextButtonModel = null;
-        this.wendyModel = null;
-        this.mendyModel = null;
+        this.wendy = null;
+        this.mendy = null;
+        
+        // Clean up interactions
+        if (this.modelInteractions) {
+            this.modelInteractions.clear();
+        }
         
         // End WebXR session if active
         if (this.session) {
@@ -1022,13 +1299,13 @@ class ARExperience {
                 
                 // Start fresh
                 this.init();
-                //this.startAR();
             });
         }
         
         // Remove window resize listener
         window.removeEventListener('resize', this.onWindowResize);
     }
+    
     
     idleMove(model, timestamp, amplitude = 0.05, speed = 0.001, axis = 'y') {
         if (!model || !model.visible) return;
@@ -1103,12 +1380,12 @@ class ARExperience {
         }
         
         // You can also animate Wendy and Mendy with different parameters
-        if (this.wendyModel && this.wendyModel.visible) {
-            this.idleMove(this.wendyModel, timestamp, 0.03, 0.001); // Slower, smaller movement
+        if (this.wendy && this.wendy.visible) {
+            this.idleMove(this.wendy, timestamp, 0.03, 0.001); // Slower, smaller movement
         }
         
-        if (this.mendyModel && this.mendyModel.visible) {
-            this.idleMove(this.mendyModel, timestamp, 0.03, 0.0001); // Slower, smaller movement
+        if (this.mendy && this.mendy.visible) {
+            this.idleMove(this.mendy, timestamp, 0.03, 0.0001); // Slower, smaller movement
         }
         
         this.renderer.render(this.scene, this.camera);
