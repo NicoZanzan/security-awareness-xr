@@ -359,178 +359,117 @@ class ARExperience {
                 }
             }
         };
-    }
-    
+    }   
 
-   /**
- * Sets up global event handlers for model interactions and handles raycasting
- * This function both sets up the listeners and provides the handler functionality
- */
-setupModelInteractions() {
-    // If already set up, don't duplicate
-    if (this.modelInteractionHandlerActive) return;
-    
-    console.log('Setting up model interaction system');
-    
-    // Create shared raycaster for all interactions
-    const raycaster = new THREE.Raycaster();
-    const pointer = new THREE.Vector2();
-    
-    // Handler function that does the actual intersection checking
-    const checkIntersections = (usingPointer = false, event = null) => {
-        // If we have no interactions, exit early
-        if (!this.modelInteractions || this.modelInteractions.size === 0) return;
+   
+    setupModelInteractions() {
+        // If already set up, don't duplicate
+        if (this.modelInteractionHandlerActive) return;
         
-        // For pointer events, update raycaster with screen coordinates
-        if (usingPointer && event) {
-            pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-            pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
-            raycaster.setFromCamera(pointer, this.camera);
-        } 
-        // For XR, raycaster should already be set up before calling
+        console.log('Setting up model interaction system');
         
-        // Get all active, visible interactive models
-        const interactiveModels = Array.from(this.modelInteractions.values())
-            .filter(data => data.active && data.model.visible && (!data.once || !data.triggered))
-            .map(data => data.model);
+        // Create shared raycaster for all interactions
+        const raycaster = new THREE.Raycaster();
+        const pointer = new THREE.Vector2();
         
-        // If no active models, exit early
-        if (interactiveModels.length === 0) return;
-        
-        // Check for intersections
-        const intersects = raycaster.intersectObjects(interactiveModels, true);
-        
-        if (intersects.length > 0) {
-            // Process the first intersection
-            const intersect = intersects[0];
+        // Handler function that does the actual intersection checking
+        const checkIntersections = (usingPointer = false, event = null) => {
+            // If we have no interactions, exit early
+            if (!this.modelInteractions || this.modelInteractions.size === 0) return;
             
-            // Find the actual interactive model (might be a parent of the intersected object)
-            let currentObj = intersect.object;
-            let interactiveModel = null;
+            // For pointer events, update raycaster with screen coordinates
+            if (usingPointer && event) {
+                pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+                pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                raycaster.setFromCamera(pointer, this.camera);
+            } 
+            // For XR, raycaster should already be set up before calling
             
-            // Traverse up the parent chain
-            while (currentObj) {
-                // Check if this is one of our registered models
-                const matchingData = Array.from(this.modelInteractions.values())
-                    .find(data => data.model === currentObj);
+            // Get all active, visible interactive models
+            const interactiveModels = Array.from(this.modelInteractions.values())
+                .filter(data => data.active && data.model.visible && (!data.once || !data.triggered))
+                .map(data => data.model);
+            
+            // If no active models, exit early
+            if (interactiveModels.length === 0) return;
+            
+            // Check for intersections
+            const intersects = raycaster.intersectObjects(interactiveModels, true);
+            
+            if (intersects.length > 0) {
+                // Process the first intersection
+                const intersect = intersects[0];
                 
-                if (matchingData) {
-                    interactiveModel = currentObj;
-                    break;
+                // Find the actual interactive model (might be a parent of the intersected object)
+                let currentObj = intersect.object;
+                let interactiveModel = null;
+                
+                // Traverse up the parent chain
+                while (currentObj) {
+                    // Check if this is one of our registered models
+                    const matchingData = Array.from(this.modelInteractions.values())
+                        .find(data => data.model === currentObj);
+                    
+                    if (matchingData) {
+                        interactiveModel = currentObj;
+                        break;
+                    }
+                    
+                    currentObj = currentObj.parent;
                 }
                 
-                currentObj = currentObj.parent;
-            }
-            
-            // If we found a match, execute its callback
-            if (interactiveModel) {
-                // Find all interactions for this model and execute their callbacks
-                this.modelInteractions.forEach((data, id) => {
-                    if (data.model === interactiveModel && data.active && (!data.once || !data.triggered)) {
-                        console.log(`Model "${interactiveModel.name || 'unnamed'}" clicked, executing callback`);
-                        
-                        // Execute the callback with the model and intersection data
-                        data.callback(interactiveModel, intersect);
-                        
-                        // If this is a one-time interaction, mark it as triggered
-                        if (data.once) {
-                            data.triggered = true;
+                // If we found a match, execute its callback
+                if (interactiveModel) {
+                    // Find all interactions for this model and execute their callbacks
+                    this.modelInteractions.forEach((data, id) => {
+                        if (data.model === interactiveModel && data.active && (!data.once || !data.triggered)) {
+                            console.log(`Model "${interactiveModel.name || 'unnamed'}" clicked, executing callback`);
+                            
+                            // Execute the callback with the model and intersection data
+                            data.callback(interactiveModel, intersect);
+                            
+                            // If this is a one-time interaction, mark it as triggered
+                            if (data.once) {
+                                data.triggered = true;
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
-        }
-    };
-    
-    // Set up pointer (mouse/touch) handler
-    const handlePointerDown = (event) => checkIntersections(true, event);
-    document.addEventListener('pointerdown', handlePointerDown);
-    
-    // Set up XR controller handler if available
-    if (this.controller) {
-        const handleXRSelect = () => {
-            if (!this.isXRActive) return;
-            
-            // Set up raycaster from controller
-            const tempMatrix = new THREE.Matrix4();
-            tempMatrix.identity().extractRotation(this.controller.matrixWorld);
-            
-            raycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
-            raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
-            
-            // Check for intersections using the configured raycaster
-            checkIntersections(false);
         };
         
-        this.controller.addEventListener('select', handleXRSelect);
-    }
-    
-    // Store handlers for cleanup
-    this.interactionHandlers = {
-        pointerDown: handlePointerDown,
-        checkIntersections
-    };
-    
-    // Mark as active
-    this.modelInteractionHandlerActive = true;
-}
-
-  
-    async loadModel(fileName, position = { x: 0, y: 0, z: 0 }, scale = 1.0) {
-        try {
-            // Ensure we have a loader
-            if (!this.loader) {
-                this.loader = new THREE.GLTFLoader();
-            }
+        // Set up pointer (mouse/touch) handler
+        const handlePointerDown = (event) => checkIntersections(true, event);
+        document.addEventListener('pointerdown', handlePointerDown);
+        
+        // Set up XR controller handler if available
+        if (this.controller) {
+            const handleXRSelect = () => {
+                if (!this.isXRActive) return;
+                
+                // Set up raycaster from controller
+                const tempMatrix = new THREE.Matrix4();
+                tempMatrix.identity().extractRotation(this.controller.matrixWorld);
+                
+                raycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
+                raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+                
+                // Check for intersections using the configured raycaster
+                checkIntersections(false);
+            };
             
-            console.log(`Loading model: ${fileName}`);
-            
-            // Extract the model name from the file path without extension
-            // This handles both "./assets/models/wendy.glb" and "wendy.glb" formats
-            const modelName = fileName.split('/').pop().split('.')[0];
-            
-            // Load the model
-            const gltf = await new Promise((resolve, reject) => {
-                this.loader.load(
-                    fileName,
-                    (gltf) => {
-                        console.log(`Successfully loaded: ${fileName}`);
-                        resolve(gltf);
-                    },
-                    (progress) => {
-                        const percent = (progress.loaded / progress.total * 100).toFixed(2);
-                        console.log(`Loading ${fileName}: ${percent}%`);
-                    },
-                    (error) => {
-                        console.error(`Failed to load ${fileName}:`, error);
-                        reject(error);
-                    }
-                );
-            });
-            
-            // Get the model from the loaded data
-            const model = gltf.scene;
-            
-            // Name the model based on the file name
-            model.name = modelName;
-            
-            // Scale the model
-            this.scaleModel(model, scale);
-            
-            // Position the model
-            model.position.set(position.x, position.y, position.z);
-            
-            // Add to scene
-            this.scene.add(model);
-            
-            console.log(`Model "${modelName}" added to scene at position:`, position);
-            
-            return model;
-        } catch (error) {
-            console.error(`Error loading model ${fileName}:`, error);
-            throw error;
+            this.controller.addEventListener('select', handleXRSelect);
         }
-    }
+        
+        // Store handlers for cleanup
+        this.interactionHandlers = {
+            pointerDown: handlePointerDown,
+            checkIntersections
+        };
+        
+        // Mark as active
+        this.modelInteractionHandlerActive = true;
+    }  
 
     startScene() {
         // Initial text plate creation
