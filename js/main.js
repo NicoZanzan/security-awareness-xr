@@ -26,8 +26,7 @@ class ARExperience {
         this.init();
     }
     
-    async init() {
-        
+    async init() {        
         // hide end page initially
         document.getElementById('endPage').style.display = 'none';
         
@@ -288,8 +287,7 @@ class ARExperience {
         window.addEventListener('resize', () => this.onWindowResize());
     }  
     
-    startScene() {
-        
+    startScene() {        
         // Initial text plate creation
         this.createTextPlate('Start!', {
             backgroundColor: 0x3366cc,
@@ -308,6 +306,9 @@ class ARExperience {
         this.wendy.visible = false;
         this.wendy.position.set(0, -1, -1.5); // 1m in front
         this.scene.add(this.wendy);
+        this.wendy.name = 'wendy';
+
+        this.playModelAnimation("wendy", 'Animation 0', true);
         
         // Mendy model
         this.mendy.visible = false;
@@ -345,6 +346,7 @@ class ARExperience {
         // Show Wendy and pause button
         this.wendy.visible = true;
         this.pauseButtonModel.visible = true;
+        this.wendy.rotation.y = -Math.PI/1.5;
 
         this.makeModelClickable(this.pauseButtonModel, () => {
             console.log('Pause button clicked!');
@@ -383,7 +385,110 @@ class ARExperience {
             // Fallback timer
             setTimeout(() => this.endWendySpeech(), 10000);
         });
-    }   
+    }
+  
+    playModelAnimation(modelName, animationName, loop = false) {
+        // Find the model in the scene
+        const model = this.scene.getObjectByName(modelName);
+        
+        if (!model) {
+            console.error(`Model "${modelName}" not found in the scene`);
+            return null;
+        }
+        
+        // Check if model has animations
+        if (!model.animations || model.animations.length === 0) {
+            console.error(`Model "${modelName}" has no animations`);
+            return null;
+        }
+        
+        // Log all available animations
+        console.log(`Available animations for "${modelName}":`);
+        model.animations.forEach((anim, index) => {
+            console.log(`${index}: ${anim.name}`);
+        });
+        
+        // Find the requested animation
+        const animation = model.animations.find(anim => anim.name === animationName);
+        
+        if (!animation) {
+            console.error(`Animation "${animationName}" not found in model "${modelName}"`);
+            return null;
+        }
+        
+        // Ensure animation mixer exists
+        if (!model.mixer) {
+            model.mixer = new THREE.AnimationMixer(model);
+            
+            // Add mixer to update list if we have an update loop
+            if (this.mixers) {
+                this.mixers.push(model.mixer);
+            }
+        }
+        
+        // Create and play the animation action
+        const action = model.mixer.clipAction(animation);
+        
+        // Set loop mode
+        if (loop) {
+            action.loop = THREE.LoopRepeat;
+        } else {
+            action.loop = THREE.LoopOnce;
+            action.clampWhenFinished = true;
+        }
+        
+        // Stop any current actions
+        model.mixer.stopAllAction();
+        
+        // Play the animation
+        action.reset();
+        action.play();
+        
+        console.log(`Playing animation "${animationName}" on model "${modelName}" (loop: ${loop})`);
+        
+        return action;
+    }
+
+    createPauseButtonPlaceholder() {
+        // Create a simple pause button placeholder (two vertical bars)
+        const group = new THREE.Group();
+        
+        const barGeometry = new THREE.BoxGeometry(0.03, 0.1, 0.02);
+        const barMaterial = new THREE.MeshPhongMaterial({ color: 0xffaa00 });
+        
+        const bar1 = new THREE.Mesh(barGeometry, barMaterial);
+        bar1.position.x = -0.02;
+        group.add(bar1);
+        
+        const bar2 = new THREE.Mesh(barGeometry, barMaterial);
+        bar2.position.x = 0.02;
+        group.add(bar2);
+        
+        this.pauseButtonModel = group;
+        console.log('Pause button placeholder created');
+    }  
+    
+    revealMendy() {
+        console.log('Revealing Mendy');
+        
+        this.mendy.visible = true;
+        
+        // Show next button
+        this.nextButtonModel.visible = true;
+        
+        // document.getElementById('arInstructions').textContent = 
+        //     'Mendy was spying on you all along! Stay aware of your surroundings. Click Next or press N to continue.';
+        if (this.textPlate) {
+            this.textPlate.updateText('Mendy was spying on you all along! Stay aware of your surroundings. Click Next or press N to continue.');
+          }
+    }
+
+    loadAudio() {       
+        this.wendyAudio.addEventListener('ended', () => {
+            console.log('Wendy audio finished');
+            this.endWendySpeech();
+        });      
+    }    
     
      //Updated setupInteraction to use the new makeModelClickable method
      setupInteraction() {
@@ -610,7 +715,7 @@ class ARExperience {
         };
     }      
    
-    setupFallbackMode() {
+    setupFallbackControls() {
         // For non-AR devices - position camera manually
         console.log('Setting up fallback 3D mode');
         this.camera.position.set(0, 0, 0);
@@ -657,144 +762,75 @@ class ARExperience {
         }
         
         console.log(`Model scaled to: ${model.scale.x}`);
-    }
-    
-    createPauseButtonPlaceholder() {
-        // Create a simple pause button placeholder (two vertical bars)
-        const group = new THREE.Group();
-        
-        const barGeometry = new THREE.BoxGeometry(0.03, 0.1, 0.02);
-        const barMaterial = new THREE.MeshPhongMaterial({ color: 0xffaa00 });
-        
-        const bar1 = new THREE.Mesh(barGeometry, barMaterial);
-        bar1.position.x = -0.02;
-        group.add(bar1);
-        
-        const bar2 = new THREE.Mesh(barGeometry, barMaterial);
-        bar2.position.x = 0.02;
-        group.add(bar2);
-        
-        this.pauseButtonModel = group;
-        console.log('Pause button placeholder created');
-    }     
-    
-    loadAudio() {
-        this.wendyAudio = new Audio('./assets/audio/voice_placeholder.mp3');
-        this.wendyAudio.preload = 'auto';
-        
-        this.wendyAudio.addEventListener('ended', () => {
-            console.log('Wendy audio finished');
-            this.endWendySpeech();
-        });
-        
-        this.wendyAudio.addEventListener('error', (e) => {
-            console.error('Audio error:', e);
-        });
-        
-        console.log('Audio loaded');
-    }    
+    }  
 
     createTextPlate(text, options = {}) {
-        // Default options
+        // Extract options with defaults
         const {
             width = 0.4,
             height = 0.15,
-            distance = 0.5,   // Distance in front of camera
-            yOffset = 0,      // Vertical offset from camera center
+            distance = 0.5,
+            yOffset = 0,
             backgroundColor = 0x222222,
             backgroundOpacity = 0.7,
             textColor = 0xffffff,
             fontSize = 32,
             padding = 0.02
         } = options;
-
+    
+        // Check camera is initialized
         if (!this.camera) {
             console.error("Cannot create text plate: camera not initialized");
             return null;
         }
         
-        // Create or ensure UI group exists (attached to camera)
+        // Setup UI group if needed
         if (!this.uiGroup) {
-            console.log("Creating new UI group for text plates");
             this.uiGroup = new THREE.Group();
-            
-            // Make sure the camera is added to the scene
             if (this.scene && !this.camera.parent) {
                 this.scene.add(this.camera);
             }
-            
             this.camera.add(this.uiGroup);
         }
-
-        // First, dispose of any existing text plate
+    
+        // Clean up any existing text plate
         if (this.textPlate) {
-            // If the text plate was previously attached to the camera
-            if (this.textPlate.parent === this.uiGroup) {
-                this.uiGroup.remove(this.textPlate);
-            } else {
-                this.scene.remove(this.textPlate);
-            }
-            
-            // Clean up resources
-            if (this.textPlate.material && this.textPlate.material.map) {
+            this.uiGroup.remove(this.textPlate);
+            if (this.textPlate.material?.map) {
                 this.textPlate.material.map.dispose();
             }
             this.disposeObject(this.textPlate);
             this.textPlate = null;
         }
-
-        // Create or ensure UI group exists (attached to camera)
-        if (!this.uiGroup) {
-            this.uiGroup = new THREE.Group();
-            
-            // Make sure the camera is added to the scene
-            if (!this.camera.parent) {
-                this.scene.add(this.camera);
-            }
-            
-            this.camera.add(this.uiGroup);
-        }
         
-        // Create high-resolution canvas for sharp text
-        const pixelRatio = Math.min(window.devicePixelRatio, 3); // Cap at 3x for performance
-        const baseWidth = 1024; // Double the previous resolution
+        // Create canvas with high resolution
+        const pixelRatio = Math.min(window.devicePixelRatio, 3);
+        const baseWidth = 1024;
         const baseHeight = 392;
         
         const canvas = document.createElement('canvas');
         canvas.width = baseWidth * pixelRatio;
         canvas.height = baseHeight * pixelRatio;
         
-        // Get context and set text properties
         const context = canvas.getContext('2d');
-        context.scale(pixelRatio, pixelRatio); // Scale context to account for device pixel ratio
+        context.scale(pixelRatio, pixelRatio);
         
-        // Clear canvas with transparent background
-        context.fillStyle = 'rgba(0, 0, 0, 0)';
-        context.fillRect(0, 0, baseWidth, baseHeight);
-        
-        // Set font with higher resolution
-        const scaledFontSize = fontSize * 1.5; // Increase font size for sharper text
-        const fontWeight = 500; // Use a slightly bolder weight
-        context.font = `${fontWeight} ${scaledFontSize}px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif`;
-        
-        // Enable font smoothing
+        // Setup text rendering properties
+        const scaledFontSize = fontSize * 1.5;
+        context.font = `500 ${scaledFontSize}px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif`;
         context.imageSmoothingEnabled = true;
         context.imageSmoothingQuality = 'high';
         
-        // Text measurement helpers
+        // Helper functions for text wrapping and layout
         const calculateWrappedText = (ctx, txt, maxWidth) => {
             if (!txt) return [];
-            
             const words = txt.split(' ');
             let lines = [];
             let currentLine = '';
             
             for (let n = 0; n < words.length; n++) {
                 const testLine = currentLine + words[n] + ' ';
-                const metrics = ctx.measureText(testLine);
-                const testWidth = metrics.width;
-                
-                if (testWidth > maxWidth && n > 0) {
+                if (ctx.measureText(testLine).width > maxWidth && n > 0) {
                     lines.push(currentLine.trim());
                     currentLine = words[n] + ' ';
                 } else {
@@ -805,17 +841,11 @@ class ARExperience {
             if (currentLine.trim() !== '') {
                 lines.push(currentLine.trim());
             }
-            
             return lines;
         };
         
         const getMaxLineWidth = (ctx, lines) => {
-            let maxWidth = 0;
-            lines.forEach(line => {
-                const metrics = ctx.measureText(line);
-                maxWidth = Math.max(maxWidth, metrics.width);
-            });
-            return maxWidth;
+            return Math.max(...lines.map(line => ctx.measureText(line).width));
         };
         
         const drawRoundedRect = (ctx, x, y, width, height, radius) => {
@@ -832,116 +862,91 @@ class ARExperience {
             ctx.closePath();
         };
         
-        // Calculate layout parameters
+        // Layout calculation
         const paddingX = 40;
         const paddingY = 25;
         const cornerRadius = 20;
-        const maxTextWidth = baseWidth - (paddingX * 2);
         const lineHeight = scaledFontSize * 1.1;
+        const maxTextWidth = baseWidth - (paddingX * 2);
         
-        // Wrap and measure text
+        // Wrap text and calculate dimensions
         const wrappedLines = calculateWrappedText(context, text, maxTextWidth);
         const totalTextHeight = wrappedLines.length * lineHeight;
         
-        // Calculate background dimensions for a tight fit
         const bgWidth = Math.min(
             baseWidth - 20,
             getMaxLineWidth(context, wrappedLines) + (paddingX * 2)
         );
         const bgHeight = totalTextHeight + (paddingY * 2);
         
-        // Position background
         const bgX = (baseWidth - bgWidth) / 2;
         const bgY = (baseHeight - bgHeight) / 2;
         
-        // Draw background with anti-aliased edges
-        context.fillStyle = `rgba(${(backgroundColor >> 16) & 0xff}, 
-                                ${(backgroundColor >> 8) & 0xff}, 
-                                ${backgroundColor & 0xff}, 
-                                ${backgroundOpacity})`;
-        
-        // Use a slightly larger radius for smoother corners
+        // Draw background
+        const r = (backgroundColor >> 16) & 0xff;
+        const g = (backgroundColor >> 8) & 0xff;
+        const b = backgroundColor & 0xff;
+        context.fillStyle = `rgba(${r}, ${g}, ${b}, ${backgroundOpacity})`;
         drawRoundedRect(context, bgX, bgY, bgWidth, bgHeight, cornerRadius);
         context.fill();
         
-        // Apply slight shadow for depth and better readability
+        // Draw text
         context.shadowColor = 'rgba(0, 0, 0, 0.3)';
         context.shadowBlur = 4;
-        context.shadowOffsetX = 0;
         context.shadowOffsetY = 1;
         
-        // Draw text with anti-aliasing
+        const textR = (textColor >> 16) & 0xff;
+        const textG = (textColor >> 8) & 0xff;
+        const textB = textColor & 0xff;
+        context.fillStyle = `rgba(${textR}, ${textG}, ${textB}, 1.0)`;
         context.textAlign = 'center';
         context.textBaseline = 'middle';
-        context.fillStyle = `rgba(${(textColor >> 16) & 0xff}, 
-                            ${(textColor >> 8) & 0xff}, 
-                            ${textColor & 0xff}, 
-                            1.0)`;
         
-        // For extremely crisp text, draw with subpixel positioning
         const textX = baseWidth / 2;
         let textY = bgY + paddingY + (lineHeight / 2);
         
         wrappedLines.forEach(line => {
-            // For very sharp text, render on exact pixel boundaries
-            const pixelAlignedY = Math.round(textY);
-            context.fillText(line, textX, pixelAlignedY);
+            context.fillText(line, textX, Math.round(textY));
             textY += lineHeight;
         });
         
-        // Clear shadow settings to prevent affecting other elements
         context.shadowColor = 'rgba(0, 0, 0, 0)';
         context.shadowBlur = 0;
-        context.shadowOffsetX = 0;
-        context.shadowOffsetY = 0;
         
-        // Create texture with optimal settings for text clarity
+        // Create Three.js objects
         const texture = new THREE.CanvasTexture(canvas);
-        texture.needsUpdate = true;
-        texture.minFilter = THREE.LinearFilter; // Better for text
+        texture.minFilter = THREE.LinearFilter;
         texture.magFilter = THREE.LinearFilter;
-        texture.anisotropy = 16; // Improve texture clarity at angles (check max supported first)
-        texture.encoding = THREE.sRGBEncoding; // Better color handling
-        texture.generateMipmaps = false; // Disable for text clarity
+        texture.anisotropy = 16;
+        texture.encoding = THREE.sRGBEncoding;
+        texture.generateMipmaps = false;
         
-        // Create material with appropriate settings
         const material = new THREE.MeshBasicMaterial({
             map: texture,
             transparent: true,
             depthTest: false,
             depthWrite: false,
-            premultipliedAlpha: true // Improves text edge quality
+            premultipliedAlpha: true
         });
         
-        // Create geometry with proper aspect ratio
+        // Create and position mesh
         const aspectRatio = canvas.width / canvas.height;
         const adjustedHeight = width / aspectRatio;
-        
         const geometry = new THREE.PlaneGeometry(width, adjustedHeight);
         this.textPlate = new THREE.Mesh(geometry, material);
-        
-        // Position in front of camera
         this.textPlate.position.set(0, yOffset, -distance);
-        
-        // Add to UI group attached to camera
         this.uiGroup.add(this.textPlate);
         
-        console.log(`High-resolution text plate created with text: "${text}"`);
-        
-        // Store references for disposal
+        // Store references
         this.textPlate.userData.texture = texture;
         this.textPlate.userData.text = text;
         
-        // Add update method
+        // Add method to update text
         this.textPlate.updateText = (newText) => {
-            // Reset context scale for clearing
             context.setTransform(1, 0, 0, 1, 0, 0);
             context.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Restore scaled context
             context.scale(pixelRatio, pixelRatio);
             
-            // Recalculate for new text
             const wrappedLines = calculateWrappedText(context, newText, maxTextWidth);
             const totalTextHeight = wrappedLines.length * lineHeight;
             
@@ -955,52 +960,36 @@ class ARExperience {
             const bgY = (baseHeight - bgHeight) / 2;
             
             // Redraw background
-            context.fillStyle = `rgba(${(backgroundColor >> 16) & 0xff}, 
-                                ${(backgroundColor >> 8) & 0xff}, 
-                                ${backgroundColor & 0xff}, 
-                                ${backgroundOpacity})`;
-            
+            context.fillStyle = `rgba(${r}, ${g}, ${b}, ${backgroundOpacity})`;
             drawRoundedRect(context, bgX, bgY, bgWidth, bgHeight, cornerRadius);
             context.fill();
             
-            // Apply shadow for depth
+            // Redraw text
             context.shadowColor = 'rgba(0, 0, 0, 0.3)';
             context.shadowBlur = 4;
-            context.shadowOffsetX = 0;
             context.shadowOffsetY = 1;
             
-            // Draw new text
-            context.font = `${fontWeight} ${scaledFontSize}px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif`;
+            context.font = `500 ${scaledFontSize}px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif`;
             context.textAlign = 'center';
             context.textBaseline = 'middle';
-            context.fillStyle = `rgba(${(textColor >> 16) & 0xff}, 
-                                ${(textColor >> 8) & 0xff}, 
-                                ${textColor & 0xff}, 
-                                1.0)`;
+            context.fillStyle = `rgba(${textR}, ${textG}, ${textB}, 1.0)`;
             
             let textY = bgY + paddingY + (lineHeight / 2);
-            
             wrappedLines.forEach(line => {
-                const pixelAlignedY = Math.round(textY);
-                context.fillText(line, textX, pixelAlignedY);
+                context.fillText(line, textX, Math.round(textY));
                 textY += lineHeight;
             });
             
-            // Clear shadow settings
             context.shadowColor = 'rgba(0, 0, 0, 0)';
             context.shadowBlur = 0;
-            context.shadowOffsetX = 0;
-            context.shadowOffsetY = 0;
             
             // Update texture
             texture.needsUpdate = true;
-            
-            // Update stored text
             this.textPlate.userData.text = newText;
         };
         
         return this.textPlate;
-    } 
+    }     
 
     togglePause() {
         if (this.isPaused) {
@@ -1040,26 +1029,10 @@ class ARExperience {
 
         if (this.textPlate) {
             this.textPlate.updateText('Turn around! Someone has been watching...');
-          }
-        
+          }       
         
         setTimeout(() => this.revealMendy(), 2000);
-    }
-    
-    revealMendy() {
-        console.log('Revealing Mendy');
-        
-        this.mendy.visible = true;
-        
-        // Show next button
-        this.nextButtonModel.visible = true;
-        
-        // document.getElementById('arInstructions').textContent = 
-        //     'Mendy was spying on you all along! Stay aware of your surroundings. Click Next or press N to continue.';
-        if (this.textPlate) {
-            this.textPlate.updateText('Mendy was spying on you all along! Stay aware of your surroundings. Click Next or press N to continue.');
-          }
-    }
+    }   
     
     handleNext() {
         console.log('Next button clicked - experience complete!');
