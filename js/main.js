@@ -142,13 +142,8 @@ class ARExperience {
                 this.wendyAudio_1.addEventListener('ended', () => {
                     console.log('Wendy audio finished');
                     this.endWendySpeech();
-                });
-                
-                this.wendyAudio_1.addEventListener('error', (e) => {
-                    console.error('Audio error:', e);
-                });
-                
-                console.log('Audio loaded');
+                });               
+              
                 
                 // -------- WEBXR INITIALIZATION --------
                 this.renderer.xr.enabled = true;
