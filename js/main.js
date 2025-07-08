@@ -285,16 +285,16 @@ class ARExperience {
         window.addEventListener('resize', () => this.onWindowResize());
     }  
     
-    startScene() {        
+    startScene() {  
+        
+        console.log('Start scene started ...');
         // Initial text plate creation
         this.createTextPlate('Start!', {
             backgroundColor: 0x3366cc,
             width: 0.5,
             height: 0.2,
             yOffset: -0.29  // Slightly below center
-        });        
-        
-        // Position and add models to scene
+        });    
         
         // Start button
         this.startButtonModel.position.set(0, -1, -1.0); // 1m in front
@@ -337,8 +337,8 @@ class ARExperience {
     
     firstScene() {
         this.experienceStarted = true;
-        console.log('Starting cybersecurity experience...');
-        
+        console.log('First scene started ...');
+            
         // Hide start button
         this.startButtonModel.visible = false;
         
@@ -661,11 +661,7 @@ class ARExperience {
                 return this; // For chaining
             }
         };
-    }    
-    
-    revealMendy() {
-        
-    }
+    }  
 
     loadAudio() {       
         this.wendyAudio_1.addEventListener('ended', () => {
