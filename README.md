@@ -1,6 +1,5 @@
 todo:
 
-- start over
 - delete first instruction in arview
 - placement of models in AR/fallback mode
 - change background color in fallback mode

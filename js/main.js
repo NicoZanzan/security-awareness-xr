@@ -13,7 +13,7 @@ class ARExperience {
         this.mendy = null;
         
         // Audio
-        this.wendyAudio = null;
+        this.wendyAudio_1 = null;
         
         // State
         this.experienceStarted = false;
@@ -133,15 +133,18 @@ class ARExperience {
                 }
                 
                 // Load audio
-                this.wendyAudio = new Audio('./assets/audio/voice_placeholder.mp3');
-                this.wendyAudio.preload = 'auto';
+                this.wendyAudio_1 = new Audio('./assets/audio/wendy_1.mp3');
+                this.wendyAudio_1.preload = 'auto';
+
+                this.wendyAudio_2 = new Audio('./assets/audio/wendy_2.mp3');
+                this.wendyAudio_2.preload = 'auto';
                 
-                this.wendyAudio.addEventListener('ended', () => {
+                this.wendyAudio_1.addEventListener('ended', () => {
                     console.log('Wendy audio finished');
                     this.endWendySpeech();
                 });
                 
-                this.wendyAudio.addEventListener('error', (e) => {
+                this.wendyAudio_1.addEventListener('error', (e) => {
                     console.error('Audio error:', e);
                 });
                 
@@ -304,15 +307,16 @@ class ARExperience {
         
         // Wendy model
         this.wendy.visible = false;
-        this.wendy.position.set(0, -1, -1.5); // 1m in front
+        this.wendy.position.set(0, 0, -2.0); // 2m in front
         this.scene.add(this.wendy);
         this.wendy.name = 'wendy';
 
-        this.playModelAnimation("wendy", 'Animation 0', true);
-        
+        //this.playModelAnimation("wendy", 'Anim_0', true);
+        this.listAllModelsAndAnimations();
+
         // Mendy model
         this.mendy.visible = false;
-        this.mendy.position.set(0, -1, 1.5); // 1m behind
+        this.mendy.position.set(0, 0, -1); // 1m behind
         this.scene.add(this.mendy);
         
         // Pause button
@@ -355,7 +359,12 @@ class ARExperience {
 
         this.makeModelClickable(this.wendy, (model) => {
             console.log('Wendy was clicked!');
-            // You could add additional effects when Wendy is clicked
+            this.wendyAudio_2.play();
+            const movement = this.moveModel("wendy", 
+                {x: 1, y: 0, z: -3},  // Target position
+                0.7                   // Speed (units per second)
+            );            
+            
             if (this.textPlate) {
                 this.textPlate.updateText("Wendy says: Hey, this tickles!!");
             }            
@@ -372,7 +381,7 @@ class ARExperience {
         this.makeModelClickable(this.nextButtonModel, () => {
             console.log('Next button clicked!');
             this.handleNext();
-        });      
+        });     
       
         
         if (this.textPlate) {
@@ -380,7 +389,7 @@ class ARExperience {
           }
 
         // Play audio
-        this.wendyAudio.play().catch(error => {
+        this.wendyAudio_1.play().catch(error => {
             console.error('Audio play failed:', error);
             // Fallback timer
             setTimeout(() => this.endWendySpeech(), 10000);
@@ -449,6 +458,66 @@ class ARExperience {
         return action;
     }
 
+    listAllModelsAndAnimations() {
+        // Create a results object to store information about all models
+        const results = {
+            modelCount: 0,
+            models: []
+        };
+        
+        // Helper function to process an object and its children
+        const processObject = (object) => {
+            // Check if the object is a model with animations
+            if (object.animations && object.animations.length > 0) {
+                const modelInfo = {
+                    name: object.name || "Unnamed Model",
+                    uuid: object.uuid,
+                    animationCount: object.animations.length,
+                    animations: []
+                };
+                
+                // Log model information
+                console.log(`Model: "${modelInfo.name}" (${modelInfo.animationCount} animations)`);
+                
+                // Process and log all animations
+                object.animations.forEach((anim, index) => {
+                    const animInfo = {
+                        index: index,
+                        name: anim.name || `Unnamed Animation ${index}`,
+                        duration: anim.duration
+                    };
+                    
+                    console.log(`  Animation ${index}: "${animInfo.name}" (${animInfo.duration}s)`);
+                    modelInfo.animations.push(animInfo);
+                });
+                
+                // Add model to results
+                results.models.push(modelInfo);
+                results.modelCount++;
+            }
+            
+            // Process children
+            if (object.children && object.children.length > 0) {
+                object.children.forEach(child => processObject(child));
+            }
+        };
+        
+        // Start processing from the scene root
+        if (this.scene) {
+            console.log("Scanning scene for models with animations...");
+            processObject(this.scene);
+            
+            console.log(`Found ${results.modelCount} models with animations in the scene`);
+            if (results.modelCount === 0) {
+                console.log("No models with animations found in the scene");
+            }
+        } else {
+            console.error("Scene is not available");
+        }
+        
+        return results;
+    }    
+
     createPauseButtonPlaceholder() {
         // Create a simple pause button placeholder (two vertical bars)
         const group = new THREE.Group();
@@ -466,25 +535,145 @@ class ARExperience {
         
         this.pauseButtonModel = group;
         console.log('Pause button placeholder created');
-    }  
+    } 
+    
+    moveModel(modelName, targetPos, speed) {
+        // Find the model in the scene
+        const model = this.scene.getObjectByName(modelName);
+        
+        if (!model) {
+            console.error(`Model "${modelName}" not found in the scene`);
+            return null;
+        }
+        
+        // Use the current position as the starting point
+        const startPos = {
+            x: model.position.x,
+            y: model.position.y,
+            z: model.position.z
+        };
+        
+        // Calculate total distance for the movement
+        const distance = new THREE.Vector3(
+            targetPos.x - startPos.x,
+            targetPos.y - startPos.y,
+            targetPos.z - startPos.z
+        ).length();
+        
+        // Calculate total duration based on speed (distance units per second)
+        const duration = distance / speed;
+        
+        // Create animation data
+        const animationData = {
+            startTime: performance.now(),
+            duration: duration * 1000, // Convert to milliseconds
+            startPos: new THREE.Vector3(startPos.x, startPos.y, startPos.z),
+            endPos: new THREE.Vector3(targetPos.x, targetPos.y, targetPos.z),
+            active: true,
+            onComplete: null
+        };
+        
+        // Store the animation data on the model for reference
+        if (!model.userData.animations) {
+            model.userData.animations = {};
+        }
+        model.userData.animations.movement = animationData;
+        
+        // Helper function for smooth easing (cubic ease-in-out)
+        const easeInOutCubic = (x) => {
+            return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+        };
+        
+        // Create update function for animation
+        const updateMovement = (currentTime) => {
+            if (!model || !model.userData.animations || !model.userData.animations.movement) {
+                return false; // Stop animation if model or data no longer exists
+            }
+            
+            const moveData = model.userData.animations.movement;
+            if (!moveData.active) {
+                return false; // Animation has been stopped manually
+            }
+            
+            // Calculate progress (0 to 1)
+            const elapsed = currentTime - moveData.startTime;
+            let progress = Math.min(elapsed / moveData.duration, 1.0);
+            
+            // Apply easing for smooth motion
+            progress = easeInOutCubic(progress);
+            
+            // Interpolate position
+            model.position.lerpVectors(
+                moveData.startPos,
+                moveData.endPos,
+                progress
+            );
+            
+            // Check if animation is complete
+            if (progress >= 1.0) {
+                // Set final position precisely
+                model.position.copy(moveData.endPos);
+                
+                // Mark animation as inactive
+                moveData.active = false;
+                
+                // Call completion callback if provided
+                if (moveData.onComplete && typeof moveData.onComplete === 'function') {
+                    moveData.onComplete(model);
+                }
+                
+                console.log(`Model "${modelName}" movement complete`);
+                return false; // Stop animation
+            }
+            
+            return true; // Continue animation
+        };
+        
+        // Add the animation to the renderer's animation loop
+        if (!this._animationCallbacks) {
+            this._animationCallbacks = [];
+            
+            // Hook into the existing render loop
+            const originalRender = this.render.bind(this);
+            this.render = (timestamp, frame) => {
+                // Run all active animations
+                this._animationCallbacks = this._animationCallbacks.filter(callback => callback(performance.now()));
+                
+                // Call the original render method
+                originalRender(timestamp, frame);
+            };
+        }
+        
+        // Add our movement animation to the callback list
+        this._animationCallbacks.push(updateMovement);
+        
+        console.log(`Starting movement of model "${modelName}" from (${startPos.x}, ${startPos.y}, ${startPos.z}) to (${targetPos.x}, ${targetPos.y}, ${targetPos.z}) at speed ${speed} units/second`);
+        
+        // Return object with control methods
+        return {
+            // Stop the animation
+            stop: () => {
+                if (model.userData.animations && model.userData.animations.movement) {
+                    model.userData.animations.movement.active = false;
+                }
+            },
+            
+            // Set completion callback
+            onComplete: (callback) => {
+                if (model.userData.animations && model.userData.animations.movement) {
+                    model.userData.animations.movement.onComplete = callback;
+                }
+                return this; // For chaining
+            }
+        };
+    }    
     
     revealMendy() {
-        console.log('Revealing Mendy');
         
-        this.mendy.visible = true;
-        
-        // Show next button
-        this.nextButtonModel.visible = true;
-        
-        // document.getElementById('arInstructions').textContent = 
-        //     'Mendy was spying on you all along! Stay aware of your surroundings. Click Next or press N to continue.';
-        if (this.textPlate) {
-            this.textPlate.updateText('Mendy was spying on you all along! Stay aware of your surroundings. Click Next or press N to continue.');
-          }
     }
 
     loadAudio() {       
-        this.wendyAudio.addEventListener('ended', () => {
+        this.wendyAudio_1.addEventListener('ended', () => {
             console.log('Wendy audio finished');
             this.endWendySpeech();
         });      
@@ -994,7 +1183,7 @@ class ARExperience {
     togglePause() {
         if (this.isPaused) {
             // Resume
-            this.wendyAudio.play();
+            this.wendyAudio_1.play();
             this.isPaused = false;
             
             // document.getElementById('arInstructions').textContent = 
@@ -1003,7 +1192,7 @@ class ARExperience {
             console.log('Audio resumed');
         } else {
             // Pause
-            this.wendyAudio.pause();
+            this.wendyAudio_1.pause();
             this.isPaused = true;
             
             // document.getElementById('arInstructions').textContent = 
@@ -1024,15 +1213,24 @@ class ARExperience {
         this.pauseButtonModel.visible = false;
         this.isPaused = false;
         
-        // document.getElementById('arInstructions').textContent = 
-        //     'Turn around! Someone has been watching...';
-
         if (this.textPlate) {
             this.textPlate.updateText('Turn around! Someone has been watching...');
-          }       
+        }       
         
-        setTimeout(() => this.revealMendy(), 2000);
-    }   
+        // Instead of calling this.revealMendy(), include the code directly in the setTimeout
+        setTimeout(() => {
+            console.log('Revealing Mendy');
+            
+            this.mendy.visible = true;
+            
+            // Show next button
+            this.nextButtonModel.visible = true;
+            
+            if (this.textPlate) {
+                this.textPlate.updateText('Mendy was spying on you all along! Stay aware of your surroundings. Click Next or press N to continue.');
+            }
+        }, 2000);
+    }     
     
     handleNext() {
         console.log('Next button clicked - experience complete!');
@@ -1080,9 +1278,9 @@ class ARExperience {
         }
         
         // Stop any audio that might be playing
-        if (this.wendyAudio) {
-            this.wendyAudio.pause();
-            this.wendyAudio.currentTime = 0;
+        if (this.wendyAudio_1) {
+            this.wendyAudio_1.pause();
+            this.wendyAudio_1.currentTime = 0;
         }
         
         // Remove text plate from camera or scene before clearing everything
