@@ -168,30 +168,7 @@ class ARExperience {
        
         this.endWendySpeech();
     });
-    }
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    colorStartButton() {
-    // Skip if button isn't loaded
-    if (!this.startButtonModel) return;
-    
-    // If NOT in XR mode, make the button green
-    if (!this.isXRActive) {
-        // Apply bright green color to all meshes in the button
-        this.startButtonModel.traverse(child => {
-            if (child.isMesh && child.material) {
-                // Create a new material to avoid affecting other objects
-                child.material = new THREE.MeshStandardMaterial({
-                    color: 0x00ff00,  // Bright green
-                    emissive: 0x00aa00,  // Slightly darker green for glow
-                    emissiveIntensity: 0.5
-                    });
-                }
-            });
-        }
-    }
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    }  
 
     // Helper method to setup controls
     async setupControls() {
@@ -394,9 +371,7 @@ class ARExperience {
         
         // Start button
         this.startButtonModel.position.set(0, -1, -1.0); // 1m in front
-        this.scene.add(this.startButtonModel);
-
-        this.colorStartButton();
+        this.scene.add(this.startButtonModel);       
         
         // Wendy model
         this.wendy.visible = false;
