@@ -173,7 +173,7 @@ class ARExperience {
     }
 
     // Helper method to setup controls
-   async setupControls() {
+    async setupControls() {
     // 1. Check for WebXR support
     if (navigator.xr) {
         try {
@@ -216,12 +216,13 @@ class ARExperience {
                 
                 // Adjust for VR if needed (particularly for Meta Quest)
                 if (isVRSupported && !isARSupported) {
-                    this.adjustForVR();
+                    //this.adjustForVR();
+                    this.camera.position.set(0, 1.6, 0);
                 }
                 
             } else {
                 console.log('XR not supported, using fallback 3D mode');
-                this.setupFallbackCameraControls();
+                this.setupFallbackCameraControls();                
             }
             
         } catch (error) {
@@ -234,7 +235,7 @@ class ARExperience {
     }
     
     // Set up non-XR interaction (mouse/touch)
-    // (This would replace the duplicate code in makeModelClickable)
+    
     if (!this.modelInteractionHandlerActive) {
         this.modelInteractionHandlerActive = true;
         
@@ -296,35 +297,34 @@ class ARExperience {
                     return data.active && model.visible && (!data.once || !data.triggered);
                 });
             
-            if (interactiveModels.length === 0) return;
-            
-            // Check for intersections
-            const intersects = raycaster.intersectObjects(interactiveModels, true);
-            
-            if (intersects.length > 0) {
-                const intersect = intersects[0];
-                let currentObj = intersect.object;
+                if (interactiveModels.length === 0) return;
                 
-                while (currentObj) {
-                    if (this.modelInteractions.has(currentObj)) {
-                        const data = this.modelInteractions.get(currentObj);
-                        if (data.active && (!data.once || !data.triggered)) {
-                            console.log(`Model clicked: ${currentObj.name || 'unnamed'}`);
-                            data.callback(currentObj, intersect);
-                            
-                            if (data.once) {
-                                data.triggered = true;
+                // Check for intersections
+                const intersects = raycaster.intersectObjects(interactiveModels, true);
+                
+                if (intersects.length > 0) {
+                    const intersect = intersects[0];
+                    let currentObj = intersect.object;
+                    
+                    while (currentObj) {
+                        if (this.modelInteractions.has(currentObj)) {
+                            const data = this.modelInteractions.get(currentObj);
+                            if (data.active && (!data.once || !data.triggered)) {
+                                console.log(`Model clicked: ${currentObj.name || 'unnamed'}`);
+                                data.callback(currentObj, intersect);
+                                
+                                if (data.once) {
+                                    data.triggered = true;
+                                }
                             }
+                            break;
                         }
-                        break;
+                        currentObj = currentObj.parent;
                     }
-                    currentObj = currentObj.parent;
                 }
-            }
-        };
+            };
+        }
     }
-}
-
 
     // Simplified fallback camera controls
     setupFallbackCameraControls() {
