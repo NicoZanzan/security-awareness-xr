@@ -32,8 +32,7 @@ class ARExperience {
     
         // Add start button event listener
         document.getElementById('startButton').addEventListener('click', async () => {
-            try {                
-                
+            try {                  
                 // Hide landing page, show AR view
                 document.getElementById('landingPage').style.display = 'none';
                 document.getElementById('arView').style.display = 'block';
