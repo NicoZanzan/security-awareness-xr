@@ -280,6 +280,27 @@ class ARExperience {
                 alert('Failed to start AR experience: ' + error.message);
             }
         });
+
+        if (navigator.xr) {
+    try {
+        // Your existing XR session setup code...
+        
+        // After successful session setup:
+        this.session = await navigator.xr.requestSession('immersive-ar', {
+            requiredFeatures: ['local', 'hit-test'],
+            optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking']
+        });
+        
+        await this.renderer.xr.setSession(this.session);
+        this.isXRActive = true;
+        
+        // Add this line to adjust for VR if needed
+        this.adjustForVR();
+        
+    } catch (error) {
+        // Your error handling...
+    }
+}
         
         // Handle window resize
         window.addEventListener('resize', () => this.onWindowResize());
@@ -671,18 +692,50 @@ class ARExperience {
     }    
     
      //Updated setupInteraction to use the new makeModelClickable method
-     setupInteraction() {
-        // Setup WebXR controller
-        this.controller = this.renderer.xr.getController(0);
-        this.scene.add(this.controller);
+    setupInteraction() {
+    // Setup WebXR controller
+    this.controller = this.renderer.xr.getController(0);
+    this.scene.add(this.controller);
+    
+    // Add select event for VR controller
+    this.controller.addEventListener('select', (event) => {
+        console.log("XR Select event received");
         
-        // Now attach XR event handlers if available
-        if (this.controller && this.interactionHandlers && this.interactionHandlers.xrSelect) {
-            console.log("Adding XR controller select event listener");
-            this.controller.addEventListener('select', this.interactionHandlers.xrSelect);
-        } else {
-            console.warn("Could not attach XR controller event - controller or handler not available");
+        // Set up raycaster from controller
+        const tempMatrix = new THREE.Matrix4();
+        tempMatrix.identity().extractRotation(this.controller.matrixWorld);
+        
+        const controllerRaycaster = new THREE.Raycaster();
+        controllerRaycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
+        controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+        
+        // Get interactive models
+        const interactiveModels = Array.from(this.modelInteractions.keys())
+            .filter(model => {
+                const data = this.modelInteractions.get(model);
+                return data.active && model.visible;
+            });
+        
+        // Check intersections
+        const intersects = controllerRaycaster.intersectObjects(interactiveModels, true);
+        
+        if (intersects.length > 0) {
+            const intersect = intersects[0];
+            let currentObj = intersect.object;
+            
+            while (currentObj) {
+                if (this.modelInteractions.has(currentObj)) {
+                    const data = this.modelInteractions.get(currentObj);
+                    if (data.active) {
+                        console.log(`VR Controller clicked: ${currentObj.name || 'unnamed'}`);
+                        data.callback(currentObj);
+                    }
+                    break;
+                }
+                currentObj = currentObj.parent;
+            }
         }
+    });
         
         // Keyboard backup controls
         document.addEventListener('keydown', (event) => {
@@ -725,6 +778,32 @@ class ARExperience {
             }
         });
     }
+
+    adjustForVR() {
+    // Check if we're in VR mode (Meta Quest 2)
+    const isVR = this.session && this.session.environmentBlendMode === 'opaque';
+    
+    if (isVR) {
+        console.log("VR mode detected - adjusting button positions");
+        
+        // Adjust button positions to be more visible and reachable in VR
+        if (this.startButtonModel) {
+            this.startButtonModel.position.set(0, -0.7, -1.2);
+            this.startButtonModel.scale.multiplyScalar(1.5);
+        }
+        
+        if (this.pauseButtonModel) {
+            this.pauseButtonModel.position.set(-0.4, -0.7, -1.2);
+            this.pauseButtonModel.scale.multiplyScalar(1.5);
+        }
+        
+        if (this.nextButtonModel) {
+            this.nextButtonModel.position.set(0.4, -0.7, -1.2);
+            this.nextButtonModel.scale.multiplyScalar(1.5);
+        }
+    }
+}
+
     
     makeModelClickable(model, callback, once = false) {
         if (!model || typeof callback !== 'function') {
