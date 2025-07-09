@@ -32,8 +32,7 @@ class ARExperience {
     
         // Add start button event listener
         document.getElementById('startButton').addEventListener('click', async () => {
-            try {
-                console.log('Starting AR experience...');
+            try {                
                 
                 // Hide landing page, show AR view
                 document.getElementById('landingPage').style.display = 'none';
@@ -97,7 +96,7 @@ class ARExperience {
                 
             } catch (error) {
                 console.error('Failed to start:', error);
-                alert('Failed to start AR experience: ' + error.message);
+                alert('Failed to start project: ' + error.message);
             }
         });    
     // Handle window resize
@@ -107,8 +106,7 @@ class ARExperience {
     // New helper method to load resources
     async loadResources() {
         const loader = new THREE.GLTFLoader();
-        console.log('Loading models...');
-        
+                
         // Internal helper function to load GLB models
         const loadGLB = (path) => {
             return new Promise((resolve, reject) => {
@@ -167,10 +165,33 @@ class ARExperience {
         this.wendyAudio_2.preload = 'auto';
         
         this.wendyAudio_1.addEventListener('ended', () => {
-        console.log('Wendy audio finished');
+       
         this.endWendySpeech();
     });
     }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    colorStartButton() {
+    // Skip if button isn't loaded
+    if (!this.startButtonModel) return;
+    
+    // If NOT in XR mode, make the button green
+    if (!this.isXRActive) {
+        // Apply bright green color to all meshes in the button
+        this.startButtonModel.traverse(child => {
+            if (child.isMesh && child.material) {
+                // Create a new material to avoid affecting other objects
+                child.material = new THREE.MeshStandardMaterial({
+                    color: 0x00ff00,  // Bright green
+                    emissive: 0x00aa00,  // Slightly darker green for glow
+                    emissiveIntensity: 0.5
+                    });
+                }
+            });
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Helper method to setup controls
     async setupControls() {
@@ -182,6 +203,7 @@ class ARExperience {
             const isVRSupported = await navigator.xr.isSessionSupported('immersive-vr');
             
             if (isARSupported || isVRSupported) {
+                
                 console.log(`Starting immersive ${isARSupported ? 'AR' : 'VR'} session`);
                 const sessionType = isARSupported ? 'immersive-ar' : 'immersive-vr';
                 
@@ -192,8 +214,7 @@ class ARExperience {
                 });
                 
                 await this.renderer.xr.setSession(this.session);
-                this.isXRActive = true;
-                this.startButton.position.y += 1;
+                this.isXRActive = true;                
                 
                 // Set up XR controller (moved from setupInteraction)
                 this.controller = this.renderer.xr.getController(0);
@@ -201,8 +222,7 @@ class ARExperience {
                 
                 // Set up the controller's select event for interaction
                 this.controller.addEventListener('select', (event) => {
-                    console.log("XR Select event received");
-                    
+                                        
                     // Set up raycaster from controller
                     const tempMatrix = new THREE.Matrix4();
                     tempMatrix.identity().extractRotation(this.controller.matrixWorld);
@@ -218,7 +238,7 @@ class ARExperience {
                 // Adjust for VR if needed (particularly for Meta Quest)
                 if (isVRSupported && !isARSupported) {
                     //this.adjustForVR();
-                    this.camera.position.set(0, -1.6, 0);
+                    //this.camera.position.set(0, -1.6, 0);
                 }
                 
             } else {
@@ -327,7 +347,7 @@ class ARExperience {
         }
     }
 
-    // Simplified fallback camera controls
+    // Simplified fallback camera controls for non-AR devices
     setupFallbackCameraControls() {
         // For non-AR devices - position camera for good view
         console.log('Setting up camera controls for non-AR mode');
@@ -363,8 +383,7 @@ class ARExperience {
     } 
 
     startScene() {  
-        
-        console.log('Start scene started ...');
+            
         // Initial text plate creation
         this.createTextPlate('Start!', {
             backgroundColor: 0x3366cc,
@@ -376,6 +395,8 @@ class ARExperience {
         // Start button
         this.startButtonModel.position.set(0, -1, -1.0); // 1m in front
         this.scene.add(this.startButtonModel);
+
+        this.colorStartButton();
         
         // Wendy model
         this.wendy.visible = false;
@@ -402,7 +423,6 @@ class ARExperience {
         this.scene.add(this.nextButtonModel);
 
         this.makeModelClickable(this.startButtonModel, () => {
-            console.log('Start button clicked!');
             this.firstScene();
         });      
         
@@ -411,8 +431,7 @@ class ARExperience {
     
     firstScene() {
         this.experienceStarted = true;
-        console.log('First scene started ...');
-            
+                    
         // Hide start button
         this.startButtonModel.visible = false;
         
@@ -427,7 +446,7 @@ class ARExperience {
         });
 
         this.makeModelClickable(this.wendy, (model) => {
-            console.log('Wendy was clicked!');
+            
             this.wendyAudio_2.play();
             const movement = this.moveModel("wendy", 
                 {x: 1, y: 0, z: -3},  // Target position
@@ -440,7 +459,7 @@ class ARExperience {
         });
 
         this.makeModelClickable(this.mendy, (model) => {
-            console.log('Mendy was clicked!');
+            
             // You could add additional effects when Mendy is clicked
             if (this.textPlate) {
                 this.textPlate.updateText("Mendy says: Leave me alone ...");
@@ -448,13 +467,13 @@ class ARExperience {
         });
 
         this.makeModelClickable(this.nextButtonModel, () => {
-            console.log('Next button clicked!');
+            
             this.handleNext();
         });     
       
         
         if (this.textPlate) {
-            this.textPlate.updateText('Wendy is talking about cybersecurity. Click the pause button or press P to pause.');
+            this.textPlate.updateText('Wendy has lost her glasses ... Press NEXT to continue');
           }
 
         // Play audio
@@ -603,7 +622,7 @@ class ARExperience {
         group.add(bar2);
         
         this.pauseButtonModel = group;
-        console.log('Pause button placeholder created');
+       
     } 
     
     moveModel(modelName, targetPos, speed) {
@@ -689,9 +708,8 @@ class ARExperience {
                 // Call completion callback if provided
                 if (moveData.onComplete && typeof moveData.onComplete === 'function') {
                     moveData.onComplete(model);
-                }
+                }                
                 
-                console.log(`Model "${modelName}" movement complete`);
                 return false; // Stop animation
             }
             
@@ -715,9 +733,7 @@ class ARExperience {
         
         // Add our movement animation to the callback list
         this._animationCallbacks.push(updateMovement);
-        
-        console.log(`Starting movement of model "${modelName}" from (${startPos.x}, ${startPos.y}, ${startPos.z}) to (${targetPos.x}, ${targetPos.y}, ${targetPos.z}) at speed ${speed} units/second`);
-        
+                
         // Return object with control methods
         return {
             // Stop the animation
@@ -739,7 +755,7 @@ class ARExperience {
 
     loadAudio() {       
         this.wendyAudio_1.addEventListener('ended', () => {
-            console.log('Wendy audio finished');
+            
             this.endWendySpeech();
         });      
     }   
@@ -795,9 +811,7 @@ class ARExperience {
         if (maxDimension > 0) {
             const scale = targetSize / maxDimension;
             model.scale.setScalar(scale);
-        }
-        
-        console.log(`Model scaled to: ${model.scale.x}`);
+        }       
     }  
 
     createTextPlate(text, options = {}) {
@@ -1032,11 +1046,7 @@ class ARExperience {
             // Resume
             this.wendyAudio_1.play();
             this.isPaused = false;
-            
-            // document.getElementById('arInstructions').textContent = 
-            //     'Wendy is talking about cybersecurity. Click the pause button or press P to pause.';
-            
-            console.log('Audio resumed');
+                        
         } else {
             // Pause
             this.wendyAudio_1.pause();
@@ -1047,15 +1057,11 @@ class ARExperience {
 
             if (this.textPlate) {
                 this.textPlate.updateText('Wendy is talking about cybersecurity. Click the pause button or press P to pause.');
-              }
-            
-            console.log('Audio paused');
+              }        
         }
     }
     
-    endWendySpeech() {
-        console.log('Wendy finished speaking');
-        
+    endWendySpeech() {       
         // Hide pause button
         this.pauseButtonModel.visible = false;
         this.isPaused = false;
@@ -1064,23 +1070,19 @@ class ARExperience {
             this.textPlate.updateText('Turn around! Someone has been watching...');
         }       
         
-        setTimeout(() => {
-            console.log('Revealing Mendy');
-            
+        setTimeout(() => {            
             this.mendy.visible = true;
             
             // Show next button
             this.nextButtonModel.visible = true;
             
             if (this.textPlate) {
-                this.textPlate.updateText('Mendy was spying on you all along! Stay aware of your surroundings. Click Next to continue.');
+                this.textPlate.updateText('She is right behind you! Turn around!');
             }
         }, 2000);
     }    
     
-    handleNext() {
-        console.log('Next button clicked - experience complete!');
-        
+    handleNext() {        
         // Hide all models
         this.wendy.visible = false;
         this.mendy.visible = false;
@@ -1101,7 +1103,7 @@ class ARExperience {
     }
     
     resetScene() {
-        console.log('Resetting experience - clearing everything');
+        console.log('Resetting scenes - clearing everything');
 
         // Clean up interactions
         if (this.modelInteractions) {
