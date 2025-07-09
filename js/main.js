@@ -359,8 +359,7 @@ class ARExperience {
         document.addEventListener('pointerup', () => { isPointerDown = false; });
     } 
 
-    startScene() {  
-            
+    startScene() {             
         // Initial text plate creation
         this.createTextPlate('Start!', {
             backgroundColor: 0x3366cc,
