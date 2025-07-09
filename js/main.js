@@ -675,211 +675,211 @@ class ARExperience {
                 currentObj = currentObj.parent;
             }
         }
-    });
-    
-    // Add visual ray to controller for aiming
-    //this.addControllerRay();
-}
+    });   
+   
+    }
 
-   makeModelClickable(model, callback, once = false) {
-    if (!model || typeof callback !== 'function') {
-        console.error('makeModelClickable requires a valid model and callback function');
-        return null;
-    }
-    
-    // If we don't have an interactions map, create one
-    if (!this.modelInteractions) {
-        this.modelInteractions = new Map();
-    }
-    
-    // Use the model object itself as the key in our interactions Map
-    this.modelInteractions.set(model, {
-        callback,
-        once,
-        active: true,
-        triggered: false
-    });
-    
-    // Add highlighting capability for hand interaction
-    const originalMaterials = [];
-    model.traverse(obj => {
-        if (obj.material) {
-            originalMaterials.push({
-                object: obj,
-                material: obj.material.clone()
-            });
+    makeModelClickable(model, callback, once = false) {
+        if (!model || typeof callback !== 'function') {
+            console.error('makeModelClickable requires a valid model and callback function');
+            return null;
         }
-    });
-    
-    // Add hover effect
-    const highlightObject = (highlight) => {
+        
+        // If we don't have an interactions map, create one
+        if (!this.modelInteractions) {
+            this.modelInteractions = new Map();
+        }
+        
+        // Use the model object itself as the key in our interactions Map
+        this.modelInteractions.set(model, {
+            callback,
+            once,
+            active: true,
+            triggered: false
+        });
+        
+        // Add highlighting capability for hand interaction
+        const originalMaterials = [];
         model.traverse(obj => {
             if (obj.material) {
-                if (highlight) {
-                    obj.material.emissive = new THREE.Color(0x555555);
-                    obj.material.emissiveIntensity = 0.5;
-                } else {
-                    obj.material.emissive = new THREE.Color(0x000000);
-                    obj.material.emissiveIntensity = 0;
-                }
+                originalMaterials.push({
+                    object: obj,
+                    material: obj.material.clone()
+                });
             }
         });
-    };
-    
-    // Store highlight function in model's userData
-    model.userData.highlight = highlightObject;
-    
-    // Set up the interaction handler if it's not already active
-    if (!this.modelInteractionHandlerActive) {
-        // Create shared raycaster for all interactions
-        const raycaster = new THREE.Raycaster();
-        const pointer = new THREE.Vector2();
         
-        // Track pointer start position to distinguish between clicks and drags
-        let pointerStartX = 0;
-        let pointerStartY = 0;
-        let isDragging = false;
-        
-        // On pointer down, record start position
-        const handlePointerDown = (event) => {
-            pointerStartX = event.clientX;
-            pointerStartY = event.clientY;
-            isDragging = false;
-        };
-        
-        // On pointer move, check if we're dragging
-        const handlePointerMove = (event) => {
-            if (!isDragging) {
-                // Check if moved more than threshold (5px) to count as drag
-                const deltaX = Math.abs(event.clientX - pointerStartX);
-                const deltaY = Math.abs(event.clientY - pointerStartY);
-                if (deltaX > 5 || deltaY > 5) {
-                    isDragging = true;
-                }
-            }
-        };
-        
-        // On pointer up, check for clicks (not drags)
-        const handlePointerUp = (event) => {
-            // Only process as a click if not dragging
-            if (!isDragging) {
-                // Calculate pointer position for raycaster
-                pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-                pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
-                raycaster.setFromCamera(pointer, this.camera);
-                
-                // Process the click
-                checkIntersections(raycaster);
-            }
-        };
-        
-        // Helper function that does the actual intersection checking
-        const checkIntersections = (raycaster) => {
-            if (!this.modelInteractions || this.modelInteractions.size === 0) return;
-            
-            console.log("Checking intersections");
-            
-            // Get all active, visible interactive models
-            const interactiveModels = Array.from(this.modelInteractions.keys())
-                .filter(model => {
-                    const data = this.modelInteractions.get(model);
-                    return data.active && model.visible && (!data.once || !data.triggered);
-                });
-            
-            if (interactiveModels.length === 0) {
-                console.log("No active models to interact with");
-                return;
-            }
-            
-            // Log models being checked
-            console.log(`Checking intersections with ${interactiveModels.length} models`);
-            interactiveModels.forEach(model => console.log(`- Model: ${model.name || 'unnamed'}`));
-            
-            // Check for intersections
-            const intersects = raycaster.intersectObjects(interactiveModels, true);
-            
-            console.log(`Found ${intersects.length} intersections`);
-            
-            if (intersects.length > 0) {
-                const intersect = intersects[0];
-                
-                // Find the actual interactive model (might be a parent of the intersected object)
-                let currentObj = intersect.object;
-                
-                while (currentObj) {
-                    if (this.modelInteractions.has(currentObj)) {
-                        // Get interaction data and execute callback
-                        const data = this.modelInteractions.get(currentObj);
-                        if (data.active && (!data.once || !data.triggered)) {
-                            console.log(`Model clicked: ${currentObj.name || 'unnamed'}`);
-                            data.callback(currentObj, intersect);
-                            
-                            if (data.once) {
-                                data.triggered = true;
-                            }
-                        }
-                        break;
+        // Add hover effect
+        const highlightObject = (highlight) => {
+            model.traverse(obj => {
+                if (obj.material) {
+                    if (highlight) {
+                        obj.material.emissive = new THREE.Color(0x555555);
+                        obj.material.emissiveIntensity = 0.5;
+                    } else {
+                        obj.material.emissive = new THREE.Color(0x000000);
+                        obj.material.emissiveIntensity = 0;
                     }
-                    currentObj = currentObj.parent;
+                }
+            });
+        };
+        
+        // Store highlight function in model's userData
+        model.userData.highlight = highlightObject;
+        
+        // Set up the interaction handler if it's not already active
+        if (!this.modelInteractionHandlerActive) {
+            // Create shared raycaster for all interactions
+            this.interactionRaycaster = new THREE.Raycaster();
+            this.interactionPointer = new THREE.Vector2();
+            
+            // Track pointer start position to distinguish between clicks and drags
+            let pointerStartX = 0;
+            let pointerStartY = 0;
+            let isDragging = false;
+            
+            // On pointer down, record start position
+            const handlePointerDown = (event) => {
+                pointerStartX = event.clientX;
+                pointerStartY = event.clientY;
+                isDragging = false;
+            };
+            
+            // On pointer move, check if we're dragging
+            const handlePointerMove = (event) => {
+                if (!isDragging) {
+                    // Check if moved more than threshold (5px) to count as drag
+                    const deltaX = Math.abs(event.clientX - pointerStartX);
+                    const deltaY = Math.abs(event.clientY - pointerStartY);
+                    if (deltaX > 5 || deltaY > 5) {
+                        isDragging = true;
+                    }
+                }
+            };
+            
+            // On pointer up, check for clicks (not drags)
+            const handlePointerUp = (event) => {
+                // Only process as a click if not dragging
+                if (!isDragging) {
+                    // Calculate pointer position for raycaster
+                    this.interactionPointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+                    this.interactionPointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                    this.interactionRaycaster.setFromCamera(this.interactionPointer, this.camera);
+                    
+                    // Process the click
+                    this.checkInteractions(this.interactionRaycaster);
+                }
+            };
+            
+            // Define the checkInteractions method at the class level for reuse
+            this.checkInteractions = (raycaster) => {
+                if (!this.modelInteractions || this.modelInteractions.size === 0) return;
+                
+                console.log("Checking intersections");
+                
+                // Get all active, visible interactive models
+                const interactiveModels = Array.from(this.modelInteractions.keys())
+                    .filter(model => {
+                        const data = this.modelInteractions.get(model);
+                        return data.active && model.visible && (!data.once || !data.triggered);
+                    });
+                
+                if (interactiveModels.length === 0) {
+                    console.log("No active models to interact with");
+                    return;
+                }
+                
+                // Log models being checked
+                console.log(`Checking intersections with ${interactiveModels.length} models`);
+                interactiveModels.forEach(model => console.log(`- Model: ${model.name || 'unnamed'}`));
+                
+                // Check for intersections
+                const intersects = raycaster.intersectObjects(interactiveModels, true);
+                
+                console.log(`Found ${intersects.length} intersections`);
+                
+                if (intersects.length > 0) {
+                    const intersect = intersects[0];
+                    
+                    // Find the actual interactive model (might be a parent of the intersected object)
+                    let currentObj = intersect.object;
+                    
+                    while (currentObj) {
+                        if (this.modelInteractions.has(currentObj)) {
+                            // Get interaction data and execute callback
+                            const data = this.modelInteractions.get(currentObj);
+                            if (data.active && (!data.once || !data.triggered)) {
+                                console.log(`Model clicked: ${currentObj.name || 'unnamed'}`);
+                                data.callback(currentObj, intersect);
+                                
+                                if (data.once) {
+                                    data.triggered = true;
+                                }
+                            }
+                            break;
+                        }
+                        currentObj = currentObj.parent;
+                    }
+                }
+            };
+            
+            // Set up touch event handlers
+            document.addEventListener('pointerdown', handlePointerDown);
+            document.addEventListener('pointermove', handlePointerMove);
+            document.addEventListener('pointerup', handlePointerUp);
+            
+            // Create XR controller handler
+            const handleXRSelect = (event) => {
+                console.log("XR Select event received");
+                
+                // Set up raycaster from controller
+                const tempMatrix = new THREE.Matrix4();
+                tempMatrix.identity().extractRotation(event.target.matrixWorld);
+                
+                const controllerRaycaster = new THREE.Raycaster();
+                controllerRaycaster.ray.origin.setFromMatrixPosition(event.target.matrixWorld);
+                controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+                
+                // Process the XR selection
+                this.checkInteractions(controllerRaycaster);
+            };
+            
+            // If we have an XR controller, attach the select event
+            if (this.controller) {
+                this.controller.addEventListener('select', handleXRSelect);
+            }
+            
+            // Store handlers for later attachment and cleanup
+            this.interactionHandlers = {
+                pointerDown: handlePointerDown,
+                pointerMove: handlePointerMove,
+                pointerUp: handlePointerUp,
+                xrSelect: handleXRSelect
+            };
+            
+            this.modelInteractionHandlerActive = true;
+        }
+        
+        return {
+            disable: () => {
+                if (this.modelInteractions.has(model)) {
+                    const data = this.modelInteractions.get(model);
+                    data.active = false;
+                }
+            },
+            enable: () => {
+                if (this.modelInteractions.has(model)) {
+                    const data = this.modelInteractions.get(model);
+                    data.active = true;
+                }
+            },
+            remove: () => {
+                if (this.modelInteractions) {
+                    this.modelInteractions.delete(model);
                 }
             }
         };
-        
-        // Set up touch event handlers
-        document.addEventListener('pointerdown', handlePointerDown);
-        document.addEventListener('pointermove', handlePointerMove);
-        document.addEventListener('pointerup', handlePointerUp);
-        
-        // Create XR controller handler
-        const handleXRSelect = (event) => {
-            console.log("XR Select event received");
-            
-            // Set up raycaster from controller
-            const tempMatrix = new THREE.Matrix4();
-            tempMatrix.identity().extractRotation(event.target.matrixWorld);
-            
-            const controllerRaycaster = new THREE.Raycaster();
-            controllerRaycaster.ray.origin.setFromMatrixPosition(event.target.matrixWorld);
-            controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
-            
-            // Process the XR selection
-            checkIntersections(controllerRaycaster);
-        };
-        
-        // Store handlers for later attachment and cleanup
-        this.interactionHandlers = {
-            pointerDown: handlePointerDown,
-            pointerMove: handlePointerMove,
-            pointerUp: handlePointerUp,
-            xrSelect: handleXRSelect,
-            checkIntersections
-        };
-        
-        this.modelInteractionHandlerActive = true;
-    }
-    
-    return {
-        disable: () => {
-            if (this.modelInteractions.has(model)) {
-                const data = this.modelInteractions.get(model);
-                data.active = false;
-            }
-        },
-        enable: () => {
-            if (this.modelInteractions.has(model)) {
-                const data = this.modelInteractions.get(model);
-                data.active = true;
-            }
-        },
-        remove: () => {
-            if (this.modelInteractions) {
-                this.modelInteractions.delete(model);
-            }
-        }
-    };
-}   
-   
-    
+    }    
         
     scaleModel(model, targetSize) {
         // Auto-scale models to reasonable size
