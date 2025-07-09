@@ -193,6 +193,7 @@ class ARExperience {
                 
                 await this.renderer.xr.setSession(this.session);
                 this.isXRActive = true;
+                this.startButton.position.y += 1;
                 
                 // Set up XR controller (moved from setupInteraction)
                 this.controller = this.renderer.xr.getController(0);
