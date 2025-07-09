@@ -29,7 +29,7 @@ class ARExperience {
     async init() {        
         // hide end page initially
         document.getElementById('endPage').style.display = 'none';
-        
+    
         // Add start button event listener
         document.getElementById('startButton').addEventListener('click', async () => {
             try {
@@ -78,194 +78,14 @@ class ARExperience {
                 this.scene.add(directionalLight2);
                 
                 // -------- RESOURCE LOADING --------
-                // Load models
-                const loader = new THREE.GLTFLoader();
-                console.log('Loading models...');
-                
-                // Internal helper function to load GLB models
-                const loadGLB = (path) => {
-                    return new Promise((resolve, reject) => {
-                        loader.load(
-                            path,
-                            (gltf) => {
-                                console.log(`Loaded: ${path}`);
-                                resolve(gltf);
-                            },
-                            (progress) => {
-                                console.log(`Loading ${path}: ${(progress.loaded / progress.total * 100)}%`);
-                            },
-                            (error) => {
-                                console.error(`Failed to load ${path}:`, error);
-                                reject(error);
-                            }
-                        );
-                    });
-                };
-                
-                try {
-                    // Load button
-                    const buttonGLB = await loadGLB('./assets/models/button.glb');
-                    this.startButtonModel = buttonGLB.scene;
-                    this.scaleModel(this.startButtonModel, 1.0);
-                    
-                    this.createPauseButtonPlaceholder();
-                    
-                    // Load next button
-                    const nextGLB = await loadGLB('./assets/models/next.glb');
-                    this.nextButtonModel = nextGLB.scene;
-                    this.scaleModel(this.nextButtonModel, 1.0);
-                    
-                    // Load Wendy
-                    const wendyGLB = await loadGLB('./assets/models/wendy.glb');
-                    this.wendy = wendyGLB.scene;
-                    this.scaleModel(this.wendy, 1.0);
-                    
-                    // Load Mendy
-                    const mendyGLB = await loadGLB('./assets/models/mendy.glb');
-                    this.mendy = mendyGLB.scene;
-                    this.scaleModel(this.mendy, 1.0);
-                    
-                    console.log('All models loaded successfully');
-                    
-                } catch (error) {
-                    console.error('Model loading failed:', error);
-                    throw error;
-                }
-                
-                // Load audio
-                this.wendyAudio_1 = new Audio('./assets/audio/wendy_1.mp3');
-                this.wendyAudio_1.preload = 'auto';
-
-                this.wendyAudio_2 = new Audio('./assets/audio/wendy_2.mp3');
-                this.wendyAudio_2.preload = 'auto';
-                
-                this.wendyAudio_1.addEventListener('ended', () => {
-                    console.log('Wendy audio finished');
-                    this.endWendySpeech();
-                });               
-              
+                // Load models and audio (unchanged)
+                await this.loadResources();
                 
                 // -------- WEBXR INITIALIZATION --------
                 this.renderer.xr.enabled = true;
                 
-                if (navigator.xr) {
-                    try {
-                        // Check for immersive AR support
-                        const isARSupported = await navigator.xr.isSessionSupported('immersive-ar');
-                        
-                        if (isARSupported) {
-                            console.log('Starting immersive AR session');
-                            this.session = await navigator.xr.requestSession('immersive-ar', {
-                                requiredFeatures: ['local', 'hit-test'],  // Add hit-test
-                                optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking']
-                            });
-                            
-                            await this.renderer.xr.setSession(this.session);
-                            this.isXRActive = true;
-                            
-                            // Position for AR
-                            //this.setupARPositioning();
-                            
-                        } else {
-                            console.log('AR not supported, using fallback 3D mode');
-                            // Setup fallback mode
-                            this.camera.position.set(0, 0, 0);
-                            
-                            // Add mouse/touch controls for fallback
-                            let isPointerDown = false;
-                            let pointerX = 0;
-                            let pointerY = 0;
-                            
-                            const onPointerMove = (event) => {
-                                if (!isPointerDown) return;
-                                
-                                const deltaX = event.clientX - pointerX;
-                                const deltaY = event.clientY - pointerY;
-                                
-                                this.camera.rotation.y -= deltaX * 0.005;
-                                this.camera.rotation.x -= deltaY * 0.005;
-                                this.camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, this.camera.rotation.x));
-                                
-                                pointerX = event.clientX;
-                                pointerY = event.clientY;
-                            };
-                            
-                            document.addEventListener('pointerdown', (event) => {
-                                isPointerDown = true;
-                                pointerX = event.clientX;
-                                pointerY = event.clientY;
-                            });
-                            
-                            document.addEventListener('pointermove', onPointerMove);
-                            document.addEventListener('pointerup', () => { isPointerDown = false; });
-                        }
-                        
-                    } catch (error) {
-                        console.log('WebXR failed, using fallback:', error.message);
-                        // Setup fallback mode
-                        this.camera.position.set(0, 0, 0);
-                        
-                        // Add mouse/touch controls for fallback
-                        let isPointerDown = false;
-                        let pointerX = 0;
-                        let pointerY = 0;
-                        
-                        const onPointerMove = (event) => {
-                            if (!isPointerDown) return;
-                            
-                            const deltaX = event.clientX - pointerX;
-                            const deltaY = event.clientY - pointerY;
-                            
-                            this.camera.rotation.y -= deltaX * 0.005;
-                            this.camera.rotation.x -= deltaY * 0.005;
-                            this.camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, this.camera.rotation.x));
-                            
-                            pointerX = event.clientX;
-                            pointerY = event.clientY;
-                        };
-                        
-                        document.addEventListener('pointerdown', (event) => {
-                            isPointerDown = true;
-                            pointerX = event.clientX;
-                            pointerY = event.clientY;
-                        });
-                        
-                        document.addEventListener('pointermove', onPointerMove);
-                        document.addEventListener('pointerup', () => { isPointerDown = false; });
-                    }
-                } else {
-                    console.log('WebXR not available, using fallback mode');
-                    // Setup fallback mode
-                    this.camera.position.set(0, 0, 0);
-                    
-                    // Add mouse/touch controls for fallback
-                    let isPointerDown = false;
-                    let pointerX = 0;
-                    let pointerY = 0;
-                    
-                    const onPointerMove = (event) => {
-                        if (!isPointerDown) return;
-                        
-                        const deltaX = event.clientX - pointerX;
-                        const deltaY = event.clientY - pointerY;
-                        
-                        this.camera.rotation.y -= deltaX * 0.005;
-                        this.camera.rotation.x -= deltaY * 0.005;
-                        this.camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, this.camera.rotation.x));
-                        
-                        pointerX = event.clientX;
-                        pointerY = event.clientY;
-                    };
-                    
-                    document.addEventListener('pointerdown', (event) => {
-                        isPointerDown = true;
-                        pointerX = event.clientX;
-                        pointerY = event.clientY;
-                    });
-                    
-                    document.addEventListener('pointermove', onPointerMove);
-                    document.addEventListener('pointerup', () => { isPointerDown = false; });
-                }
+                // Set up either WebXR or fallback controls
+                await this.setupControls();
                 
                 // Start render loop
                 this.renderer.setAnimationLoop((timestamp, frame) => {
@@ -279,33 +99,154 @@ class ARExperience {
                 console.error('Failed to start:', error);
                 alert('Failed to start AR experience: ' + error.message);
             }
-        });
-
-        if (navigator.xr) {
-    try {
-        // Your existing XR session setup code...
-        
-        // After successful session setup:
-        this.session = await navigator.xr.requestSession('immersive-ar', {
-            requiredFeatures: ['local', 'hit-test'],
-            optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking']
-        });
-        
-        await this.renderer.xr.setSession(this.session);
-        this.isXRActive = true;
-        
-        // Add this line to adjust for VR if needed
-        this.adjustForVR();
-        
-    } catch (error) {
-        // Your error handling...
+        });    
+    // Handle window resize
+    window.addEventListener('resize', () => this.onWindowResize());
     }
-}
+
+    // New helper method to load resources
+    async loadResources() {
+        const loader = new THREE.GLTFLoader();
+        console.log('Loading models...');
         
-        // Handle window resize
-        window.addEventListener('resize', () => this.onWindowResize());
-    }  
+        // Internal helper function to load GLB models
+        const loadGLB = (path) => {
+            return new Promise((resolve, reject) => {
+                loader.load(
+                    path,
+                    (gltf) => {
+                        console.log(`Loaded: ${path}`);
+                        resolve(gltf);
+                    },
+                    (progress) => {
+                        console.log(`Loading ${path}: ${(progress.loaded / progress.total * 100)}%`);
+                    },
+                    (error) => {
+                        console.error(`Failed to load ${path}:`, error);
+                        reject(error);
+                    }
+                );
+            });
+    };
     
+    try {
+        // Load button
+        const buttonGLB = await loadGLB('./assets/models/button.glb');
+        this.startButtonModel = buttonGLB.scene;
+        this.scaleModel(this.startButtonModel, 1.0);
+        
+        this.createPauseButtonPlaceholder();
+        
+        // Load next button
+        const nextGLB = await loadGLB('./assets/models/next.glb');
+        this.nextButtonModel = nextGLB.scene;
+        this.scaleModel(this.nextButtonModel, 1.0);
+        
+        // Load Wendy
+        const wendyGLB = await loadGLB('./assets/models/wendy.glb');
+        this.wendy = wendyGLB.scene;
+        this.scaleModel(this.wendy, 1.0);
+        
+        // Load Mendy
+        const mendyGLB = await loadGLB('./assets/models/mendy.glb');
+        this.mendy = mendyGLB.scene;
+        this.scaleModel(this.mendy, 1.0);
+        
+        console.log('All models loaded successfully');
+        
+        } catch (error) {
+            console.error('Model loading failed:', error);
+            throw error;
+        }
+        
+        // Load audio
+        this.wendyAudio_1 = new Audio('./assets/audio/wendy_1.mp3');
+        this.wendyAudio_1.preload = 'auto';
+
+        this.wendyAudio_2 = new Audio('./assets/audio/wendy_2.mp3');
+        this.wendyAudio_2.preload = 'auto';
+        
+        this.wendyAudio_1.addEventListener('ended', () => {
+        console.log('Wendy audio finished');
+        this.endWendySpeech();
+    });
+    }
+
+    // Helper method to setup controls
+    async setupControls() {
+        if (navigator.xr) {
+            try {
+                // Check for immersive AR or VR support
+                const isARSupported = await navigator.xr.isSessionSupported('immersive-ar');
+                const isVRSupported = await navigator.xr.isSessionSupported('immersive-vr');
+                
+                if (isARSupported || isVRSupported) {
+                    console.log(`Starting immersive ${isARSupported ? 'AR' : 'VR'} session`);
+                    const sessionType = isARSupported ? 'immersive-ar' : 'immersive-vr';
+                    
+                    this.session = await navigator.xr.requestSession(sessionType, {
+                        requiredFeatures: ['local'],
+                        optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'hit-test']
+                    });
+                    
+                    await this.renderer.xr.setSession(this.session);
+                    this.isXRActive = true;
+                    
+                    // Adjust for VR if needed (particularly for Meta Quest)
+                    if (isVRSupported && !isARSupported) {
+                        this.adjustForVR();
+                    }
+                    
+                } else {
+                    console.log('XR not supported, using fallback 3D mode');
+                    this.setupFallbackCameraControls();
+                }
+                
+            } catch (error) {
+                console.log('WebXR failed, using fallback:', error.message);
+                this.setupFallbackCameraControls();
+            }
+        } else {
+            console.log('WebXR not available, using fallback mode');
+            this.setupFallbackCameraControls();
+        }
+    }
+
+    // Simplified fallback camera controls
+    setupFallbackCameraControls() {
+        // For non-AR devices - position camera for good view
+        console.log('Setting up camera controls for non-AR mode');
+        this.camera.position.set(0, 0, 0);
+        
+        // Add mouse/touch camera rotation controls
+        let isPointerDown = false;
+        let pointerX = 0;
+        let pointerY = 0;
+        
+        const onPointerMove = (event) => {
+            if (!isPointerDown) return;
+            
+            const deltaX = event.clientX - pointerX;
+            const deltaY = event.clientY - pointerY;
+            
+            this.camera.rotation.y -= deltaX * 0.005;
+            this.camera.rotation.x -= deltaY * 0.005;
+            this.camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, this.camera.rotation.x));
+            
+            pointerX = event.clientX;
+            pointerY = event.clientY;
+        };
+        
+        document.addEventListener('pointerdown', (event) => {
+            isPointerDown = true;
+            pointerX = event.clientX;
+            pointerY = event.clientY;
+        });
+        
+        document.addEventListener('pointermove', onPointerMove);
+        document.addEventListener('pointerup', () => { isPointerDown = false; });
+    } 
+
     startScene() {  
         
         console.log('Start scene started ...');
@@ -740,33 +681,6 @@ class ARExperience {
     //this.addControllerRay();
 }
 
-
-    adjustForVR() {
-    // Check if we're in VR mode (Meta Quest 2)
-    const isVR = this.session && this.session.environmentBlendMode === 'opaque';
-    
-    if (isVR) {
-        console.log("VR mode detected - adjusting button positions");
-        
-        // Adjust button positions to be more visible and reachable in VR
-        if (this.startButtonModel) {
-            this.startButtonModel.position.set(0, -0.7, -1.2);
-            this.startButtonModel.scale.multiplyScalar(1.5);
-        }
-        
-        if (this.pauseButtonModel) {
-            this.pauseButtonModel.position.set(-0.4, -0.7, -1.2);
-            this.pauseButtonModel.scale.multiplyScalar(1.5);
-        }
-        
-        if (this.nextButtonModel) {
-            this.nextButtonModel.position.set(0.4, -0.7, -1.2);
-            this.nextButtonModel.scale.multiplyScalar(1.5);
-        }
-    }
-}
-
-    
    makeModelClickable(model, callback, once = false) {
     if (!model || typeof callback !== 'function') {
         console.error('makeModelClickable requires a valid model and callback function');
@@ -965,40 +879,7 @@ class ARExperience {
     };
 }   
    
-    setupFallbackControls() {
-        // For non-AR devices - position camera manually
-        console.log('Setting up fallback 3D mode');
-        this.camera.position.set(0, 0, 0);
-        
-        // Add mouse/touch controls for fallback
-        // Setup pointer-based camera controls
-        let isPointerDown = false;
-        let pointerX = 0;
-        let pointerY = 0;
-        
-        const onPointerMove = (event) => {
-            if (!isPointerDown) return;
-            
-            const deltaX = event.clientX - pointerX;
-            const deltaY = event.clientY - pointerY;
-            
-            this.camera.rotation.y -= deltaX * 0.005;
-            this.camera.rotation.x -= deltaY * 0.005;
-            this.camera.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, this.camera.rotation.x));
-            
-            pointerX = event.clientX;
-            pointerY = event.clientY;
-        };
-        
-        document.addEventListener('pointerdown', (event) => {
-            isPointerDown = true;
-            pointerX = event.clientX;
-            pointerY = event.clientY;
-        });
-        
-        document.addEventListener('pointermove', onPointerMove);
-        document.addEventListener('pointerup', () => { isPointerDown = false; });
-    }    
+    
         
     scaleModel(model, targetSize) {
         // Auto-scale models to reasonable size
@@ -1267,30 +1148,30 @@ class ARExperience {
         }
     }
     
-  endWendySpeech() {
-    console.log('Wendy finished speaking');
-    
-    // Hide pause button
-    this.pauseButtonModel.visible = false;
-    this.isPaused = false;
-    
-    if (this.textPlate) {
-        this.textPlate.updateText('Turn around! Someone has been watching...');
-    }       
-    
-    setTimeout(() => {
-        console.log('Revealing Mendy');
+    endWendySpeech() {
+        console.log('Wendy finished speaking');
         
-        this.mendy.visible = true;
-        
-        // Show next button
-        this.nextButtonModel.visible = true;
+        // Hide pause button
+        this.pauseButtonModel.visible = false;
+        this.isPaused = false;
         
         if (this.textPlate) {
-            this.textPlate.updateText('Mendy was spying on you all along! Stay aware of your surroundings. Click Next to continue.');
-        }
-    }, 2000);
-}    
+            this.textPlate.updateText('Turn around! Someone has been watching...');
+        }       
+        
+        setTimeout(() => {
+            console.log('Revealing Mendy');
+            
+            this.mendy.visible = true;
+            
+            // Show next button
+            this.nextButtonModel.visible = true;
+            
+            if (this.textPlate) {
+                this.textPlate.updateText('Mendy was spying on you all along! Stay aware of your surroundings. Click Next to continue.');
+            }
+        }, 2000);
+    }    
     
     handleNext() {
         console.log('Next button clicked - experience complete!');
