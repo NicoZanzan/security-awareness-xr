@@ -173,44 +173,158 @@ class ARExperience {
     }
 
     // Helper method to setup controls
-    async setupControls() {
-        if (navigator.xr) {
-            try {
-                // Check for immersive AR or VR support
-                const isARSupported = await navigator.xr.isSessionSupported('immersive-ar');
-                const isVRSupported = await navigator.xr.isSessionSupported('immersive-vr');
+   async setupControls() {
+    // 1. Check for WebXR support
+    if (navigator.xr) {
+        try {
+            // Check for immersive AR or VR support
+            const isARSupported = await navigator.xr.isSessionSupported('immersive-ar');
+            const isVRSupported = await navigator.xr.isSessionSupported('immersive-vr');
+            
+            if (isARSupported || isVRSupported) {
+                console.log(`Starting immersive ${isARSupported ? 'AR' : 'VR'} session`);
+                const sessionType = isARSupported ? 'immersive-ar' : 'immersive-vr';
                 
-                if (isARSupported || isVRSupported) {
-                    console.log(`Starting immersive ${isARSupported ? 'AR' : 'VR'} session`);
-                    const sessionType = isARSupported ? 'immersive-ar' : 'immersive-vr';
+                // Request XR session with needed features
+                this.session = await navigator.xr.requestSession(sessionType, {
+                    requiredFeatures: ['local'],
+                    optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'hit-test']
+                });
+                
+                await this.renderer.xr.setSession(this.session);
+                this.isXRActive = true;
+                
+                // Set up XR controller (moved from setupInteraction)
+                this.controller = this.renderer.xr.getController(0);
+                this.scene.add(this.controller);
+                
+                // Set up the controller's select event for interaction
+                this.controller.addEventListener('select', (event) => {
+                    console.log("XR Select event received");
                     
-                    this.session = await navigator.xr.requestSession(sessionType, {
-                        requiredFeatures: ['local'],
-                        optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'hit-test']
-                    });
+                    // Set up raycaster from controller
+                    const tempMatrix = new THREE.Matrix4();
+                    tempMatrix.identity().extractRotation(this.controller.matrixWorld);
                     
-                    await this.renderer.xr.setSession(this.session);
-                    this.isXRActive = true;
+                    const controllerRaycaster = new THREE.Raycaster();
+                    controllerRaycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
+                    controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
                     
-                    // Adjust for VR if needed (particularly for Meta Quest)
-                    if (isVRSupported && !isARSupported) {
-                        this.adjustForVR();
-                    }
-                    
-                } else {
-                    console.log('XR not supported, using fallback 3D mode');
-                    this.setupFallbackCameraControls();
+                    // Check for interactive object intersections
+                    this.checkInteractions(controllerRaycaster);
+                });
+                
+                // Adjust for VR if needed (particularly for Meta Quest)
+                if (isVRSupported && !isARSupported) {
+                    this.adjustForVR();
                 }
                 
-            } catch (error) {
-                console.log('WebXR failed, using fallback:', error.message);
+            } else {
+                console.log('XR not supported, using fallback 3D mode');
                 this.setupFallbackCameraControls();
             }
-        } else {
-            console.log('WebXR not available, using fallback mode');
+            
+        } catch (error) {
+            console.log('WebXR failed, using fallback:', error.message);
             this.setupFallbackCameraControls();
         }
+    } else {
+        console.log('WebXR not available, using fallback mode');
+        this.setupFallbackCameraControls();
     }
+    
+    // Set up non-XR interaction (mouse/touch)
+    // (This would replace the duplicate code in makeModelClickable)
+    if (!this.modelInteractionHandlerActive) {
+        this.modelInteractionHandlerActive = true;
+        
+        // Set up shared raycaster for interactions
+        this.interactionRaycaster = new THREE.Raycaster();
+        this.interactionPointer = new THREE.Vector2();
+        
+        // Track pointer for click vs. drag detection
+        let pointerStartX = 0;
+        let pointerStartY = 0;
+        let isDragging = false;
+        
+        // Set up pointer event handlers
+        const handlePointerDown = (event) => {
+            pointerStartX = event.clientX;
+            pointerStartY = event.clientY;
+            isDragging = false;
+        };
+        
+        const handlePointerMove = (event) => {
+            if (!isDragging) {
+                const deltaX = Math.abs(event.clientX - pointerStartX);
+                const deltaY = Math.abs(event.clientY - pointerStartY);
+                if (deltaX > 5 || deltaY > 5) {
+                    isDragging = true;
+                }
+            }
+        };
+        
+        const handlePointerUp = (event) => {
+            if (!isDragging) {
+                this.interactionPointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+                this.interactionPointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                this.interactionRaycaster.setFromCamera(this.interactionPointer, this.camera);
+                this.checkInteractions(this.interactionRaycaster);
+            }
+        };
+        
+        // Add event listeners
+        document.addEventListener('pointerdown', handlePointerDown);
+        document.addEventListener('pointermove', handlePointerMove);
+        document.addEventListener('pointerup', handlePointerUp);
+        
+        // Store handlers for cleanup
+        this.interactionHandlers = {
+            pointerDown: handlePointerDown,
+            pointerMove: handlePointerMove,
+            pointerUp: handlePointerUp
+        };
+        
+        // Add helper method for checking interactions
+        this.checkInteractions = (raycaster) => {
+            if (!this.modelInteractions || this.modelInteractions.size === 0) return;
+            
+            // Get all active, visible interactive models
+            const interactiveModels = Array.from(this.modelInteractions.keys())
+                .filter(model => {
+                    const data = this.modelInteractions.get(model);
+                    return data.active && model.visible && (!data.once || !data.triggered);
+                });
+            
+            if (interactiveModels.length === 0) return;
+            
+            // Check for intersections
+            const intersects = raycaster.intersectObjects(interactiveModels, true);
+            
+            if (intersects.length > 0) {
+                const intersect = intersects[0];
+                let currentObj = intersect.object;
+                
+                while (currentObj) {
+                    if (this.modelInteractions.has(currentObj)) {
+                        const data = this.modelInteractions.get(currentObj);
+                        if (data.active && (!data.once || !data.triggered)) {
+                            console.log(`Model clicked: ${currentObj.name || 'unnamed'}`);
+                            data.callback(currentObj, intersect);
+                            
+                            if (data.once) {
+                                data.triggered = true;
+                            }
+                        }
+                        break;
+                    }
+                    currentObj = currentObj.parent;
+                }
+            }
+        };
+    }
+}
+
 
     // Simplified fallback camera controls
     setupFallbackCameraControls() {
@@ -289,10 +403,7 @@ class ARExperience {
         this.makeModelClickable(this.startButtonModel, () => {
             console.log('Start button clicked!');
             this.firstScene();
-        });
-        
-        // Setup interaction for interactive elements
-        this.setupInteraction();
+        });      
         
         console.log('Scene ready - should be visible');
     }    
@@ -630,54 +741,7 @@ class ARExperience {
             console.log('Wendy audio finished');
             this.endWendySpeech();
         });      
-    }    
-    
-    setupInteraction() {
-    // Setup WebXR controller
-    this.controller = this.renderer.xr.getController(0);
-    this.scene.add(this.controller);
-    
-    // Add select event for VR controller
-    this.controller.addEventListener('select', (event) => {
-        console.log("XR Select event received");
-        
-        // Set up raycaster from controller
-        const tempMatrix = new THREE.Matrix4();
-        tempMatrix.identity().extractRotation(this.controller.matrixWorld);
-        
-        const controllerRaycaster = new THREE.Raycaster();
-        controllerRaycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
-        controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
-        
-        // Get interactive models
-        const interactiveModels = Array.from(this.modelInteractions.keys())
-            .filter(model => {
-                const data = this.modelInteractions.get(model);
-                return data.active && model.visible;
-            });
-        
-        // Check intersections
-        const intersects = controllerRaycaster.intersectObjects(interactiveModels, true);
-        
-        if (intersects.length > 0) {
-            const intersect = intersects[0];
-            let currentObj = intersect.object;
-            
-            while (currentObj) {
-                if (this.modelInteractions.has(currentObj)) {
-                    const data = this.modelInteractions.get(currentObj);
-                    if (data.active) {
-                        console.log(`VR Controller clicked: ${currentObj.name || 'unnamed'}`);
-                        data.callback(currentObj);
-                    }
-                    break;
-                }
-                currentObj = currentObj.parent;
-            }
-        }
-    });   
-   
-    }
+    }   
 
     makeModelClickable(model, callback, once = false) {
         if (!model || typeof callback !== 'function') {
@@ -685,181 +749,21 @@ class ARExperience {
             return null;
         }
         
-        // If we don't have an interactions map, create one
+        // Ensure the model interactions map exists
         if (!this.modelInteractions) {
             this.modelInteractions = new Map();
         }
         
-        // Use the model object itself as the key in our interactions Map
+        // Register the model with its callback
         this.modelInteractions.set(model, {
             callback,
             once,
             active: true,
             triggered: false
-        });
+        });   
+
         
-        // Add highlighting capability for hand interaction
-        const originalMaterials = [];
-        model.traverse(obj => {
-            if (obj.material) {
-                originalMaterials.push({
-                    object: obj,
-                    material: obj.material.clone()
-                });
-            }
-        });
-        
-        // Add hover effect
-        const highlightObject = (highlight) => {
-            model.traverse(obj => {
-                if (obj.material) {
-                    if (highlight) {
-                        obj.material.emissive = new THREE.Color(0x555555);
-                        obj.material.emissiveIntensity = 0.5;
-                    } else {
-                        obj.material.emissive = new THREE.Color(0x000000);
-                        obj.material.emissiveIntensity = 0;
-                    }
-                }
-            });
-        };
-        
-        // Store highlight function in model's userData
-        model.userData.highlight = highlightObject;
-        
-        // Set up the interaction handler if it's not already active
-        if (!this.modelInteractionHandlerActive) {
-            // Create shared raycaster for all interactions
-            this.interactionRaycaster = new THREE.Raycaster();
-            this.interactionPointer = new THREE.Vector2();
-            
-            // Track pointer start position to distinguish between clicks and drags
-            let pointerStartX = 0;
-            let pointerStartY = 0;
-            let isDragging = false;
-            
-            // On pointer down, record start position
-            const handlePointerDown = (event) => {
-                pointerStartX = event.clientX;
-                pointerStartY = event.clientY;
-                isDragging = false;
-            };
-            
-            // On pointer move, check if we're dragging
-            const handlePointerMove = (event) => {
-                if (!isDragging) {
-                    // Check if moved more than threshold (5px) to count as drag
-                    const deltaX = Math.abs(event.clientX - pointerStartX);
-                    const deltaY = Math.abs(event.clientY - pointerStartY);
-                    if (deltaX > 5 || deltaY > 5) {
-                        isDragging = true;
-                    }
-                }
-            };
-            
-            // On pointer up, check for clicks (not drags)
-            const handlePointerUp = (event) => {
-                // Only process as a click if not dragging
-                if (!isDragging) {
-                    // Calculate pointer position for raycaster
-                    this.interactionPointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-                    this.interactionPointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
-                    this.interactionRaycaster.setFromCamera(this.interactionPointer, this.camera);
-                    
-                    // Process the click
-                    this.checkInteractions(this.interactionRaycaster);
-                }
-            };
-            
-            // Define the checkInteractions method at the class level for reuse
-            this.checkInteractions = (raycaster) => {
-                if (!this.modelInteractions || this.modelInteractions.size === 0) return;
-                
-                console.log("Checking intersections");
-                
-                // Get all active, visible interactive models
-                const interactiveModels = Array.from(this.modelInteractions.keys())
-                    .filter(model => {
-                        const data = this.modelInteractions.get(model);
-                        return data.active && model.visible && (!data.once || !data.triggered);
-                    });
-                
-                if (interactiveModels.length === 0) {
-                    console.log("No active models to interact with");
-                    return;
-                }
-                
-                // Log models being checked
-                console.log(`Checking intersections with ${interactiveModels.length} models`);
-                interactiveModels.forEach(model => console.log(`- Model: ${model.name || 'unnamed'}`));
-                
-                // Check for intersections
-                const intersects = raycaster.intersectObjects(interactiveModels, true);
-                
-                console.log(`Found ${intersects.length} intersections`);
-                
-                if (intersects.length > 0) {
-                    const intersect = intersects[0];
-                    
-                    // Find the actual interactive model (might be a parent of the intersected object)
-                    let currentObj = intersect.object;
-                    
-                    while (currentObj) {
-                        if (this.modelInteractions.has(currentObj)) {
-                            // Get interaction data and execute callback
-                            const data = this.modelInteractions.get(currentObj);
-                            if (data.active && (!data.once || !data.triggered)) {
-                                console.log(`Model clicked: ${currentObj.name || 'unnamed'}`);
-                                data.callback(currentObj, intersect);
-                                
-                                if (data.once) {
-                                    data.triggered = true;
-                                }
-                            }
-                            break;
-                        }
-                        currentObj = currentObj.parent;
-                    }
-                }
-            };
-            
-            // Set up touch event handlers
-            document.addEventListener('pointerdown', handlePointerDown);
-            document.addEventListener('pointermove', handlePointerMove);
-            document.addEventListener('pointerup', handlePointerUp);
-            
-            // Create XR controller handler
-            const handleXRSelect = (event) => {
-                console.log("XR Select event received");
-                
-                // Set up raycaster from controller
-                const tempMatrix = new THREE.Matrix4();
-                tempMatrix.identity().extractRotation(event.target.matrixWorld);
-                
-                const controllerRaycaster = new THREE.Raycaster();
-                controllerRaycaster.ray.origin.setFromMatrixPosition(event.target.matrixWorld);
-                controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
-                
-                // Process the XR selection
-                this.checkInteractions(controllerRaycaster);
-            };
-            
-            // If we have an XR controller, attach the select event
-            if (this.controller) {
-                this.controller.addEventListener('select', handleXRSelect);
-            }
-            
-            // Store handlers for later attachment and cleanup
-            this.interactionHandlers = {
-                pointerDown: handlePointerDown,
-                pointerMove: handlePointerMove,
-                pointerUp: handlePointerUp,
-                xrSelect: handleXRSelect
-            };
-            
-            this.modelInteractionHandlerActive = true;
-        }
-        
+        // Return methods to control this interactive model
         return {
             disable: () => {
                 if (this.modelInteractions.has(model)) {
@@ -879,7 +783,7 @@ class ARExperience {
                 }
             }
         };
-    }    
+    }   
         
     scaleModel(model, targetSize) {
         // Auto-scale models to reasonable size
@@ -1196,129 +1100,128 @@ class ARExperience {
     }
     
     resetScene() {
-    console.log('Resetting experience - clearing everything');
+        console.log('Resetting experience - clearing everything');
 
-    // Clean up interactions
-    if (this.modelInteractions) {
-        this.modelInteractions.clear();
-    }
+        // Clean up interactions
+        if (this.modelInteractions) {
+            this.modelInteractions.clear();
+        }
 
-    // Remove interaction handlers
-    if (this.interactionHandlers) {
-        document.removeEventListener('pointerdown', this.interactionHandlers.pointerDown);
-        document.removeEventListener('pointermove', this.interactionHandlers.pointerMove);
-        document.removeEventListener('pointerup', this.interactionHandlers.pointerUp);
-        
-        if (this.controller && this.interactionHandlers.xrSelect) {
-            console.log("Removing XR controller event listener");
-            this.controller.removeEventListener('select', this.interactionHandlers.xrSelect);
-        }
-        
-        this.interactionHandlers = null;
-        this.modelInteractionHandlerActive = false;
-    }
-    
-    // Stop any audio that might be playing
-    if (this.wendyAudio_1) {
-        this.wendyAudio_1.pause();
-        this.wendyAudio_1.currentTime = 0;
-    }
-    
-    if (this.wendyAudio_2) {
-        this.wendyAudio_2.pause();
-        this.wendyAudio_2.currentTime = 0;
-    }
-    
-    // Remove text plate from camera or scene before clearing everything
-    if (this.textPlate) {
-        if (this.uiGroup && this.textPlate.parent === this.uiGroup) {
-            this.uiGroup.remove(this.textPlate);
-        } else if (this.scene) {
-            this.scene.remove(this.textPlate);
-        }
-        
-        // Dispose text plate resources
-        if (this.textPlate.material && this.textPlate.material.map) {
-            this.textPlate.material.map.dispose();
-        }
-        this.disposeObject(this.textPlate);
-    }
-    
-    // Remove UI group from camera if it exists
-    if (this.uiGroup && this.camera) {
-        this.camera.remove(this.uiGroup);
-    }
-    
-    // Clear UI references to ensure they're recreated
-    this.textPlate = null;
-    this.uiGroup = null;
-    
-    // Remove all models from scene
-    if (this.scene) {
-        // Remove all objects from the scene
-        while (this.scene.children.length > 0) {
-            const object = this.scene.children[0];
-            this.scene.remove(object);
-        }
-    }
-    
-    // Dispose of all resources to prevent memory leaks
-    if (this.startButtonModel) this.disposeObject(this.startButtonModel);
-    if (this.pauseButtonModel) this.disposeObject(this.pauseButtonModel);
-    if (this.nextButtonModel) this.disposeObject(this.nextButtonModel);
-    if (this.wendy) this.disposeObject(this.wendy);
-    if (this.mendy) this.disposeObject(this.mendy);
-    
-    // Clear all models
-    this.startButtonModel = null;
-    this.pauseButtonModel = null;
-    this.nextButtonModel = null;
-    this.wendy = null;
-    this.mendy = null;
-    
-    // End WebXR session if active
-    if (this.session) {
-        this.session.end().catch(error => console.error('Error ending XR session:', error));
-        this.session = null;
-    }
-    
-    // Stop animation loop
-    if (this.renderer) {
-        this.renderer.setAnimationLoop(null);
-    }
-    
-    // Reset state
-    this.experienceStarted = false;
-    this.isPaused = false;
-    this.isXRActive = false;
-    
-    // Reset UI
-    document.getElementById('arView').style.display = 'none';
-    document.getElementById('landingPage').style.display = 'none';
-    document.getElementById('endPage').style.display = 'block';
-    
-    // Set up restart button
-    const restartButton = document.getElementById('restartButton');
-    if (restartButton) {
-        // Remove any existing event listeners to avoid duplicates
-        const newButton = restartButton.cloneNode(true);
-        restartButton.parentNode.replaceChild(newButton, restartButton);
-        
-        // Add fresh event listener
-        newButton.addEventListener('click', () => {
-            // Clear display
-            document.getElementById('endPage').style.display = 'none';
-            document.getElementById('landingPage').style.display = 'block';
+        // Remove interaction handlers
+        if (this.interactionHandlers) {
+            document.removeEventListener('pointerdown', this.interactionHandlers.pointerDown);
+            document.removeEventListener('pointermove', this.interactionHandlers.pointerMove);
+            document.removeEventListener('pointerup', this.interactionHandlers.pointerUp);
             
-            // Start fresh
-            this.init();
-        });
-    }
-    
-    // Remove window resize listener
-    window.removeEventListener('resize', this.onWindowResize);
-}  
-    
+            if (this.controller && this.interactionHandlers.xrSelect) {
+                console.log("Removing XR controller event listener");
+                this.controller.removeEventListener('select', this.interactionHandlers.xrSelect);
+            }
+            
+            this.interactionHandlers = null;
+            this.modelInteractionHandlerActive = false;
+        }
+        
+        // Stop any audio that might be playing
+        if (this.wendyAudio_1) {
+            this.wendyAudio_1.pause();
+            this.wendyAudio_1.currentTime = 0;
+        }
+        
+        if (this.wendyAudio_2) {
+            this.wendyAudio_2.pause();
+            this.wendyAudio_2.currentTime = 0;
+        }
+        
+        // Remove text plate from camera or scene before clearing everything
+        if (this.textPlate) {
+            if (this.uiGroup && this.textPlate.parent === this.uiGroup) {
+                this.uiGroup.remove(this.textPlate);
+            } else if (this.scene) {
+                this.scene.remove(this.textPlate);
+            }
+            
+            // Dispose text plate resources
+            if (this.textPlate.material && this.textPlate.material.map) {
+                this.textPlate.material.map.dispose();
+            }
+            this.disposeObject(this.textPlate);
+        }
+        
+        // Remove UI group from camera if it exists
+        if (this.uiGroup && this.camera) {
+            this.camera.remove(this.uiGroup);
+        }
+        
+        // Clear UI references to ensure they're recreated
+        this.textPlate = null;
+        this.uiGroup = null;
+        
+        // Remove all models from scene
+        if (this.scene) {
+            // Remove all objects from the scene
+            while (this.scene.children.length > 0) {
+                const object = this.scene.children[0];
+                this.scene.remove(object);
+            }
+        }
+        
+        // Dispose of all resources to prevent memory leaks
+        if (this.startButtonModel) this.disposeObject(this.startButtonModel);
+        if (this.pauseButtonModel) this.disposeObject(this.pauseButtonModel);
+        if (this.nextButtonModel) this.disposeObject(this.nextButtonModel);
+        if (this.wendy) this.disposeObject(this.wendy);
+        if (this.mendy) this.disposeObject(this.mendy);
+        
+        // Clear all models
+        this.startButtonModel = null;
+        this.pauseButtonModel = null;
+        this.nextButtonModel = null;
+        this.wendy = null;
+        this.mendy = null;
+        
+        // End WebXR session if active
+        if (this.session) {
+            this.session.end().catch(error => console.error('Error ending XR session:', error));
+            this.session = null;
+        }
+        
+        // Stop animation loop
+        if (this.renderer) {
+            this.renderer.setAnimationLoop(null);
+        }
+        
+        // Reset state
+        this.experienceStarted = false;
+        this.isPaused = false;
+        this.isXRActive = false;
+        
+        // Reset UI
+        document.getElementById('arView').style.display = 'none';
+        document.getElementById('landingPage').style.display = 'none';
+        document.getElementById('endPage').style.display = 'block';
+        
+        // Set up restart button
+        const restartButton = document.getElementById('restartButton');
+        if (restartButton) {
+            // Remove any existing event listeners to avoid duplicates
+            const newButton = restartButton.cloneNode(true);
+            restartButton.parentNode.replaceChild(newButton, restartButton);
+            
+            // Add fresh event listener
+            newButton.addEventListener('click', () => {
+                // Clear display
+                document.getElementById('endPage').style.display = 'none';
+                document.getElementById('landingPage').style.display = 'block';
+                
+                // Start fresh
+                this.init();
+            });
+        }
+        
+        // Remove window resize listener
+        window.removeEventListener('resize', this.onWindowResize);
+    }     
     
     idleMove(model, timestamp, amplitude = 0.05, speed = 0.001, axis = 'y') {
         if (!model || !model.visible) return;
