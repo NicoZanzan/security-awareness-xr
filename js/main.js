@@ -163,10 +163,7 @@ class ARExperience {
         this.wendyAudio_2 = new Audio('./assets/audio/wendy_2.mp3');
         this.wendyAudio_2.preload = 'auto';
         
-        this.wendyAudio_1.addEventListener('ended', () => {
-       
-        this.endWendySpeech();
-    });
+      
     }  
 
     // Helper method to setup controls
@@ -449,13 +446,27 @@ class ARExperience {
             this.textPlate.updateText('Wendy has lost her glasses ... Press NEXT to continue');
           }
 
-        // Play audio
-        this.wendyAudio_1.play().catch(error => {
-            console.error('Audio play failed:', error);
-            // Fallback timer
-            setTimeout(() => this.endWendySpeech(), 10000);
+       
+        this.wendyAudio_1.play().then(() => {          
+            this.pauseButtonModel.visible = true;
+            
+            this.isPaused = false;       
+           
+            this.wendyAudio_1.addEventListener('ended', () => {
+                
+                this.pauseButtonModel.visible = false;
+                           
+                if (this.textPlate) {
+                    this.textPlate.updateText('Turn around! Someone has been watching...');
+                }                
+                
+                this.mendy.visible = true;                
+               
+                this.nextButtonModel.visible = true;
+            });       
         });
     }
+     
   
     playModelAnimation(modelName, animationName, loop = false) {
         // Find the model in the scene
@@ -724,13 +735,6 @@ class ARExperience {
                 return this; // For chaining
             }
         };
-    }  
-
-    loadAudio() {       
-        this.wendyAudio_1.addEventListener('ended', () => {
-            
-            this.endWendySpeech();
-        });      
     }   
 
     makeModelClickable(model, callback, once = false) {
@@ -1032,28 +1036,7 @@ class ARExperience {
                 this.textPlate.updateText('Wendy is talking about cybersecurity. Click the pause button or press P to pause.');
               }        
         }
-    }
-    
-    endWendySpeech() {       
-        // Hide pause button
-        this.pauseButtonModel.visible = false;
-        this.isPaused = false;
-        
-        if (this.textPlate) {
-            this.textPlate.updateText('Turn around! Someone has been watching...');
-        }       
-        
-        setTimeout(() => {            
-            this.mendy.visible = true;
-            
-            // Show next button
-            this.nextButtonModel.visible = true;
-            
-            if (this.textPlate) {
-                this.textPlate.updateText('She is right behind you! Turn around!');
-            }
-        }, 2000);
-    }    
+    }  
     
     handleNext() {        
         // Hide all models
