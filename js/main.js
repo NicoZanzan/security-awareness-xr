@@ -127,17 +127,25 @@ class ARExperience {
     };
     
     try {
-        // Load button
+
+        //Load all assets
+        
         const buttonGLB = await loadGLB('./assets/models/button.glb');
         this.startButtonModel = buttonGLB.scene;
-        this.scaleModel(this.startButtonModel, 1.0);
-        
-        this.createPauseButtonPlaceholder();
-        
+        this.scaleModel(this.startButtonModel, 0.7);
+
+        const pauseGLB = await loadGLB('./assets/models/pauseButton.glb');
+        this.pauseButtonModel = pauseGLB.scene;
+        this.scaleModel(this.pauseButtonModel, 0.2);
+
+        const quitGLB = await loadGLB('./assets/models/quitButton.glb');
+        this.quitButtonModel = quitGLB.scene;
+        this.scaleModel(this.quitButtonModel, 0.2);
+              
         // Load next button
         const nextGLB = await loadGLB('./assets/models/next.glb');
         this.nextButtonModel = nextGLB.scene;
-        this.scaleModel(this.nextButtonModel, 1.0);
+        this.scaleModel(this.nextButtonModel, 0.7);
         
         // Load Wendy
         const wendyGLB = await loadGLB('./assets/models/wendy.glb');
@@ -355,6 +363,8 @@ class ARExperience {
         document.addEventListener('pointerup', () => { isPointerDown = false; });
     } 
 
+    /////////////////////////////////////////START SCENES////////////////////////////////////////////////////
+
     startScene() {             
         // Initial text plate creation
         this.createTextPlate('Start!', {
@@ -365,7 +375,7 @@ class ARExperience {
         });    
         
         // Start button
-        this.startButtonModel.position.set(0, -1, -1.0); // 1m in front
+        this.startButtonModel.position.set(0, -0.7, -1.0); // 1m in front
         this.scene.add(this.startButtonModel);       
         
         // Wendy model
@@ -384,13 +394,13 @@ class ARExperience {
         
         // Pause button
         this.pauseButtonModel.visible = false;
-        this.pauseButtonModel.position.set(0, -1.5, -1.0); // Top right, 1m in front
+        this.pauseButtonModel.position.set(-0.6, 0, -1.0); // Top right, 1m in front
         this.scene.add(this.pauseButtonModel);
         
         // Next button - fix variable name from nextModel to nextButtonModel
-        this.nextButtonModel.visible = false;
-        this.nextButtonModel.position.set(0.5, -1, -1.0); // Center-bottom, 1m in front
-        this.scene.add(this.nextButtonModel);
+        this.quitButtonModel.visible = false;
+        this.quitButtonModel.position.set(-0.6, 0, -1.0); // Center-bottom, 1m in front
+        this.scene.add(this.quitButtonModel);
 
         this.makeModelClickable(this.startButtonModel, () => {
             this.firstScene();
@@ -407,20 +417,19 @@ class ARExperience {
         
         // Show Wendy and pause button
         this.wendy.visible = true;
-        this.pauseButtonModel.visible = true;
-        this.wendy.rotation.y = -Math.PI/1.5;
-
-        this.makeModelClickable(this.pauseButtonModel, () => {
-            console.log('Pause button clicked!');
-            this.togglePause();
-        });
-
-        this.makeModelClickable(this.wendy, (model) => {
-            
+        this.wendy.rotation.y = -Math.PI/1.5;  
+        
+        //Indruction text plate
+        if (this.textPlate) {
+            this.textPlate.updateText('Wendy has lost her glasses ... press Pause to pause the audio');
+        }
+       
+        //Wendy does not want to betickled when clicked and moves away
+        this.makeModelClickable(this.wendy, (model) => {            
             this.wendyAudio_2.play();
             const movement = this.moveModel("wendy", 
-                {x: 1, y: 0, z: -3},  // Target position
-                0.7                   // Speed (units per second)
+                {x: 1, y: 0, z: -3},  
+                0.7                   
             );            
             
             if (this.textPlate) {
@@ -428,25 +437,33 @@ class ARExperience {
             }            
         });
 
+        //Mendy is annoyed, when you click her
         this.makeModelClickable(this.mendy, (model) => {
-            
-            // You could add additional effects when Mendy is clicked
+                      
             if (this.textPlate) {
                 this.textPlate.updateText("Mendy says: Leave me alone ...");
             }     
         });
 
-        this.makeModelClickable(this.nextButtonModel, () => {
+        // NEXT Button to finish scene
+        this.makeModelClickable(this.quitButtonModel, () => {
             
-            this.handleNext();
-        });     
-      
+            // Hide all models
+            this.wendy.visible = false;
+            this.mendy.visible = false;
+            this.nextButtonModel.visible = false;
+                        
+            if (this.textPlate) {
+                this.textPlate.updateText('Cybersecurity experience complete! Thank you for staying aware.');
+                }
+            
+            //Go to end page after 3sec
+            setTimeout(() => {
+                this.finishAR();
+            }, 3000);
+        });
         
-        if (this.textPlate) {
-            this.textPlate.updateText('Wendy has lost her glasses ... Press NEXT to continue');
-          }
-
-       
+        
         this.wendyAudio_1.play().then(() => {          
             this.pauseButtonModel.visible = true;
             
@@ -457,16 +474,23 @@ class ARExperience {
                 this.pauseButtonModel.visible = false;
                            
                 if (this.textPlate) {
-                    this.textPlate.updateText('Turn around! Someone has been watching...');
+                    this.textPlate.updateText('Turn around! Someone has been watching... use QUIT to quit the scene');
                 }                
                 
                 this.mendy.visible = true;                
                
-                this.nextButtonModel.visible = true;
+                this.quitButtonModel.visible = true;
             });       
+        });
+
+        //Pause button
+        this.pauseButtonModel.visible = true;
+        this.makeModelClickable(this.pauseButtonModel, () => {
+            this.togglePause(this.wendyAudio_1);
         });
     }
      
+    ///////////////////////////////////////////////END SCENES////////////////////////////////////////////////////////////
   
     playModelAnimation(modelName, animationName, loop = false) {
         // Find the model in the scene
@@ -589,25 +613,6 @@ class ARExperience {
         
         return results;
     }    
-
-    createPauseButtonPlaceholder() {
-        // Create a simple pause button placeholder (two vertical bars)
-        const group = new THREE.Group();
-        
-        const barGeometry = new THREE.BoxGeometry(0.03, 0.1, 0.02);
-        const barMaterial = new THREE.MeshPhongMaterial({ color: 0xffaa00 });
-        
-        const bar1 = new THREE.Mesh(barGeometry, barMaterial);
-        bar1.position.x = -0.02;
-        group.add(bar1);
-        
-        const bar2 = new THREE.Mesh(barGeometry, barMaterial);
-        bar2.position.x = 0.02;
-        group.add(bar2);
-        
-        this.pauseButtonModel = group;
-       
-    } 
     
     moveModel(modelName, targetPos, speed) {
         // Find the model in the scene
@@ -1018,47 +1023,21 @@ class ARExperience {
         return this.textPlate;
     }     
 
-    togglePause() {
-        if (this.isPaused) {
-            // Resume
-            this.wendyAudio_1.play();
-            this.isPaused = false;
-                        
-        } else {
-            // Pause
-            this.wendyAudio_1.pause();
-            this.isPaused = true;
-            
-            // document.getElementById('arInstructions').textContent = 
-            //     'Audio paused. Click the pause button or press P to resume.';
-
-            if (this.textPlate) {
-                this.textPlate.updateText('Wendy is talking about cybersecurity. Click the pause button or press P to pause.');
-              }        
+   togglePause(audio, textPlate = null) {
+    if (audio.paused) {
+        audio.play();
+        if (textPlate) {
+            textPlate.updateText('Playing audio');
         }
-    }  
-    
-    handleNext() {        
-        // Hide all models
-        this.wendy.visible = false;
-        this.mendy.visible = false;
-        this.nextButtonModel.visible = false;
-        
-        // Update instructions
-        // document.getElementById('arInstructions').textContent = 
-        //     'Cybersecurity experience complete! Thank you for staying aware.';
-        
-        if (this.textPlate) {
-            this.textPlate.updateText('Cybersecurity experience complete! Thank you for staying aware.');
+        } else {
+            audio.pause();
+            if (textPlate) {
+                textPlate.updateText('Audio paused – click again to resume');
             }
-        
-        // Optional: Return to landing page after a delay
-        setTimeout(() => {
-            this.resetScene();
-        }, 3000);
-    }
+        }
+    }    
     
-    resetScene() {
+    finishAR() {
         console.log('Resetting scenes - clearing everything');
 
         // Clean up interactions
@@ -1246,9 +1225,9 @@ class ARExperience {
             this.idleMove(this.startButtonModel, timestamp);
         }
         
-        if (this.pauseButtonModel) {
-            this.idleMove(this.pauseButtonModel, timestamp);
-        }
+        // if (this.pauseButtonModel) {
+        //     this.idleMove(this.pauseButtonModel, timestamp);
+        // }
         
         if (this.nextButtonModel) {
             this.idleMove(this.nextButtonModel, timestamp);
