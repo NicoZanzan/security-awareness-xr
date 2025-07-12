@@ -9,11 +9,14 @@ class ARExperience {
         this.startButtonModel = null;
         this.pauseButtonModel = null;
         this.nextButtonModel = null;
+        this.quitButtonModel = null;
+        this.laptopModel = null;
         this.wendy = null;
         this.mendy = null;
         
         // Audio
         this.wendyAudio_1 = null;
+        this.wendyAudio_2 = null;
         
         // State
         this.experienceStarted = false;
@@ -133,6 +136,14 @@ class ARExperience {
         const buttonGLB = await loadGLB('./assets/models/button.glb');
         this.startButtonModel = buttonGLB.scene;
         this.scaleModel(this.startButtonModel, 0.7);
+
+        const laptopGLB = await loadGLB('./assets/models/laptop.glb');
+        this.laptopModel = laptopGLB.scene;
+        this.scaleModel(this.laptopModel, 1);
+
+        const deskGLB = await loadGLB('./assets/models/desk.glb');
+        this.deskModel = deskGLB.scene;
+        this.scaleModel(this.deskModel, 1);
 
         const pauseGLB = await loadGLB('./assets/models/pauseButton.glb');
         this.pauseButtonModel = pauseGLB.scene;
@@ -376,13 +387,35 @@ class ARExperience {
         
         // Start button
         this.startButtonModel.position.set(0, -0.7, -1.0); // 1m in front
-        this.scene.add(this.startButtonModel);       
+        this.scene.add(this.startButtonModel);  
         
-        // Wendy model
+        // Start button
+        this.deskModel.position.set(0, -0.7, -1.0); // 1m in front
+        this.scene.add(this.deskModel);
+        this.deskModel.name = "desk"; 
+            
+        this.makeModelClickable(this.startButtonModel, () => {
+             const movement = this.moveModel("desk", 
+                {x: 1, y: 10, z: -3},  
+                7                   
+            );              
+           setTimeout(() => {
+            this.firstScene();
+            this.deskModel.visible = false;
+            }, 2000);
+        });      
+        
+        console.log('Scene ready - should be visible');
+    }    
+    
+    firstScene() {
+        this.experienceStarted = true;
+
+          // Wendy model
         this.wendy.visible = false;
         this.wendy.position.set(0, 0, -2.0); // 2m in front
         this.scene.add(this.wendy);
-        this.wendy.name = 'wendy';
+        this.wendy.name = 'wendy';     
 
         //this.playModelAnimation("wendy", 'Anim_0', true);
         this.listAllModelsAndAnimations();
@@ -401,24 +434,14 @@ class ARExperience {
         this.quitButtonModel.visible = false;
         this.quitButtonModel.position.set(-0.6, 0, -1.0); // Center-bottom, 1m in front
         this.scene.add(this.quitButtonModel);
-
-        this.makeModelClickable(this.startButtonModel, () => {
-            this.firstScene();
-        });      
-        
-        console.log('Scene ready - should be visible');
-    }    
-    
-    firstScene() {
-        this.experienceStarted = true;
                     
         // Hide start button
-        this.startButtonModel.visible = false;
+        this.startButtonModel.visible = false;       
         
         // Show Wendy and pause button
         this.wendy.visible = true;
-        this.wendy.rotation.y = -Math.PI/1.5;  
-        
+        this.wendy.rotation.y = -Math.PI/1.5;   
+             
         //Indruction text plate
         if (this.textPlate) {
             this.textPlate.updateText('Wendy has lost her glasses ... press Pause to pause the audio');
@@ -433,7 +456,7 @@ class ARExperience {
             );            
             
             if (this.textPlate) {
-                this.textPlate.updateText("Wendy says: Hey, this tickles!!");
+                this.textPlate.updateText("Wendy says: Hey, this tickles!!");               
             }            
         });
 
