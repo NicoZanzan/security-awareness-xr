@@ -1,6 +1,8 @@
 todo:
 
-++++
+- Quiz
+- load nextScene(scene)
+- animation plyback
 - placement of models in AR/fallback mode
 - change background color in fallback mode
 - anchor buttons in ar mode (and create HUD)

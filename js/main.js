@@ -141,17 +141,21 @@ class ARExperience {
         this.laptopModel = laptopGLB.scene;
         this.scaleModel(this.laptopModel, 1);
 
-        const deskGLB = await loadGLB('./assets/models/desk.glb');
-        this.deskModel = deskGLB.scene;
-        this.scaleModel(this.deskModel, 1);
+        const flatTableGLB = await loadGLB('./assets/models/flatTable.glb');
+        this.flatTableModel = flatTableGLB.scene;
+        this.scaleModel(this.flatTableModel, 1);
+
+        const tableGLB = await loadGLB('./assets/models/table.glb');
+        this.tableModel = tableGLB.scene;
+        this.scaleModel(this.tableModel, 1);
 
         const pauseGLB = await loadGLB('./assets/models/pauseButton.glb');
         this.pauseButtonModel = pauseGLB.scene;
-        this.scaleModel(this.pauseButtonModel, 0.2);
+        this.scaleModel(this.pauseButtonModel, 0.15);
 
         const quitGLB = await loadGLB('./assets/models/quitButton.glb');
         this.quitButtonModel = quitGLB.scene;
-        this.scaleModel(this.quitButtonModel, 0.2);
+        this.scaleModel(this.quitButtonModel, 0.15);
               
         // Load next button
         const nextGLB = await loadGLB('./assets/models/next.glb');
@@ -378,7 +382,7 @@ class ARExperience {
 
     startScene() {             
         // Initial text plate creation
-        this.createTextPlate('Start!', {
+        this.createTextPlate('Use START to begin', {
             backgroundColor: 0x3366cc,
             width: 0.5,
             height: 0.2,
@@ -390,18 +394,18 @@ class ARExperience {
         this.scene.add(this.startButtonModel);  
         
         // Start button
-        this.deskModel.position.set(0, -0.7, -1.0); // 1m in front
-        this.scene.add(this.deskModel);
-        this.deskModel.name = "desk"; 
+        this.flatTableModel.position.set(0.5, 0, -1.5); // 1m in front
+        this.scene.add(this.flatTableModel);
+        this.flatTableModel.name = "flatTable"; 
             
         this.makeModelClickable(this.startButtonModel, () => {
-             const movement = this.moveModel("desk", 
+             const movement = this.moveModel("flatTable", 
                 {x: 1, y: 10, z: -3},  
                 7                   
             );              
            setTimeout(() => {
             this.firstScene();
-            this.deskModel.visible = false;
+            this.flatTableModel.visible = false;
             }, 2000);
         });      
         
@@ -411,11 +415,16 @@ class ARExperience {
     firstScene() {
         this.experienceStarted = true;
 
-          // Wendy model
+        // Wendy model
         this.wendy.visible = false;
         this.wendy.position.set(0, 0, -2.0); // 2m in front
         this.scene.add(this.wendy);
-        this.wendy.name = 'wendy';     
+        this.wendy.name = 'wendy';    
+        
+        this.tableModel.visible = true;
+        this.tableModel.position.set(1, 0, -2.0); // 2m in front
+        this.scene.add(this.tableModel);
+        this.tableModel.name = 'table';    
 
         //this.playModelAnimation("wendy", 'Anim_0', true);
         this.listAllModelsAndAnimations();
@@ -427,12 +436,12 @@ class ARExperience {
         
         // Pause button
         this.pauseButtonModel.visible = false;
-        this.pauseButtonModel.position.set(-0.6, 0, -1.0); // Top right, 1m in front
+        this.pauseButtonModel.position.set(0, -0.4, -1.0); // Top right, 1m in front
         this.scene.add(this.pauseButtonModel);
         
         // Next button - fix variable name from nextModel to nextButtonModel
         this.quitButtonModel.visible = false;
-        this.quitButtonModel.position.set(-0.6, 0, -1.0); // Center-bottom, 1m in front
+        this.quitButtonModel.position.set(0, -0.4, -1.0); // Center-bottom, 1m in front
         this.scene.add(this.quitButtonModel);
                     
         // Hide start button
