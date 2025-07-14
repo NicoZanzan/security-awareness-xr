@@ -372,7 +372,7 @@ class ARExperience {
     setupFallbackCameraControls() {
         // For non-AR devices - position camera for good view
         console.log('Setting up camera controls for non-AR mode');
-        this.camera.position.set(0, 0, 0);
+        this.camera.position.set(0, 2, 0);
         
         // Add mouse/touch camera rotation controls
         let isPointerDown = false;
@@ -415,11 +415,11 @@ class ARExperience {
         });    
         
         // Start button
-        this.startButtonModel.position.set(0, -0.7, -1.0); // 1m in front
+        this.startButtonModel.position.set(0.5, 2, -1.5); // 1m in front
         this.scene.add(this.startButtonModel);  
         
         // Start button
-        this.flatTableModel.position.set(0.5, 0, -1.5); // 1m in front
+        this.flatTableModel.position.set(0.5, 2, -1.5); // 1m in front
         this.scene.add(this.flatTableModel);
         this.flatTableModel.name = "flatTable"; 
             
@@ -442,12 +442,12 @@ class ARExperience {
 
         // Wendy model
         this.wendy.visible = false;
-        this.wendy.position.set(0, 0, -2.0); // 2m in front
+        this.wendy.position.set(0.5, 2, -1.5); // Position at eye level (1.6m high)
         this.scene.add(this.wendy);
-        this.wendy.name = 'wendy';    
+        this.wendy.name = 'wendy';
         
         this.tableModel.visible = true;
-        this.tableModel.position.set(1, 0, -2.0); // 2m in front
+        this.tableModel.position.set(0.5, 2, -1.5); // 2m in front
         this.scene.add(this.tableModel);
         this.tableModel.name = 'table';    
 
@@ -456,17 +456,17 @@ class ARExperience {
 
         // Mendy model
         this.mendy.visible = false;
-        this.mendy.position.set(0, 0, -1); // 1m behind
+        this.mendy.position.set(0, 2, -1); // 1m behind
         this.scene.add(this.mendy);
         
         // Pause button
         this.pauseButtonModel.visible = false;
-        this.pauseButtonModel.position.set(0, -0.4, -1.0); // Top right, 1m in front
+        this.pauseButtonModel.position.set(0.5, 2, -1.5); // Top right, 1m in front
         this.scene.add(this.pauseButtonModel);
         
         // Next button - fix variable name from nextModel to nextButtonModel
         this.quitButtonModel.visible = false;
-        this.quitButtonModel.position.set(0, -0.4, -1.0); // Center-bottom, 1m in front
+        this.quitButtonModel.position.set(0.5, 2, -1.5); // Center-bottom, 1m in front
         this.scene.add(this.quitButtonModel);
                     
         // Hide start button
