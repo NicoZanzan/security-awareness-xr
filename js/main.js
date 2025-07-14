@@ -25,7 +25,11 @@ class ARExperience {
         
         // For managing interactive objects
         this.modelInteractions = new Map();
-        
+
+        //Raycaster for XR interaction
+        this.raycasterLine = null;
+        this.rayLength = 5; // Length of visible ray in meters  
+
         this.init();
     }
     
@@ -192,155 +196,177 @@ class ARExperience {
     // Helper method to setup controls
     async setupControls() {
     // 1. Check for WebXR support
-    if (navigator.xr) {
-        try {
-            // Check for immersive AR or VR support
-            const isARSupported = await navigator.xr.isSessionSupported('immersive-ar');
-            const isVRSupported = await navigator.xr.isSessionSupported('immersive-vr');
-            
-            if (isARSupported || isVRSupported) {
+        if (navigator.xr) {
+            try {
+                // Check for immersive AR or VR support
+                const isARSupported = await navigator.xr.isSessionSupported('immersive-ar');
+                const isVRSupported = await navigator.xr.isSessionSupported('immersive-vr');
                 
-                console.log(`Starting immersive ${isARSupported ? 'AR' : 'VR'} session`);
-                const sessionType = isARSupported ? 'immersive-ar' : 'immersive-vr';
-                
-                // Request XR session with needed features
-                this.session = await navigator.xr.requestSession(sessionType, {
-                    requiredFeatures: ['local'],
-                    optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'hit-test']
-                });
-                
-                await this.renderer.xr.setSession(this.session);
-                this.isXRActive = true;                
-                
-                // Set up XR controller (moved from setupInteraction)
-                this.controller = this.renderer.xr.getController(0);
-                this.scene.add(this.controller);
-                
-                // Set up the controller's select event for interaction
-                this.controller.addEventListener('select', (event) => {
-                                        
-                    // Set up raycaster from controller
-                    const tempMatrix = new THREE.Matrix4();
-                    tempMatrix.identity().extractRotation(this.controller.matrixWorld);
+                if (isARSupported || isVRSupported) {
                     
-                    const controllerRaycaster = new THREE.Raycaster();
-                    controllerRaycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
-                    controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+                    console.log(`Starting immersive ${isARSupported ? 'AR' : 'VR'} session`);
+                    const sessionType = isARSupported ? 'immersive-ar' : 'immersive-vr';
                     
-                    // Check for interactive object intersections
-                    this.checkInteractions(controllerRaycaster);
-                });
-                
-                // Adjust for VR if needed (particularly for Meta Quest)
-                if (isVRSupported && !isARSupported) {
-                    //this.adjustForVR();
-                    //this.camera.position.set(0, -1.6, 0);
+                    // Request XR session with needed features
+                    this.session = await navigator.xr.requestSession(sessionType, {
+                        requiredFeatures: ['local'],
+                        optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'hit-test']
+                    });
+                    
+                    await this.renderer.xr.setSession(this.session);
+                    this.isXRActive = true;                
+                    
+                    // Set up XR controller (moved from setupInteraction)
+                    this.controller = this.renderer.xr.getController(0);
+                    this.scene.add(this.controller);
+
+                    // Create raycaster line for controller
+                     if (this.session) {  // If we're in AR/VR mode
+                        // Set up XR controller
+                        this.controller = this.renderer.xr.getController(0);
+                        this.scene.add(this.controller);
+                        
+                        // Create visible ray
+                        this.createRaycasterRay();
+                        
+                        // Set up controller select event
+                        this.controller.addEventListener('select', (event) => {
+                            const tempMatrix = new THREE.Matrix4();
+                            tempMatrix.identity().extractRotation(this.controller.matrixWorld);
+                            
+                            const controllerRaycaster = new THREE.Raycaster();
+                            controllerRaycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
+                            controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+                            
+                            this.checkInteractions(controllerRaycaster);
+                        });
+                    }
+                    
+                    // Set up the controller's select event for interaction
+                    this.controller.addEventListener('select', (event) => {
+                                            
+                        // Set up raycaster from controller
+                        const tempMatrix = new THREE.Matrix4();
+                        tempMatrix.identity().extractRotation(this.controller.matrixWorld);
+                        
+                        const controllerRaycaster = new THREE.Raycaster();
+                        controllerRaycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
+                        controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+                        
+                        // Check for interactive object intersections
+                        this.checkInteractions(controllerRaycaster);
+                    });
+                    
+                    // Adjust for VR if needed (particularly for Meta Quest)
+                    if (isVRSupported && !isARSupported) {
+                        //this.adjustForVR();
+                        //this.camera.position.set(0, -1.6, 0);
+                    }
+                    
+                } else {
+                    console.log('XR not supported, using fallback 3D mode');
+                    this.setupFallbackCameraControls();                
                 }
                 
-            } else {
-                console.log('XR not supported, using fallback 3D mode');
-                this.setupFallbackCameraControls();                
+            } catch (error) {
+                console.log('WebXR failed, using fallback:', error.message);
+                this.setupFallbackCameraControls();
             }
-            
-        } catch (error) {
-            console.log('WebXR failed, using fallback:', error.message);
+        } else {
+            console.log('WebXR not available, using fallback mode');
             this.setupFallbackCameraControls();
         }
-    } else {
-        console.log('WebXR not available, using fallback mode');
-        this.setupFallbackCameraControls();
-    }
-    
-    // Set up non-XR interaction (mouse/touch)
-    
-    if (!this.modelInteractionHandlerActive) {
-        this.modelInteractionHandlerActive = true;
         
-        // Set up shared raycaster for interactions
-        this.interactionRaycaster = new THREE.Raycaster();
-        this.interactionPointer = new THREE.Vector2();
+        // Set up non-XR interaction (mouse/touch)
         
-        // Track pointer for click vs. drag detection
-        let pointerStartX = 0;
-        let pointerStartY = 0;
-        let isDragging = false;
-        
-        // Set up pointer event handlers
-        const handlePointerDown = (event) => {
-            pointerStartX = event.clientX;
-            pointerStartY = event.clientY;
-            isDragging = false;
-        };
-        
-        const handlePointerMove = (event) => {
-            if (!isDragging) {
-                const deltaX = Math.abs(event.clientX - pointerStartX);
-                const deltaY = Math.abs(event.clientY - pointerStartY);
-                if (deltaX > 5 || deltaY > 5) {
-                    isDragging = true;
-                }
-            }
-        };
-        
-        const handlePointerUp = (event) => {
-            if (!isDragging) {
-                this.interactionPointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-                this.interactionPointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
-                this.interactionRaycaster.setFromCamera(this.interactionPointer, this.camera);
-                this.checkInteractions(this.interactionRaycaster);
-            }
-        };
-        
-        // Add event listeners
-        document.addEventListener('pointerdown', handlePointerDown);
-        document.addEventListener('pointermove', handlePointerMove);
-        document.addEventListener('pointerup', handlePointerUp);
-        
-        // Store handlers for cleanup
-        this.interactionHandlers = {
-            pointerDown: handlePointerDown,
-            pointerMove: handlePointerMove,
-            pointerUp: handlePointerUp
-        };
-        
-        // Add helper method for checking interactions
-        this.checkInteractions = (raycaster) => {
-            if (!this.modelInteractions || this.modelInteractions.size === 0) return;
+        if (!this.modelInteractionHandlerActive) {
+            this.modelInteractionHandlerActive = true;
             
-            // Get all active, visible interactive models
-            const interactiveModels = Array.from(this.modelInteractions.keys())
-                .filter(model => {
-                    const data = this.modelInteractions.get(model);
-                    return data.active && model.visible && (!data.once || !data.triggered);
-                });
+            // Set up shared raycaster for interactions
+            this.interactionRaycaster = new THREE.Raycaster();
+            this.interactionPointer = new THREE.Vector2();
             
-                if (interactiveModels.length === 0) return;
-                
-                // Check for intersections
-                const intersects = raycaster.intersectObjects(interactiveModels, true);
-                
-                if (intersects.length > 0) {
-                    const intersect = intersects[0];
-                    let currentObj = intersect.object;
-                    
-                    while (currentObj) {
-                        if (this.modelInteractions.has(currentObj)) {
-                            const data = this.modelInteractions.get(currentObj);
-                            if (data.active && (!data.once || !data.triggered)) {
-                                console.log(`Model clicked: ${currentObj.name || 'unnamed'}`);
-                                data.callback(currentObj, intersect);
-                                
-                                if (data.once) {
-                                    data.triggered = true;
-                                }
-                            }
-                            break;
-                        }
-                        currentObj = currentObj.parent;
+            // Track pointer for click vs. drag detection
+            let pointerStartX = 0;
+            let pointerStartY = 0;
+            let isDragging = false;
+            
+            // Set up pointer event handlers
+            const handlePointerDown = (event) => {
+                pointerStartX = event.clientX;
+                pointerStartY = event.clientY;
+                isDragging = false;
+            };
+            
+            const handlePointerMove = (event) => {
+                if (!isDragging) {
+                    const deltaX = Math.abs(event.clientX - pointerStartX);
+                    const deltaY = Math.abs(event.clientY - pointerStartY);
+                    if (deltaX > 5 || deltaY > 5) {
+                        isDragging = true;
                     }
                 }
             };
-        }
+            
+            const handlePointerUp = (event) => {
+                if (!isDragging) {
+                    this.interactionPointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+                    this.interactionPointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                    this.interactionRaycaster.setFromCamera(this.interactionPointer, this.camera);
+                    this.checkInteractions(this.interactionRaycaster);
+                }
+            };
+            
+            // Add event listeners
+            document.addEventListener('pointerdown', handlePointerDown);
+            document.addEventListener('pointermove', handlePointerMove);
+            document.addEventListener('pointerup', handlePointerUp);
+            
+            // Store handlers for cleanup
+            this.interactionHandlers = {
+                pointerDown: handlePointerDown,
+                pointerMove: handlePointerMove,
+                pointerUp: handlePointerUp
+            };
+            
+            // Add helper method for checking interactions
+            this.checkInteractions = (raycaster) => {
+                if (!this.modelInteractions || this.modelInteractions.size === 0) return;
+                
+                // Get all active, visible interactive models
+                const interactiveModels = Array.from(this.modelInteractions.keys())
+                    .filter(model => {
+                        const data = this.modelInteractions.get(model);
+                        return data.active && model.visible && (!data.once || !data.triggered);
+                    });
+                
+                    if (interactiveModels.length === 0) return;
+                    
+                    // Check for intersections
+                    const intersects = raycaster.intersectObjects(interactiveModels, true);
+                    
+                    if (intersects.length > 0) {
+                        const intersect = intersects[0];
+                        let currentObj = intersect.object;
+                        
+                        while (currentObj) {
+                            if (this.modelInteractions.has(currentObj)) {
+                                const data = this.modelInteractions.get(currentObj);
+                                if (data.active && (!data.once || !data.triggered)) {
+                                    console.log(`Model clicked: ${currentObj.name || 'unnamed'}`);
+                                    data.callback(currentObj, intersect);
+                                    
+                                    if (data.once) {
+                                        data.triggered = true;
+                                    }
+                                }
+                                break;
+                            }
+                            currentObj = currentObj.parent;
+                        }
+                    }
+                };
+            }
     }
 
     // Simplified fallback camera controls for non-AR devices
@@ -524,6 +550,72 @@ class ARExperience {
      
     ///////////////////////////////////////////////END SCENES////////////////////////////////////////////////////////////
   
+    createRaycasterRay() {
+        // Create a simple line geometry
+        const points = [
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(0, 0, -this.rayLength)
+        ];
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        
+        // Create material - default red
+        const material = new THREE.LineBasicMaterial({ 
+            color: 0xff0000,
+            linewidth: 2
+        });
+        
+        // Create line and add to controller
+        this.raycasterLine = new THREE.Line(geometry, material);
+        this.controller.add(this.raycasterLine);
+    }
+    
+    updateRaycastRay() {
+        if (!this.controller || !this.raycasterLine) return;
+        
+        // Set up raycaster from controller position/direction
+        const tempMatrix = new THREE.Matrix4();
+        tempMatrix.identity().extractRotation(this.controller.matrixWorld);
+        
+        const controllerRaycaster = new THREE.Raycaster();
+        controllerRaycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
+        controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+        
+        // Get interactive objects
+        const interactiveModels = Array.from(this.modelInteractions.keys())
+            .filter(model => {
+                const data = this.modelInteractions.get(model);
+                return data.active && model.visible;
+            });
+        
+        // Check for intersection
+        if (interactiveModels.length > 0) {
+            const intersects = controllerRaycaster.intersectObjects(interactiveModels, true);
+            
+            // Change color based on intersection
+            if (intersects.length > 0) {
+                // Green when pointing at interactive object
+                this.raycasterLine.material.color.set(0x00ff00);
+                
+                // Optionally update ray length to match hit distance
+                if (this.raycasterLine.geometry.attributes.position) {
+                    const positions = this.raycasterLine.geometry.attributes.position.array;
+                    positions[5] = -Math.min(intersects[0].distance, this.rayLength);
+                    this.raycasterLine.geometry.attributes.position.needsUpdate = true;
+                }
+            } else {
+                // Red when not pointing at anything interactive
+                this.raycasterLine.material.color.set(0xff0000);
+                
+                // Reset ray length
+                if (this.raycasterLine.geometry.attributes.position) {
+                    const positions = this.raycasterLine.geometry.attributes.position.array;
+                    positions[5] = -this.rayLength;
+                    this.raycasterLine.geometry.attributes.position.needsUpdate = true;
+                }
+            }
+        }
+    }    
+    
     playModelAnimation(modelName, animationName, loop = false) {
         // Find the model in the scene
         const model = this.scene.getObjectByName(modelName);
@@ -1272,6 +1364,10 @@ class ARExperience {
         
         if (this.mendy && this.mendy.visible) {
             this.idleMove(this.mendy, timestamp, 0.03, 0.0001); // Slower, smaller movement
+        }
+
+        if (this.isXRActive && this.raycasterLine) {
+            this.updateRaycastRay();
         }
         
         this.renderer.render(this.scene, this.camera);
