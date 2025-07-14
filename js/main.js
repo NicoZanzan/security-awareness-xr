@@ -192,8 +192,7 @@ class ARExperience {
         
       
     }  
-
-    // Helper method to setup controls
+   
     async setupControls() {
     // 1. Check for WebXR support
         if (navigator.xr) {
@@ -220,7 +219,7 @@ class ARExperience {
                     this.controller = this.renderer.xr.getController(0);
                     this.scene.add(this.controller);
 
-                    // Create raycaster line for controller
+                    // Create raycaster line for controller when in AR/VR mode
                      if (this.session) {  // If we're in AR/VR mode
                         // Set up XR controller
                         this.controller = this.renderer.xr.getController(0);
@@ -363,10 +362,10 @@ class ARExperience {
                                 break;
                             }
                             currentObj = currentObj.parent;
-                        }
                     }
-                };
-            }
+                }
+            };
+        }
     }
 
     // Simplified fallback camera controls for non-AR devices
