@@ -170,6 +170,7 @@ class ARExperience {
         const wendyGLB = await loadGLB('./assets/models/wendy.glb');
         this.wendy = wendyGLB.scene;
         this.scaleModel(this.wendy, 1.0);
+        this.wendy.position.set(-1.0, 1.6, -1.5); // Position at eye level (1.6m high)
         
         // Load Mendy
         const mendyGLB = await loadGLB('./assets/models/mendy.glb');
@@ -442,7 +443,7 @@ class ARExperience {
 
         // Wendy model
         this.wendy.visible = false;
-        this.wendy.position.set(0.5, 1.6, -1.5); // Position at eye level (1.6m high)
+        //this.wendy.position.set(0.5, -2, -1.5); // Position at eye level (1.6m high)
         this.scene.add(this.wendy);
         this.wendy.name = 'wendy';
         
