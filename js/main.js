@@ -30,6 +30,10 @@ class ARExperience {
         this.raycasterLine = null;
         this.rayLength = 5; // Length of visible ray in meters  
 
+        this.mixers = [];
+
+        this.clock = new THREE.Clock();
+
         this.init();
     }
     
@@ -151,6 +155,8 @@ class ARExperience {
 
         const tableGLB = await loadGLB('./assets/models/table.glb');
         this.tableModel = tableGLB.scene;
+        this.tableAnimations = tableGLB.animations;
+        console.log("Table animations:", this.tableAnimations.map(a => a.name));
         this.scaleModel(this.tableModel, 1);
 
         const pauseGLB = await loadGLB('./assets/models/pauseButton.glb');
@@ -450,7 +456,8 @@ class ARExperience {
         this.tableModel.visible = true;
         this.tableModel.position.set(0.5, 1.6, -1.5); // 2m in front
         this.scene.add(this.tableModel);
-        this.tableModel.name = 'table';    
+        this.tableModel.name = 'table';         
+        this.playModelAnimation('table', 'CafeAction.001', true);
 
         //this.playModelAnimation("wendy", 'Anim_0', true);
         this.listAllModelsAndAnimations();
@@ -550,6 +557,62 @@ class ARExperience {
      
     ///////////////////////////////////////////////END SCENES////////////////////////////////////////////////////////////
   
+    
+
+    playModelAnimation(modelName, animationName, loop = false) {
+        // Find the model in the scene
+        const model = this.scene.getObjectByName(modelName);
+        
+        if (!model) {
+            console.error(`Model "${modelName}" not found in the scene`);
+            return null;
+        }
+        
+        // Find animations for this model
+        let animations;
+        if (modelName === 'table' && this.tableAnimations) {
+            animations = this.tableAnimations;
+        } else if (modelName === 'wendy' && this.wendyAnimations) {
+            animations = this.wendyAnimations;
+        }
+        // Add more models as needed
+        
+        if (!animations || animations.length === 0) {
+            console.error(`No animations found for model "${modelName}"`);
+            return null;
+        }
+        
+        // Find the requested animation
+        const animation = animations.find(anim => anim.name === animationName);
+        
+        if (!animation) {
+            console.error(`Animation "${animationName}" not found for model "${modelName}"`);
+            console.log("Available animations:", animations.map(a => a.name));
+            return null;
+        }
+        
+        // Create a mixer if it doesn't exist
+        if (!model.userData.mixer) {
+            model.userData.mixer = new THREE.AnimationMixer(model);
+            this.mixers.push(model.userData.mixer);
+        }
+        
+        // Create and play the animation action
+        const action = model.userData.mixer.clipAction(animation);
+        
+        // Set loop mode
+        action.loop = loop ? THREE.LoopRepeat : THREE.LoopOnce;
+        
+        // Play the animation
+        action.reset();
+        action.play();
+        
+        console.log(`Playing animation "${animationName}" on model "${modelName}"`);
+        
+        return action;
+    }    
+    
+    
     createRaycasterRay() {
         // Create a simple line geometry
         const points = [
@@ -614,68 +677,6 @@ class ARExperience {
                 }
             }
         }
-    }    
-    
-    playModelAnimation(modelName, animationName, loop = false) {
-        // Find the model in the scene
-        const model = this.scene.getObjectByName(modelName);
-        
-        if (!model) {
-            console.error(`Model "${modelName}" not found in the scene`);
-            return null;
-        }
-        
-        // Check if model has animations
-        if (!model.animations || model.animations.length === 0) {
-            console.error(`Model "${modelName}" has no animations`);
-            return null;
-        }
-        
-        // Log all available animations
-        console.log(`Available animations for "${modelName}":`);
-        model.animations.forEach((anim, index) => {
-            console.log(`${index}: ${anim.name}`);
-        });
-        
-        // Find the requested animation
-        const animation = model.animations.find(anim => anim.name === animationName);
-        
-        if (!animation) {
-            console.error(`Animation "${animationName}" not found in model "${modelName}"`);
-            return null;
-        }
-        
-        // Ensure animation mixer exists
-        if (!model.mixer) {
-            model.mixer = new THREE.AnimationMixer(model);
-            
-            // Add mixer to update list if we have an update loop
-            if (this.mixers) {
-                this.mixers.push(model.mixer);
-            }
-        }
-        
-        // Create and play the animation action
-        const action = model.mixer.clipAction(animation);
-        
-        // Set loop mode
-        if (loop) {
-            action.loop = THREE.LoopRepeat;
-        } else {
-            action.loop = THREE.LoopOnce;
-            action.clampWhenFinished = true;
-        }
-        
-        // Stop any current actions
-        model.mixer.stopAllAction();
-        
-        // Play the animation
-        action.reset();
-        action.play();
-        
-        console.log(`Playing animation "${animationName}" on model "${modelName}" (loop: ${loop})`);
-        
-        return action;
     }
 
     listAllModelsAndAnimations() {
@@ -1368,6 +1369,14 @@ class ARExperience {
 
         if (this.isXRActive && this.raycasterLine) {
             this.updateRaycastRay();
+        }
+
+        const delta = this.clock ? this.clock.getDelta() : 0;
+    
+        if (this.mixers) {
+            this.mixers.forEach(mixer => {
+                if (mixer) mixer.update(delta);
+            });
         }
         
         this.renderer.render(this.scene, this.camera);
