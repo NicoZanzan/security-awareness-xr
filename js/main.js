@@ -596,6 +596,8 @@ class ARExperience {
             model.userData.mixer = new THREE.AnimationMixer(model);
             this.mixers.push(model.userData.mixer);
         }
+
+        console.log("All animations: ", this.mixers);
         
         // Create and play the animation action
         const action = model.userData.mixer.clipAction(animation);
