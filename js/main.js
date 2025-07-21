@@ -138,9 +138,8 @@ class ARExperience {
     };
     
     try {
-
-        //Load all assets
         
+        //Load all assets        
         const buttonGLB = await loadGLB('./assets/models/button.glb');
         this.startButtonModel = buttonGLB.scene;
         this.scaleModel(this.startButtonModel, 0.7);
@@ -195,8 +194,7 @@ class ARExperience {
         this.wendyAudio_1.preload = 'auto';
 
         this.wendyAudio_2 = new Audio('./assets/audio/wendy_2.mp3');
-        this.wendyAudio_2.preload = 'auto';
-        
+        this.wendyAudio_2.preload = 'auto';        
       
     }  
    
@@ -458,9 +456,7 @@ class ARExperience {
         this.scene.add(this.tableModel);
         this.tableModel.name = 'table';         
         this.playModelAnimation('table', 'CafeAction.001', true);
-
-        //this.playModelAnimation("wendy", 'Anim_0', true);
-        this.listAllModelsAndAnimations();
+      
 
         // Mendy model
         this.mendy.visible = false;
@@ -560,7 +556,7 @@ class ARExperience {
     
 
     playModelAnimation(modelName, animationName, loop = false) {
-        // Find the model in the scene
+    // Find the model in the scene
         const model = this.scene.getObjectByName(modelName);
         
         if (!model) {
@@ -568,14 +564,21 @@ class ARExperience {
             return null;
         }
         
-        // Find animations for this model
+        // Find animations for this model using a more dynamic approach
+        // Check if the animations are stored in a property named after the model
         let animations;
-        if (modelName === 'table' && this.tableAnimations) {
-            animations = this.tableAnimations;
-        } else if (modelName === 'wendy' && this.wendyAnimations) {
-            animations = this.wendyAnimations;
+        const animationsPropertyName = `${modelName}Animations`;
+        
+        if (this[animationsPropertyName]) {
+            // If we have animations stored in a property like this.tableAnimations
+            animations = this[animationsPropertyName];
+        } else if (model.animations) {
+            // Check if animations are stored directly on the model
+            animations = model.animations;
+        } else {
+            // Look for animations stored in userData
+            animations = model.userData?.animations;
         }
-        // Add more models as needed
         
         if (!animations || animations.length === 0) {
             console.error(`No animations found for model "${modelName}"`);
@@ -596,8 +599,6 @@ class ARExperience {
             model.userData.mixer = new THREE.AnimationMixer(model);
             this.mixers.push(model.userData.mixer);
         }
-
-        console.log("All animations: ", this.mixers);
         
         // Create and play the animation action
         const action = model.userData.mixer.clipAction(animation);
@@ -612,7 +613,7 @@ class ARExperience {
         console.log(`Playing animation "${animationName}" on model "${modelName}"`);
         
         return action;
-    }    
+    }  
     
     
     createRaycasterRay() {
@@ -679,67 +680,7 @@ class ARExperience {
                 }
             }
         }
-    }
-
-    listAllModelsAndAnimations() {
-        // Create a results object to store information about all models
-        const results = {
-            modelCount: 0,
-            models: []
-        };
-        
-        // Helper function to process an object and its children
-        const processObject = (object) => {
-            // Check if the object is a model with animations
-            if (object.animations && object.animations.length > 0) {
-                const modelInfo = {
-                    name: object.name || "Unnamed Model",
-                    uuid: object.uuid,
-                    animationCount: object.animations.length,
-                    animations: []
-                };
-                
-                // Log model information
-                console.log(`Model: "${modelInfo.name}" (${modelInfo.animationCount} animations)`);
-                
-                // Process and log all animations
-                object.animations.forEach((anim, index) => {
-                    const animInfo = {
-                        index: index,
-                        name: anim.name || `Unnamed Animation ${index}`,
-                        duration: anim.duration
-                    };
-                    
-                    console.log(`  Animation ${index}: "${animInfo.name}" (${animInfo.duration}s)`);
-                    modelInfo.animations.push(animInfo);
-                });
-                
-                // Add model to results
-                results.models.push(modelInfo);
-                results.modelCount++;
-            }
-            
-            // Process children
-            if (object.children && object.children.length > 0) {
-                object.children.forEach(child => processObject(child));
-            }
-        };
-        
-        // Start processing from the scene root
-        if (this.scene) {
-            console.log("Scanning scene for models with animations...");
-            processObject(this.scene);
-            
-            console.log(`Found ${results.modelCount} models with animations in the scene`);
-            if (results.modelCount === 0) {
-                console.log("No models with animations found in the scene");
-            }
-        } else {
-            console.error("Scene is not available");
-        }
-        
-        return results;
-    }    
+    }  
     
     moveModel(modelName, targetPos, speed) {
         // Find the model in the scene

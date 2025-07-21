@@ -1,10 +1,11 @@
 todo:
 
-- Quiz
+- load all models at once
+- create animations array
 - load nextScene(scene)
-- animation plyback
 - placement of models in AR/fallback mode
-- change background color in fallback mode
+ 
+- Quiz: pls choose an object that might be dangerous 
 - anchor buttons in ar mode (and create HUD)
 - position subtitles/info textplate
 - include fuchi's start image
