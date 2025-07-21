@@ -141,46 +141,40 @@ class ARExperience {
         
         //Load all assets        
         const buttonGLB = await loadGLB('./assets/models/button.glb');
-        this.startButtonModel = buttonGLB.scene;
-        this.scaleModel(this.startButtonModel, 0.7);
+        this.startButtonModel = buttonGLB.scene;       
 
         const laptopGLB = await loadGLB('./assets/models/laptop.glb');
-        this.laptopModel = laptopGLB.scene;
-        this.scaleModel(this.laptopModel, 1);
+        this.laptopModel = laptopGLB.scene;       
 
         const flatTableGLB = await loadGLB('./assets/models/flatTable.glb');
-        this.flatTableModel = flatTableGLB.scene;
-        this.scaleModel(this.flatTableModel, 1);
+        this.flatTableModel = flatTableGLB.scene;      
 
         const tableGLB = await loadGLB('./assets/models/table.glb');
         this.tableModel = tableGLB.scene;
-        this.tableAnimations = tableGLB.animations;
-        console.log("Table animations:", this.tableAnimations.map(a => a.name));
-        this.scaleModel(this.tableModel, 1);
+        this.tableAnimations = tableGLB.animations;        
 
         const pauseGLB = await loadGLB('./assets/models/pauseButton.glb');
-        this.pauseButtonModel = pauseGLB.scene;
-        this.scaleModel(this.pauseButtonModel, 0.15);
+        this.pauseButtonModel = pauseGLB.scene;        
 
         const quitGLB = await loadGLB('./assets/models/quitButton.glb');
-        this.quitButtonModel = quitGLB.scene;
-        this.scaleModel(this.quitButtonModel, 0.15);
+        this.quitButtonModel = quitGLB.scene;       
               
         // Load next button
         const nextGLB = await loadGLB('./assets/models/next.glb');
-        this.nextButtonModel = nextGLB.scene;
-        this.scaleModel(this.nextButtonModel, 0.7);
+        this.nextButtonModel = nextGLB.scene;      
+
+        const doc1GLB = await loadGLB('./assets/models/doc1.glb');
+        this.doc1Model = doc1GLB.scene;      
         
         // Load Wendy
         const wendyGLB = await loadGLB('./assets/models/wendy.glb');
-        this.wendy = wendyGLB.scene;
-        this.scaleModel(this.wendy, 1.0);
-        this.wendy.position.set(-1.0, 1.6, -1.5); // Position at eye level (1.6m high)
+        this.wendy = wendyGLB.scene;      
+      
         
         // Load Mendy
         const mendyGLB = await loadGLB('./assets/models/mendy.glb');
         this.mendy = mendyGLB.scene;
-        this.scaleModel(this.mendy, 1.0);
+       
         
         console.log('All models loaded successfully');
         
@@ -190,7 +184,7 @@ class ARExperience {
         }
         
         // Load audio
-        this.wendyAudio_1 = new Audio('./assets/audio/wendy_1.mp3');
+        this.wendyAudio_1 = new Audio('./assets/audio/wendy_test.mp3');
         this.wendyAudio_1.preload = 'auto';
 
         this.wendyAudio_2 = new Audio('./assets/audio/wendy_2.mp3');
@@ -410,7 +404,14 @@ class ARExperience {
 
     /////////////////////////////////////////START SCENES////////////////////////////////////////////////////
 
-    startScene() {             
+    startScene() {   
+        
+        // 1. Create/get the object
+        // 2. Set its properties (position, scale, name, etc.)
+        // 3. Add to scene
+        // 4. Make visible
+        // 5. Set up interactions
+
         // Initial text plate creation
         this.createTextPlate('Use START to begin', {
             backgroundColor: 0x3366cc,
@@ -420,11 +421,12 @@ class ARExperience {
         });    
         
         // Start button
-        this.startButtonModel.position.set(0.5, 1.6, -1.5); // 1m in front
+        this.startButtonModel.position.set(0.5, 0.6, -1.5); 
+        this.scaleModel(this.startButtonModel, 0.7);// 1m in front
         this.scene.add(this.startButtonModel);  
         
         // Start button
-        this.flatTableModel.position.set(0.5, 1.6, -1.5); // 1m in front
+        this.flatTableModel.position.set(0.5, 2.6, -5.5); // 1m in front
         this.scene.add(this.flatTableModel);
         this.flatTableModel.name = "flatTable"; 
             
@@ -443,20 +445,27 @@ class ARExperience {
     }    
     
     firstScene() {
+
+        // 1. Create/get the object
+        // 2. Set its properties (position, scale, name, etc.)
+        // 3. Add to scene
+        // 4. Make visible
+        // 5. Set up interactions
+        
         this.experienceStarted = true;
 
         // Wendy model
-        this.wendy.visible = false;
-        //this.wendy.position.set(0.5, -2, -1.5); // Position at eye level (1.6m high)
-        this.scene.add(this.wendy);
+        this.wendy.position.set(0.5, 2.6, 1.5);
+        this.scaleModel(this.wendy, 0.5); 
+        this.scene.add(this.wendy);               
         this.wendy.name = 'wendy';
+        this.wendy.visible = true;
         
         this.tableModel.visible = true;
         this.tableModel.position.set(0.5, 1.6, -1.5); // 2m in front
         this.scene.add(this.tableModel);
         this.tableModel.name = 'table';         
-        this.playModelAnimation('table', 'CafeAction.001', true);
-      
+        this.playModelAnimation('table', 'CafeAction.001', true);      
 
         // Mendy model
         this.mendy.visible = false;
@@ -470,14 +479,15 @@ class ARExperience {
         
         // Next button - fix variable name from nextModel to nextButtonModel
         this.quitButtonModel.visible = false;
-        this.quitButtonModel.position.set(0.5, 1.6, -1.5); // Center-bottom, 1m in front
+        this.quitButtonModel.position.set(0.5, 1.6, -1.5); 
+        this.scaleModel(this.quitButtonModel, 0.15);// Center-bottom, 1m in front
         this.scene.add(this.quitButtonModel);
                     
         // Hide start button
         this.startButtonModel.visible = false;       
         
         // Show Wendy and pause button
-        this.wendy.visible = true;
+       
         this.wendy.rotation.y = -Math.PI/1.5;   
              
         //Indruction text plate
@@ -527,6 +537,7 @@ class ARExperience {
         
         this.wendyAudio_1.play().then(() => {          
             this.pauseButtonModel.visible = true;
+            this.scaleModel(this.pauseButtonModel, 0.15);
             
             this.isPaused = false;       
            
@@ -551,8 +562,7 @@ class ARExperience {
         });
     }
      
-    ///////////////////////////////////////////////END SCENES////////////////////////////////////////////////////////////
-  
+    ///////////////////////////////////////////////END SCENES//////////////////////////////////////////////////////////// 
     
 
     playModelAnimation(modelName, animationName, loop = false) {
