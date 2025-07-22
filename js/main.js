@@ -404,16 +404,10 @@ class ARExperience {
 
     /////////////////////////////////////////START SCENES////////////////////////////////////////////////////
 
-    startScene() {   
-        
-        // 1. Create/get the object
-        // 2. Set its properties (position, scale, name, etc.)
-        // 3. Add to scene
-        // 4. Make visible
-        // 5. Set up interactions
+    startScene() {  
 
         // Initial text plate creation
-        this.createTextPlate('Use START to begin', {
+        this.createTextPlate('Welcome! Use START to begin', {
             backgroundColor: 0x3366cc,
             width: 0.5,
             height: 0.2,
@@ -421,8 +415,8 @@ class ARExperience {
         });    
         
         // Start button
-        this.startButtonModel.position.set(0.5, 0.6, -1.5); 
-        this.scaleModel(this.startButtonModel, 0.7);// 1m in front
+        this.startButtonModel.position.set(0, 0, -2); 
+        this.scaleModel(this.startButtonModel, 1);// 1m in front
         this.scene.add(this.startButtonModel);  
         
         // Start button
@@ -431,35 +425,46 @@ class ARExperience {
         this.flatTableModel.name = "flatTable"; 
             
         this.makeModelClickable(this.startButtonModel, () => {
-             const movement = this.moveModel("flatTable", 
-                {x: 1, y: 10, z: -3},  
+             this.moveModel("flatTable", 
+                {x: 1, y: 10, z: -5.5},  
                 7                   
-            );              
-           setTimeout(() => {
+            );  
+
+            setTimeout(() => {
+                //this.firstScene();
+                this.flatTableModel.visible = false;
+                this.startButtonModel.visible = false;
+                this.nextButtonModel.visible = true;
+                this.nextButtonModel.position.set(0, 0, -2); // 2m in front
+                this.scene.add(this.nextButtonModel);
+                this.nextButtonModel.name = 'nextButton';
+                }, 2000);
+        }); 
+        
+        
+        this.makeModelClickable(this.nextButtonModel, () => {
             this.firstScene();
-            this.flatTableModel.visible = false;
-            }, 2000);
-        });      
+        });    
         
         console.log('Scene ready - should be visible');
     }    
     
-    firstScene() {
+    firstScene() {      
+
+        this.nextButtonModel.visible = false;
 
         // 1. Create/get the object
         // 2. Set its properties (position, scale, name, etc.)
         // 3. Add to scene
         // 4. Make visible
         // 5. Set up interactions
-        
-        this.experienceStarted = true;
 
         // Wendy model
-        this.wendy.position.set(0.5, 2.6, 1.5);
-        this.scaleModel(this.wendy, 0.5); 
-        this.scene.add(this.wendy);               
-        this.wendy.name = 'wendy';
-        this.wendy.visible = true;
+        this.wendy.name = 'wendy';                   
+        this.wendy.position.set(0.5, 2.6, 1.5);    
+        this.scaleModel(this.wendy, 0.5);          
+        this.wendy.visible = true;               
+        this.scene.add(this.wendy); 
         
         this.tableModel.visible = true;
         this.tableModel.position.set(0.5, 1.6, -1.5); // 2m in front
@@ -473,8 +478,10 @@ class ARExperience {
         this.scene.add(this.mendy);
         
         // Pause button
+       
+        this.pauseButtonModel.position.set(0.5, 1.6, -1.5);
+        this.scaleModel(this.pauseButtonModel, 0.15);
         this.pauseButtonModel.visible = false;
-        this.pauseButtonModel.position.set(0.5, 1.6, -1.5); // Top right, 1m in front
         this.scene.add(this.pauseButtonModel);
         
         // Next button - fix variable name from nextModel to nextButtonModel
@@ -562,8 +569,7 @@ class ARExperience {
         });
     }
      
-    ///////////////////////////////////////////////END SCENES//////////////////////////////////////////////////////////// 
-    
+    ///////////////////////////////////////////////END SCENES////////////////////////////////////////////////////////////     
 
     playModelAnimation(modelName, animationName, loop = false) {
     // Find the model in the scene
