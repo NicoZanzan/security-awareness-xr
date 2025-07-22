@@ -102,7 +102,7 @@ class ARExperience {
                 });
                 
                 // Start the interactive scene
-                this.startScene();
+                this.scene1();
                 
             } catch (error) {
                 console.error('Failed to start:', error);
@@ -404,172 +404,153 @@ class ARExperience {
 
     /////////////////////////////////////////START SCENES////////////////////////////////////////////////////
 
-    startScene() {  
+    scene1() {
+        this.nextScene('scene2');
+        console.log('Starting scene 1 - interactive demo');
+    }
 
-        // Initial text plate creation
-        this.createTextPlate('Welcome! Use START to begin', {
-            backgroundColor: 0x3366cc,
-            width: 0.5,
-            height: 0.2,
-            yOffset: -0.29  // Slightly below center
-        });    
-        
-        // Start button
-        this.startButtonModel.position.set(0, 0, -2); 
-        this.scaleModel(this.startButtonModel, 1);// 1m in front
-        this.scene.add(this.startButtonModel);  
-        
-        // Start button
-        this.flatTableModel.position.set(0.5, 2.6, -5.5); // 1m in front
-        this.scene.add(this.flatTableModel);
-        this.flatTableModel.name = "flatTable"; 
-            
-        this.makeModelClickable(this.startButtonModel, () => {
-             this.moveModel("flatTable", 
-                {x: 1, y: 10, z: -5.5},  
-                7                   
-            );  
+    scene2() {
+        this.nextScene('scene3');
+        console.log('Starting scene 2 - interactive demo');
+    }
 
-            setTimeout(() => {
-                //this.firstScene();
-                this.flatTableModel.visible = false;
-                this.startButtonModel.visible = false;
-                this.nextButtonModel.visible = true;
-                this.nextButtonModel.position.set(0, 0, -2); // 2m in front
-                this.scene.add(this.nextButtonModel);
-                this.nextButtonModel.name = 'nextButton';
-                }, 2000);
-        }); 
-        
-        
-        this.makeModelClickable(this.nextButtonModel, () => {
-            this.firstScene();
-        });    
-        
-        console.log('Scene ready - should be visible');
-    }    
-    
-    firstScene() {      
+    scene3() {
+        console.log('Starting scene 3 - interactive demo');
+        this.quitButtonModel.position.set(0, 0, -2);       
+        this.scene.add(this.quitButtonModel);  
 
-        this.nextButtonModel.visible = false;
-
-        // 1. Create/get the object
-        // 2. Set its properties (position, scale, name, etc.)
-        // 3. Add to scene
-        // 4. Make visible
-        // 5. Set up interactions
-
-        // Wendy model
-        this.wendy.name = 'wendy';                   
-        this.wendy.position.set(0.5, 2.6, 1.5);    
-        this.scaleModel(this.wendy, 0.5);          
-        this.wendy.visible = true;               
-        this.scene.add(this.wendy); 
-        
-        this.tableModel.visible = true;
-        this.tableModel.position.set(0.5, 1.6, -1.5); // 2m in front
-        this.scene.add(this.tableModel);
-        this.tableModel.name = 'table';         
-        this.playModelAnimation('table', 'CafeAction.001', true);      
-
-        // Mendy model
-        this.mendy.visible = false;
-        this.mendy.position.set(0.5, 1.6, -1.5); // 1m behind
-        this.scene.add(this.mendy);
-        
-        // Pause button
-       
-        this.pauseButtonModel.position.set(0.5, 1.6, -1.5);
-        this.scaleModel(this.pauseButtonModel, 0.15);
-        this.pauseButtonModel.visible = false;
-        this.scene.add(this.pauseButtonModel);
-        
-        // Next button - fix variable name from nextModel to nextButtonModel
-        this.quitButtonModel.visible = false;
-        this.quitButtonModel.position.set(0.5, 1.6, -1.5); 
-        this.scaleModel(this.quitButtonModel, 0.15);// Center-bottom, 1m in front
-        this.scene.add(this.quitButtonModel);
-                    
-        // Hide start button
-        this.startButtonModel.visible = false;       
-        
-        // Show Wendy and pause button
-       
-        this.wendy.rotation.y = -Math.PI/1.5;   
-             
-        //Indruction text plate
-        if (this.textPlate) {
-            this.textPlate.updateText('Wendy has lost her glasses ... press Pause to pause the audio');
-        }
-       
-        //Wendy does not want to betickled when clicked and moves away
-        this.makeModelClickable(this.wendy, (model) => {            
-            this.wendyAudio_2.play();
-            const movement = this.moveModel("wendy", 
-                {x: 1, y: 0, z: -3},  
-                0.7                   
-            );            
-            
-            if (this.textPlate) {
-                this.textPlate.updateText("Wendy says: Hey, this tickles!!");               
-            }            
-        });
-
-        //Mendy is annoyed, when you click her
-        this.makeModelClickable(this.mendy, (model) => {
-                      
-            if (this.textPlate) {
-                this.textPlate.updateText("Mendy says: Leave me alone ...");
-            }     
-        });
-
-        // NEXT Button to finish scene
         this.makeModelClickable(this.quitButtonModel, () => {
-            
-            // Hide all models
-            this.wendy.visible = false;
-            this.mendy.visible = false;
-            this.nextButtonModel.visible = false;
-                        
-            if (this.textPlate) {
-                this.textPlate.updateText('Cybersecurity experience complete! Thank you for staying aware.');
-                }
-            
-            //Go to end page after 3sec
-            setTimeout(() => {
-                this.finishAR();
-            }, 3000);
-        });
-        
-        
-        this.wendyAudio_1.play().then(() => {          
-            this.pauseButtonModel.visible = true;
-            this.scaleModel(this.pauseButtonModel, 0.15);
-            
-            this.isPaused = false;       
-           
-            this.wendyAudio_1.addEventListener('ended', () => {
-                
-                this.pauseButtonModel.visible = false;
-                           
-                if (this.textPlate) {
-                    this.textPlate.updateText('Turn around! Someone has been watching... use QUIT to quit the scene');
-                }                
-                
-                this.mendy.visible = true;                
-               
-                this.quitButtonModel.visible = true;
-            });       
-        });
-
-        //Pause button
-        this.pauseButtonModel.visible = true;
-        this.makeModelClickable(this.pauseButtonModel, () => {
-            this.togglePause(this.wendyAudio_1);
-        });
+              this.finishAR();
+        });      
     }
      
     ///////////////////////////////////////////////END SCENES////////////////////////////////////////////////////////////     
+
+    nextScene(sceneName) {
+    // 1. Clear everything first
+    //this.clearScene();
+    
+    // 2. Create next button anew in empty scene
+    if (this.nextButtonModel) {
+        this.nextButtonModel.name = 'nextButton';
+        this.nextButtonModel.position.set(0, 0, -2);
+        this.scaleModel(this.nextButtonModel, 1);
+        this.nextButtonModel.visible = true;
+        this.scene.add(this.nextButtonModel);
+    }
+    
+    // 3. Show text plate
+    this.createTextPlate('Use NEXT to proceed to the next scene', {
+        backgroundColor: 0x3366cc,
+        width: 0.5,
+        height: 0.2,
+        yOffset: -0.29
+    });
+    
+    // 4. Setup click handler for next button
+    this.makeModelClickable(this.nextButtonModel, () => {
+        // Clear scene and call next scene
+        this.clearScene();
+        
+        // Call the next scene
+        if (typeof this[sceneName] === 'function') {
+            setTimeout(() => {
+                this[sceneName]();
+            }, 300);
+        } else {
+            console.log(`Scene ${sceneName} not found`);
+        }
+    });
+}
+
+
+    clearScene() {
+        console.log('Clearing scene - disposing all assets');
+
+        // Remove all objects from scene (keep lights and camera)
+        if (this.scene) {
+            [...this.scene.children].forEach(object => {
+                if (object.type.includes('Light') || object.type === 'PerspectiveCamera') return;
+                
+                this.scene.remove(object);
+                
+                // Dispose recursively inline
+                const dispose = (obj) => {
+                    if (!obj) return;
+                    
+                    [...(obj.children || [])].forEach(child => {
+                        dispose(child);
+                        obj.remove(child);
+                    });
+                    
+                    obj.geometry?.dispose();
+                    
+                    if (obj.material) {
+                        const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+                        materials.forEach(mat => {
+                            Object.values(mat).forEach(prop => prop?.isTexture && prop.dispose());
+                            mat.dispose?.();
+                        });
+                    }
+                };
+                dispose(object);
+            });
+        }
+
+        // Clear UI from camera
+        if (this.camera?.children) {
+            [...this.camera.children].forEach(child => {
+                this.camera.remove(child);
+                
+                // Dispose UI inline
+                const disposeUI = (element) => {
+                    if (!element) return;
+                    [...(element.children || [])].forEach(subChild => {
+                        disposeUI(subChild);
+                        element.remove(subChild);
+                    });
+                    element.geometry?.dispose();
+                    if (element.material?.map) element.material.map.dispose();
+                    element.material?.dispose();
+                };
+                disposeUI(child);
+            });
+        }
+
+        // Clear interactions and animations
+        this.modelInteractions?.clear();
+        if (this._animationCallbacks) this._animationCallbacks = [];
+        
+        // Stop all mixers
+        this.mixers?.forEach(mixer => {
+            try { mixer.stopAllAction(); mixer.uncacheRoot?.(mixer.getRoot()); } 
+            catch(e) {}
+        });
+        this.mixers = [];
+
+        // Reset all models and clear properties
+        Object.keys(this).forEach(key => {
+            const value = this[key];
+            
+            // Hide Three.js models and clear userData
+            if (value?.isObject3D) {
+                value.visible = false;
+                if (value.userData) Object.keys(value.userData).forEach(k => delete value.userData[k]);
+            }
+            
+            // Stop audio
+            if (value?.pause) {
+                try { value.pause(); value.currentTime = 0; } catch(e) {}
+            }
+            
+            // Clear UI/animation properties
+            if (key.includes('textPlate') || key.includes('UI') || key.includes('animation')) {
+                this[key] = null;
+            }
+        });
+
+        console.log('Scene cleared');
+    }
 
     playModelAnimation(modelName, animationName, loop = false) {
     // Find the model in the scene
@@ -629,8 +610,7 @@ class ARExperience {
         console.log(`Playing animation "${animationName}" on model "${modelName}"`);
         
         return action;
-    }  
-    
+    }      
     
     createRaycasterRay() {
         // Create a simple line geometry
