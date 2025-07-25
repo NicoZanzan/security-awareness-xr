@@ -419,7 +419,7 @@ class ARExperience {
         });    
         
         // Start button
-        this.startButtonModel.position.set(0, 0, -2); 
+        this.startButtonModel.position.set(0, -0.8, -1.5); 
         this.scaleModel(this.startButtonModel, 1);// 1m in front
         this.scene.add(this.startButtonModel);  
         
