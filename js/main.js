@@ -374,6 +374,8 @@ class ARExperience {
         // Adjusted camera height to better frame objects at Y=0, which are 1.5m in front of the origin.
         // A height of 0.7m allows for a natural slight downward gaze to see objects on the floor.
         this.camera.position.set(0, 0.7, 0); // Changed from 1.6 to 0.7
+
+        this.camera.rotation.set(0, 0, 0); 
         
         // Add mouse/touch camera rotation controls
         let isPointerDown = false;
@@ -429,30 +431,40 @@ class ARExperience {
      
     ///////////////////////////////////////////////END SCENES////////////////////////////////////////////////////////////     
 
-    nextScene(sceneName) {
-        // this.clearScene(); // This line remains commented out as clearScene is called in the click handler
-
-        // 2. Prepare and display next button
-        if (this.nextButtonModel) {
-            this.nextButtonModel.name = 'nextButton';
-            // Ensure the button is added to the scene if not already
-            if (!this.nextButtonModel.parent || this.nextButtonModel.parent !== this.scene) {
-                this.scene.add(this.nextButtonModel);
-            }
-            
-            // --- SIMPLEST: Fixed position assuming camera looks towards 0,0,0 ---
-            this.nextButtonModel.position.set(0, -0.3, -1.5); // Fixed position in front of origin
-            // --- END SIMPLEST ---
-
-            this.scaleModel(this.nextButtonModel, 1);
-            this.nextButtonModel.visible = true; // Make visible
-            console.log(`Next Button made visible and positioned at (0, -0.3, -1.5) for: ${sceneName}`);
-        } else {
+      nextScene(sceneName) {
+        // Sicherstellen, dass das nextButtonModel geladen ist
+        if (!this.nextButtonModel) {
             console.error("nextButtonModel not found. Please ensure it is loaded.");
-            return; // Exit if the model is not available
+            return;
         }
+
+        // 1. WICHTIG: Den Next Button aus der Szene entfernen, falls er bereits existiert.
+        // Dies stellt sicher, dass er immer "frisch" hinzugefügt wird.
+        if (this.nextButtonModel.parent === this.scene) {
+            this.scene.remove(this.nextButtonModel);
+            console.log("Next Button explizit aus der Szene entfernt vor dem erneuten Hinzufügen.");
+        }
+
+        // NEUE ZEILEN: Lokale Transformation des Models auf Identität zurücksetzen
+        // Dies ist entscheidend, da das Objekt wiederverwendet wird und seine interne Matrix
+        // möglicherweise nicht vollständig zurückgesetzt wird, wenn es nur entfernt und hinzugefügt wird.
+        this.nextButtonModel.position.set(0, 0, 0);   // Setzt die lokale Position auf den Ursprung
+        this.nextButtonModel.rotation.set(0, 0, 0);   // Setzt die lokale Rotation zurück
+        this.nextButtonModel.scale.set(1, 1, 1);     // Setzt die lokale Skalierung zurück
+        this.nextButtonModel.updateMatrixWorld(true); // Aktualisiert die Weltmatrix des Objekts sofort
+
+        // 2. Den Next Button immer zur Szene hinzufügen
+        this.scene.add(this.nextButtonModel);
+        this.nextButtonModel.name = 'nextButton'; // Name sicherstellen
         
-        // 3. Display text plate
+        // 3. Positionieren, skalieren und sichtbar machen
+        // Diese Position wird nun auf ein "sauberes" Objekt angewendet
+        this.nextButtonModel.position.set(0, -0.3, -1.5); // Feste Position
+        this.scaleModel(this.nextButtonModel, 1); // Dies wird die Skalierung erneut anwenden
+        this.nextButtonModel.visible = true; // Sichtbar machen
+        console.log(`Next Button sichtbar gemacht und positioniert bei (0, -0.3, -1.5) für: ${sceneName}`);
+        
+        // 4. Textplatte anzeigen (unverändert)
         this.createTextPlate('Click NEXT to proceed to the next scene', {
             backgroundColor: 0x3366cc,
             width: 0.5,
@@ -460,28 +472,34 @@ class ARExperience {
             yOffset: -0.29
         });
         
-        // 4. Setup click handler for next button
+        // 5. Click-Handler für den Next Button einrichten
         this.makeModelClickable(this.nextButtonModel, () => {
-            // Hide the Next button immediately after it's clicked
-            if (this.nextButtonModel) {
-                this.nextButtonModel.visible = false;
-                console.log("Next Button made invisible after click.");
+            // WICHTIG: Den Next Button KOMPLETT aus der Szene entfernen, nachdem er geklickt wurde.
+            if (this.nextButtonModel && this.nextButtonModel.parent === this.scene) {
+                this.scene.remove(this.nextButtonModel);
+                console.log("Next Button komplett aus der Szene entfernt nach dem Klick.");
             }
 
-            // Clear scene and call next scene
-            this.clearScene();
+            // Szene aufräumen und nächste Szene aufrufen
+            // clearScene() wird hier noch aufgerufen, um andere dynamische Objekte zu bereinigen,
+            // aber der Next Button wird explizit vorher behandelt.
+            this.clearScene(); 
             
-            // Call the next scene
+            // Nächste Szene aufrufen
             if (typeof this[sceneName] === 'function') {
                 setTimeout(() => {
                     this[sceneName]();
                 }, 300);
             } else {
-                console.log(`Scene ${sceneName} not found`);
+                console.log(`Szene ${sceneName} nicht gefunden`);
             }
         });
     }
 
+    // Ihre clearScene Methode (die disposeSafely enthält) bleibt im Wesentlichen wie zuvor
+    // mit der Änderung, dass obj.parent.remove(obj) für die Buttons aufgerufen wird.
+    // Die explizite Handhabung im nextScene() macht die Abhängigkeit von clearScene()
+    // für den nextButton geringer.
     clearScene() {
         console.log('Clearing scene - disposing all assets');
 
@@ -489,11 +507,13 @@ class ARExperience {
         const disposeSafely = (obj) => {
            
             if (obj === this.nextButtonModel || obj === this.quitButtonModel) {
-                console.log(`Skipping full disposal for reusable button: ${obj.name || obj.uuid}. Setting to invisible.`);
+                console.log(`Skipping full disposal for reusable button: ${obj.name || obj.uuid}. Setting to invisible and removing from parent.`);
                 obj.visible = false; // Make the button invisible when not needed
-                // Important: We do NOT call obj.parent.remove(obj) here,
-                // so that the button remains in the scene graph.
-                return; // Exit function to skip dispose() for this object
+                // WICHTIGE ÄNDERUNG: ENTFERNE DEN BUTTON TATSÄCHLICH AUS SEINEM ELTERNTEIL (DER SZENE)
+                if (obj.parent) { // Überprüfen, ob es noch einen Elternteil hat, um Fehler zu vermeiden
+                    obj.parent.remove(obj); 
+                }
+                return; // Funktion beenden, um dispose() für dieses Objekt zu überspringen
             }
 
             if (!obj) return;
@@ -520,40 +540,40 @@ class ARExperience {
             // console.log(`Disposed: ${obj.name || obj.uuid}`); // For debugging
         };
 
-        // Remove and dispose objects from the scene (keep lights and camera)
+        // Alle Objekte aus der Szene entfernen (Lichter und Kamera beibehalten)
         if (this.scene) {
-            // Create a copy of the array as it is modified during iteration
+            // Eine Kopie des Arrays erstellen, da es während der Iteration modifiziert wird
             [...this.scene.children].forEach(object => {
-                // Exclude lights and camera from disposal
+                // Lichter und Kamera von der Entsorgung ausschließen
                 if (object.type.includes('Light') || object.type === 'PerspectiveCamera') return;
                 
-                // Call the safe disposal function
+                // Sichere Entsorgungsfunktion aufrufen
                 disposeSafely(object);
             });
         }
 
-        // Remove and dispose UI elements from the camera
-        // Since the buttons are now attached to the scene, this only affects the text plate/uiGroup
+        // UI-Elemente von der Kamera entfernen und entsorgen
+        // Da die Buttons jetzt der Szene hinzugefügt werden, betrifft dies nur die Textplatte/uiGroup
         if (this.camera?.children) {
-            // Create a copy of the array
+            // Eine Kopie des Arrays erstellen
             [...this.camera.children].forEach(child => {
-                disposeSafely(child); // Call the safe disposal function
+                disposeSafely(child); // Sichere Entsorgungsfunktion aufrufen
             });
         }
         
-        // Explicitly remove and dispose the uiGroup (which contains the text plate)
+        // Explizites Entfernen und Entsorgen der uiGroup (die die Textplatte enthält)
         if (this.uiGroup && this.camera && this.uiGroup.parent === this.camera) {
             this.camera.remove(this.uiGroup);
-            disposeSafely(this.uiGroup); // Dispose safely
-            this.uiGroup = null; // Nullify reference
-            this.textPlate = null; // Nullify reference as the text plate is also recreated
+            disposeSafely(this.uiGroup); // Sicher entsorgen
+            this.uiGroup = null; // Referenz aufheben
+            this.textPlate = null; // Referenz aufheben, da die Textplatte ebenfalls neu erstellt wird
         }
 
-        // Clear interactions and animations
+        // Interaktionen und Animationen löschen
         this.modelInteractions?.clear();
         if (this._animationCallbacks) this._animationCallbacks = [];
         
-        // Stop all mixers
+        // Alle Mixer stoppen
         this.mixers?.forEach(mixer => {
             try { mixer.stopAllAction(); mixer.uncacheRoot?.(mixer.getRoot()); } 
             catch(e) {}
@@ -561,7 +581,8 @@ class ARExperience {
         this.mixers = [];
 
         console.log('Scene cleared');
-    }
+    }  
+
 
     playModelAnimation(modelName, animationName, loop = false) {
     // Find the model in the scene
