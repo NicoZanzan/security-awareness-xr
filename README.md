@@ -1,5 +1,6 @@
 todo:
 
+- replace model.name by model in moveModel() and placeModel()
 - load all models at once
 - create animations array
 - load nextScene(scene)
