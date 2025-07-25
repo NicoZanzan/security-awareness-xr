@@ -410,8 +410,37 @@ class ARExperience {
     /////////////////////////////////////////START SCENES////////////////////////////////////////////////////
 
     scene1() {
-        this.nextScene('scene2');
-        console.log('Starting scene 1 - interactive demo');
+              // Initial text plate creation
+        this.createTextPlate('Welcome! Use START to begin', {
+            backgroundColor: 0x3366cc,
+            width: 0.5,
+            height: 0.2,
+            yOffset: -0.29  // Slightly below center
+        });    
+        
+        // Start button
+        this.startButtonModel.position.set(0, 0, -2); 
+        this.scaleModel(this.startButtonModel, 1);// 1m in front
+        this.scene.add(this.startButtonModel);  
+        
+        // Start button
+        this.flatTableModel.position.set(0.5, 2.6, -5.5); // 1m in front
+        this.scene.add(this.flatTableModel);
+        this.flatTableModel.name = "flatTable"; 
+            
+        this.makeModelClickable(this.startButtonModel, () => {
+             this.moveModel("flatTable", 
+                {x: 1, y: 10, z: -5.5},  
+                7                   
+            );  
+
+            setTimeout(() => {
+                //this.firstScene();
+                this.flatTableModel.visible = false;
+                this.startButtonModel.visible = false;
+                this.nextScene('scene2');
+                }, 2000);
+        });         
     }
 
     scene2() {
@@ -421,7 +450,16 @@ class ARExperience {
 
     scene3() {
         console.log('Starting scene 3 - interactive demo');
-        this.quitButtonModel.position.set(0, 0, -2);       
+        
+         this.createTextPlate('Click QUIT to finish the experience', {
+            backgroundColor: 0x336633   ,
+            width: 0.5,
+            height: 0.2,
+            yOffset: -0.29
+        });
+
+        this.quitButtonModel.position.set(0, 0, -1.5); 
+        this.scaleModel(this.quitButtonModel, 0.3);      
         this.scene.add(this.quitButtonModel);  
 
         this.makeModelClickable(this.quitButtonModel, () => {
@@ -431,7 +469,7 @@ class ARExperience {
      
     ///////////////////////////////////////////////END SCENES////////////////////////////////////////////////////////////     
 
-      nextScene(sceneName) {
+    nextScene(sceneName) {
         // Sicherstellen, dass das nextButtonModel geladen ist
         if (!this.nextButtonModel) {
             console.error("nextButtonModel not found. Please ensure it is loaded.");
@@ -459,7 +497,7 @@ class ARExperience {
         
         // 3. Positionieren, skalieren und sichtbar machen
         // Diese Position wird nun auf ein "sauberes" Objekt angewendet
-        this.nextButtonModel.position.set(0, -0.3, -1.5); // Feste Position
+        this.nextButtonModel.position.set(0, -0.8, -1.5); // Feste Position
         this.scaleModel(this.nextButtonModel, 1); // Dies wird die Skalierung erneut anwenden
         this.nextButtonModel.visible = true; // Sichtbar machen
         console.log(`Next Button sichtbar gemacht und positioniert bei (0, -0.3, -1.5) für: ${sceneName}`);
@@ -477,7 +515,7 @@ class ARExperience {
             // WICHTIG: Den Next Button KOMPLETT aus der Szene entfernen, nachdem er geklickt wurde.
             if (this.nextButtonModel && this.nextButtonModel.parent === this.scene) {
                 this.scene.remove(this.nextButtonModel);
-                console.log("Next Button komplett aus der Szene entfernt nach dem Klick.");
+                
             }
 
             // Szene aufräumen und nächste Szene aufrufen
@@ -495,11 +533,7 @@ class ARExperience {
             }
         });
     }
-
-    // Ihre clearScene Methode (die disposeSafely enthält) bleibt im Wesentlichen wie zuvor
-    // mit der Änderung, dass obj.parent.remove(obj) für die Buttons aufgerufen wird.
-    // Die explizite Handhabung im nextScene() macht die Abhängigkeit von clearScene()
-    // für den nextButton geringer.
+   
     clearScene() {
         console.log('Clearing scene - disposing all assets');
 
@@ -509,11 +543,11 @@ class ARExperience {
             if (obj === this.nextButtonModel || obj === this.quitButtonModel) {
                 console.log(`Skipping full disposal for reusable button: ${obj.name || obj.uuid}. Setting to invisible and removing from parent.`);
                 obj.visible = false; // Make the button invisible when not needed
-                // WICHTIGE ÄNDERUNG: ENTFERNE DEN BUTTON TATSÄCHLICH AUS SEINEM ELTERNTEIL (DER SZENE)
-                if (obj.parent) { // Überprüfen, ob es noch einen Elternteil hat, um Fehler zu vermeiden
+               
+                if (obj.parent) { 
                     obj.parent.remove(obj); 
                 }
-                return; // Funktion beenden, um dispose() für dieses Objekt zu überspringen
+                return; 
             }
 
             if (!obj) return;
@@ -540,49 +574,40 @@ class ARExperience {
             // console.log(`Disposed: ${obj.name || obj.uuid}`); // For debugging
         };
 
-        // Alle Objekte aus der Szene entfernen (Lichter und Kamera beibehalten)
+       
         if (this.scene) {
-            // Eine Kopie des Arrays erstellen, da es während der Iteration modifiziert wird
-            [...this.scene.children].forEach(object => {
-                // Lichter und Kamera von der Entsorgung ausschließen
-                if (object.type.includes('Light') || object.type === 'PerspectiveCamera') return;
-                
-                // Sichere Entsorgungsfunktion aufrufen
+           
+            [...this.scene.children].forEach(object => {                
+                if (object.type.includes('Light') || object.type === 'PerspectiveCamera') return;              
                 disposeSafely(object);
             });
         }
 
-        // UI-Elemente von der Kamera entfernen und entsorgen
-        // Da die Buttons jetzt der Szene hinzugefügt werden, betrifft dies nur die Textplatte/uiGroup
+        
         if (this.camera?.children) {
             // Eine Kopie des Arrays erstellen
             [...this.camera.children].forEach(child => {
                 disposeSafely(child); // Sichere Entsorgungsfunktion aufrufen
             });
-        }
-        
-        // Explizites Entfernen und Entsorgen der uiGroup (die die Textplatte enthält)
+        }        
+       
         if (this.uiGroup && this.camera && this.uiGroup.parent === this.camera) {
             this.camera.remove(this.uiGroup);
-            disposeSafely(this.uiGroup); // Sicher entsorgen
-            this.uiGroup = null; // Referenz aufheben
-            this.textPlate = null; // Referenz aufheben, da die Textplatte ebenfalls neu erstellt wird
+            disposeSafely(this.uiGroup);
+            this.uiGroup = null; 
+            this.textPlate = null; 
         }
-
-        // Interaktionen und Animationen löschen
+       
         this.modelInteractions?.clear();
-        if (this._animationCallbacks) this._animationCallbacks = [];
-        
-        // Alle Mixer stoppen
+        if (this._animationCallbacks) this._animationCallbacks = [];        
+       
         this.mixers?.forEach(mixer => {
             try { mixer.stopAllAction(); mixer.uncacheRoot?.(mixer.getRoot()); } 
             catch(e) {}
         });
         this.mixers = [];
-
         console.log('Scene cleared');
-    }  
-
+    } 
 
     playModelAnimation(modelName, animationName, loop = false) {
     // Find the model in the scene
