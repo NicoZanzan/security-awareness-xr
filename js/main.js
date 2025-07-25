@@ -427,94 +427,123 @@ class ARExperience {
     ///////////////////////////////////////////////END SCENES////////////////////////////////////////////////////////////     
 
     nextScene(sceneName) {
-    // 1. Clear everything first
-    //this.clearScene();
-    
-    // 2. Create next button anew in empty scene
-    if (this.nextButtonModel) {
-        this.nextButtonModel.name = 'nextButton';
-        this.nextButtonModel.position.set(0, 0, -2);
-        this.scaleModel(this.nextButtonModel, 1);
-        this.nextButtonModel.visible = true;
-        this.scene.add(this.nextButtonModel);
-    }
-    
-    // 3. Show text plate
-    this.createTextPlate('Use NEXT to proceed to the next scene', {
-        backgroundColor: 0x3366cc,
-        width: 0.5,
-        height: 0.2,
-        yOffset: -0.29
-    });
-    
-    // 4. Setup click handler for next button
-    this.makeModelClickable(this.nextButtonModel, () => {
-        // Clear scene and call next scene
-        this.clearScene();
-        
-        // Call the next scene
-        if (typeof this[sceneName] === 'function') {
-            setTimeout(() => {
-                this[sceneName]();
-            }, 300);
-        } else {
-            console.log(`Scene ${sceneName} not found`);
-        }
-    });
-}
+        // this.clearScene(); // This line remains commented out as clearScene is called in the click handler
 
+        // 2. Prepare and display next button
+        if (this.nextButtonModel) {
+            this.nextButtonModel.name = 'nextButton';
+            // Ensure the button is added to the scene if not already
+            if (!this.nextButtonModel.parent || this.nextButtonModel.parent !== this.scene) {
+                this.scene.add(this.nextButtonModel);
+            }
+            
+            // --- SIMPLEST: Fixed position assuming camera looks towards 0,0,0 ---
+            this.nextButtonModel.position.set(0, -0.3, -1.5); // Fixed position in front of origin
+            // --- END SIMPLEST ---
+
+            this.scaleModel(this.nextButtonModel, 1);
+            this.nextButtonModel.visible = true; // Make visible
+            console.log(`Next Button made visible and positioned at (0, -0.3, -1.5) for: ${sceneName}`);
+        } else {
+            console.error("nextButtonModel not found. Please ensure it is loaded.");
+            return; // Exit if the model is not available
+        }
+        
+        // 3. Display text plate
+        this.createTextPlate('Click NEXT to proceed to the next scene', {
+            backgroundColor: 0x3366cc,
+            width: 0.5,
+            height: 0.2,
+            yOffset: -0.29
+        });
+        
+        // 4. Setup click handler for next button
+        this.makeModelClickable(this.nextButtonModel, () => {
+            // Hide the Next button immediately after it's clicked
+            if (this.nextButtonModel) {
+                this.nextButtonModel.visible = false;
+                console.log("Next Button made invisible after click.");
+            }
+
+            // Clear scene and call next scene
+            this.clearScene();
+            
+            // Call the next scene
+            if (typeof this[sceneName] === 'function') {
+                setTimeout(() => {
+                    this[sceneName]();
+                }, 300);
+            } else {
+                console.log(`Scene ${sceneName} not found`);
+            }
+        });
+    }
 
     clearScene() {
         console.log('Clearing scene - disposing all assets');
 
-        // Remove all objects from scene (keep lights and camera)
+        // Helper function for disposing objects that skips reusable buttons.
+        const disposeSafely = (obj) => {
+           
+            if (obj === this.nextButtonModel || obj === this.quitButtonModel) {
+                console.log(`Skipping full disposal for reusable button: ${obj.name || obj.uuid}. Setting to invisible.`);
+                obj.visible = false; // Make the button invisible when not needed
+                // Important: We do NOT call obj.parent.remove(obj) here,
+                // so that the button remains in the scene graph.
+                return; // Exit function to skip dispose() for this object
+            }
+
+            if (!obj) return;
+            
+            // Recursively dispose children first
+            // Create a copy of the children list as it is modified during iteration
+            [...(obj.children || [])].forEach(child => {
+                disposeSafely(child); // Recursive call
+                // Ensure the child is removed from the parent after disposal
+                if (obj.isObject3D) obj.remove(child);
+            });
+            
+            // Dispose geometry
+            obj.geometry?.dispose();
+            
+            // Dispose materials (even if there are multiple materials)
+            if (obj.material) {
+                const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+                materials.forEach(mat => {
+                    Object.values(mat).forEach(prop => prop?.isTexture && prop.dispose());
+                    mat.dispose?.();
+                });
+            }
+            // console.log(`Disposed: ${obj.name || obj.uuid}`); // For debugging
+        };
+
+        // Remove and dispose objects from the scene (keep lights and camera)
         if (this.scene) {
+            // Create a copy of the array as it is modified during iteration
             [...this.scene.children].forEach(object => {
+                // Exclude lights and camera from disposal
                 if (object.type.includes('Light') || object.type === 'PerspectiveCamera') return;
                 
-                this.scene.remove(object);
-                
-                // Dispose recursively inline
-                const dispose = (obj) => {
-                    if (!obj) return;
-                    
-                    [...(obj.children || [])].forEach(child => {
-                        dispose(child);
-                        obj.remove(child);
-                    });
-                    
-                    obj.geometry?.dispose();
-                    
-                    if (obj.material) {
-                        const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
-                        materials.forEach(mat => {
-                            Object.values(mat).forEach(prop => prop?.isTexture && prop.dispose());
-                            mat.dispose?.();
-                        });
-                    }
-                };
-                dispose(object);
+                // Call the safe disposal function
+                disposeSafely(object);
             });
         }
 
-        // Clear UI from camera
+        // Remove and dispose UI elements from the camera
+        // Since the buttons are now attached to the scene, this only affects the text plate/uiGroup
         if (this.camera?.children) {
+            // Create a copy of the array
             [...this.camera.children].forEach(child => {
-                this.camera.remove(child);
-                
-                // Dispose UI inline
-                const disposeUI = (element) => {
-                    if (!element) return;
-                    [...(element.children || [])].forEach(subChild => {
-                        disposeUI(subChild);
-                        element.remove(subChild);
-                    });
-                    element.geometry?.dispose();
-                    if (element.material?.map) element.material.map.dispose();
-                    element.material?.dispose();
-                };
-                disposeUI(child);
+                disposeSafely(child); // Call the safe disposal function
             });
+        }
+        
+        // Explicitly remove and dispose the uiGroup (which contains the text plate)
+        if (this.uiGroup && this.camera && this.uiGroup.parent === this.camera) {
+            this.camera.remove(this.uiGroup);
+            disposeSafely(this.uiGroup); // Dispose safely
+            this.uiGroup = null; // Nullify reference
+            this.textPlate = null; // Nullify reference as the text plate is also recreated
         }
 
         // Clear interactions and animations
@@ -527,27 +556,6 @@ class ARExperience {
             catch(e) {}
         });
         this.mixers = [];
-
-        // Reset all models and clear properties
-        Object.keys(this).forEach(key => {
-            const value = this[key];
-            
-            // Hide Three.js models and clear userData
-            if (value?.isObject3D) {
-                value.visible = false;
-                if (value.userData) Object.keys(value.userData).forEach(k => delete value.userData[k]);
-            }
-            
-            // Stop audio
-            if (value?.pause) {
-                try { value.pause(); value.currentTime = 0; } catch(e) {}
-            }
-            
-            // Clear UI/animation properties
-            if (key.includes('textPlate') || key.includes('UI') || key.includes('animation')) {
-                this[key] = null;
-            }
-        });
 
         console.log('Scene cleared');
     }
