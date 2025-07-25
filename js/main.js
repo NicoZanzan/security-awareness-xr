@@ -371,7 +371,9 @@ class ARExperience {
     setupFallbackCameraControls() {
         // For non-AR devices - position camera for good view
         console.log('Setting up camera controls for non-AR mode');
-        this.camera.position.set(0, 1.6, 0);
+        // Adjusted camera height to better frame objects at Y=0, which are 1.5m in front of the origin.
+        // A height of 0.7m allows for a natural slight downward gaze to see objects on the floor.
+        this.camera.position.set(0, 0.7, 0); // Changed from 1.6 to 0.7
         
         // Add mouse/touch camera rotation controls
         let isPointerDown = false;
@@ -401,6 +403,7 @@ class ARExperience {
         document.addEventListener('pointermove', onPointerMove);
         document.addEventListener('pointerup', () => { isPointerDown = false; });
     } 
+
 
     /////////////////////////////////////////START SCENES////////////////////////////////////////////////////
 
