@@ -1296,6 +1296,60 @@ class ARExperience {
         model.position[axis] = originalPos + Math.sin(timestamp * speed) * amplitude;
     }
 
+    playback3D(modelAnimationPairs, audioFileNames, offsetMs = 0) {
+         
+        //  const animationsToPlay = [
+        //     { modelName: 'wendy', animationName: 'Wave' }, // Wendy performs 'Wave' animation once
+        //     { modelName: 'laptopModel', animationName: 'OpenLid' } // Laptop opens its lid once
+        // ];
+
+        // // Define the audio files to play (assuming this.wendyAudio_1 and this.backgroundMusic exist)
+        // const audioToPlay = ['wendyAudio_1', 'backgroundMusic'];
+
+        // // Define the offset (e.g., start audio 500ms after animations)
+        // const audioDelayOffset = 500; // milliseconds
+
+        // // Call the new combined function
+        // this.playback3D(animationsToPlay, audioToPlay, audioDelayOffset);
+
+        console.log('Starting combined animations and audio playback...');
+
+        // 1. Play animations for each specified model
+        modelAnimationPairs.forEach(pair => {
+            // Destructuring only modelName and animationName
+            const { modelName, animationName } = pair;
+            
+            // Check if the model exists as a class property
+            if (this[modelName]) {
+                // `playModelAnimation` expects the string name of the model and the animation.
+                // Since 'loop' is removed from the input, playModelAnimation will use its default (false).
+                this.playModelAnimation(modelName, animationName); 
+            } else {
+                console.warn(`Model '${modelName}' not found. Animation '${animationName}' will be skipped.`);
+            }
+        });
+
+        // 2. Play audio files with the specified offset
+        setTimeout(() => {
+            audioFileNames.forEach(audioName => {
+                const audio = this[audioName]; // Access the audio property of the class
+                
+                // Check if it's a valid HTML Audio object
+                if (audio instanceof Audio) {
+                    audio.play().catch(error => {
+                        // Log error if playback fails (e.g., due to browser autoplay policies)
+                        console.error(`Error playing audio '${audioName}':`, error);
+                    });
+                    console.log(`Audio '${audioName}' started.`);
+                } else {
+                    console.warn(`Audio file '${audioName}' not found or is not a valid Audio object. Playback will be skipped.`);
+                }
+            });
+        }, offsetMs);
+
+        console.log('Request for animations and audio playback initiated.');
+    }
+
    // Helper method to properly dispose of 3D objects
     disposeObject(object) {
         if (!object) return;
