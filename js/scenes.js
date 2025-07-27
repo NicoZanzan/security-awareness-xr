@@ -1,0 +1,198 @@
+// scenes.js - Scene management and story flow
+
+ARExperience.prototype.scene1 = function() {
+    // Initial text plate creation
+    this.createTextPlate('Welcome! Use START to begin', {
+        backgroundColor: 0x3366cc,
+        width: 0.5,
+        height: 0.2,
+        yOffset: -0.29  // Slightly below center
+    });    
+    
+    // Start button
+    this.startButtonModel.position.set(0, -0.8, -1.5); 
+    this.scaleModel(this.startButtonModel, 1);// 1m in front
+    this.scene.add(this.startButtonModel);  
+    
+    // Start button
+    this.flatTableModel.position.set(0.5, 2.6, -5.5); // 1m in front
+    this.scene.add(this.flatTableModel);
+    this.flatTableModel.name = "flatTable"; 
+        
+    this.makeModelClickable(this.startButtonModel, () => {
+        this.moveModel("flatTable", 
+            {x: 1, y: 10, z: -5.5},  
+            7                   
+        );  
+
+        setTimeout(() => {
+            //this.firstScene();
+            this.flatTableModel.visible = false;
+            this.startButtonModel.visible = false;
+            this.nextScene('scene2');
+        }, 2000);
+    });         
+};
+
+ARExperience.prototype.scene2 = function() {
+    this.nextScene('scene3');
+    console.log('Starting scene 2 - interactive demo');
+};
+
+ARExperience.prototype.scene3 = function() {
+    console.log('Starting scene 3 - interactive demo');
+    
+    this.createTextPlate('Click QUIT to finish the experience', {
+        backgroundColor: 0x336633,
+        width: 0.5,
+        height: 0.2,
+        yOffset: -0.29
+    });
+
+    this.quitButtonModel.position.set(0, 0, -1.5); 
+    this.scaleModel(this.quitButtonModel, 0.3);      
+    this.scene.add(this.quitButtonModel);  
+
+    this.makeModelClickable(this.quitButtonModel, () => {
+        this.finishAR();
+    });      
+};
+
+ARExperience.prototype.nextScene = function(sceneName) {
+    // Sicherstellen, dass das nextButtonModel geladen ist
+    if (!this.nextButtonModel) {
+        console.error("nextButtonModel not found. Please ensure it is loaded.");
+        return;
+    }
+
+    // 1. WICHTIG: Den Next Button aus der Szene entfernen, falls er bereits existiert.
+    // Dies stellt sicher, dass er immer "frisch" hinzugefügt wird.
+    if (this.nextButtonModel.parent === this.scene) {
+        this.scene.remove(this.nextButtonModel);
+        console.log("Next Button explizit aus der Szene entfernt vor dem erneuten Hinzufügen.");
+    }
+
+    // NEUE ZEILEN: Lokale Transformation des Models auf Identität zurücksetzen
+    // Dies ist entscheidend, da das Objekt wiederverwendet wird und seine interne Matrix
+    // möglicherweise nicht vollständig zurückgesetzt wird, wenn es nur entfernt und hinzugefügt wird.
+    this.nextButtonModel.position.set(0, 0, 0);   // Setzt die lokale Position auf den Ursprung
+    this.nextButtonModel.rotation.set(0, 0, 0);   // Setzt die lokale Rotation zurück
+    this.nextButtonModel.scale.set(1, 1, 1);     // Setzt die lokale Skalierung zurück
+    this.nextButtonModel.updateMatrixWorld(true); // Aktualisiert die Weltmatrix des Objekts sofort
+
+    // 2. Den Next Button immer zur Szene hinzufügen
+    this.scene.add(this.nextButtonModel);
+    this.nextButtonModel.name = 'nextButton'; // Name sicherstellen
+    
+    // 3. Positionieren, skalieren und sichtbar machen
+    // Diese Position wird nun auf ein "sauberes" Objekt angewendet
+    this.nextButtonModel.position.set(0, -0.8, -1.5); // Feste Position
+    this.scaleModel(this.nextButtonModel, 1); // Dies wird die Skalierung erneut anwenden
+    this.nextButtonModel.visible = true; // Sichtbar machen
+    console.log(`Next Button sichtbar gemacht und positioniert bei (0, -0.3, -1.5) für: ${sceneName}`);
+    
+    // 4. Textplatte anzeigen (unverändert)
+    this.createTextPlate('Click NEXT to proceed to the next scene', {
+        backgroundColor: 0x3366cc,
+        width: 0.5,
+        height: 0.2,
+        yOffset: -0.29
+    });
+    
+    // 5. Click-Handler für den Next Button einrichten
+    this.makeModelClickable(this.nextButtonModel, () => {
+        // WICHTIG: Den Next Button KOMPLETT aus der Szene entfernen, nachdem er geklickt wurde.
+        if (this.nextButtonModel && this.nextButtonModel.parent === this.scene) {
+            this.scene.remove(this.nextButtonModel);
+        }
+
+        // Szene aufräumen und nächste Szene aufrufen
+        // clearScene() wird hier noch aufgerufen, um andere dynamische Objekte zu bereinigen,
+        // aber der Next Button wird explizit vorher behandelt.
+        this.clearScene(); 
+        
+        // Nächste Szene aufrufen
+        if (typeof this[sceneName] === 'function') {
+            setTimeout(() => {
+                this[sceneName]();
+            }, 300);
+        } else {
+            console.log(`Szene ${sceneName} nicht gefunden`);
+        }
+    });
+};
+
+ARExperience.prototype.clearScene = function() {
+    console.log('Clearing scene - disposing all assets');
+
+    // Helper function for disposing objects that skips reusable buttons.
+    const disposeSafely = (obj) => {
+       
+        if (obj === this.nextButtonModel || obj === this.quitButtonModel) {
+            console.log(`Skipping full disposal for reusable button: ${obj.name || obj.uuid}. Setting to invisible and removing from parent.`);
+            obj.visible = false; // Make the button invisible when not needed
+           
+            if (obj.parent) { 
+                obj.parent.remove(obj); 
+            }
+            return; 
+        }
+
+        if (!obj) return;
+        
+        // Recursively dispose children first
+        // Create a copy of the children list as it is modified during iteration
+        [...(obj.children || [])].forEach(child => {
+            disposeSafely(child); // Recursive call
+            // Ensure the child is removed from the parent after disposal
+            if (obj.isObject3D) obj.remove(child);
+        });
+        
+        // Dispose geometry
+        obj.geometry?.dispose();
+        
+        // Dispose materials (even if there are multiple materials)
+        if (obj.material) {
+            const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+            materials.forEach(mat => {
+                Object.values(mat).forEach(prop => prop?.isTexture && prop.dispose());
+                mat.dispose?.();
+            });
+        }
+        // console.log(`Disposed: ${obj.name || obj.uuid}`); // For debugging
+    };
+
+   
+    if (this.scene) {
+       
+        [...this.scene.children].forEach(object => {                
+            if (object.type.includes('Light') || object.type === 'PerspectiveCamera') return;              
+            disposeSafely(object);
+        });
+    }
+
+    
+    if (this.camera?.children) {
+        // Eine Kopie des Arrays erstellen
+        [...this.camera.children].forEach(child => {
+            disposeSafely(child); // Sichere Entsorgungsfunktion aufrufen
+        });
+    }        
+   
+    if (this.uiGroup && this.camera && this.uiGroup.parent === this.camera) {
+        this.camera.remove(this.uiGroup);
+        disposeSafely(this.uiGroup);
+        this.uiGroup = null; 
+        this.textPlate = null; 
+    }
+   
+    this.modelInteractions?.clear();
+    if (this._animationCallbacks) this._animationCallbacks = [];        
+   
+    this.mixers?.forEach(mixer => {
+        try { mixer.stopAllAction(); mixer.uncacheRoot?.(mixer.getRoot()); } 
+        catch(e) {}
+    });
+    this.mixers = [];
+    console.log('Scene cleared');
+};
