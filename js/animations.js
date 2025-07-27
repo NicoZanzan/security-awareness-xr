@@ -1,4 +1,5 @@
 // animations.js - Animation, movement, and UI
+console.log('animations.js loading...');
 
 ARExperience.prototype.moveModel = function(modelName, targetPos, speed) {
     // Find the model in the scene

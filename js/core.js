@@ -104,27 +104,7 @@ class ARExperience {
                 });
                 
                 // Start the interactive scene
-                // Start the interactive scene - DEBUG VERSION
-console.log('About to call scene1...');
-console.log('this.scene1 exists?', typeof this.scene1);
-console.log('Available methods on this:', Object.getOwnPropertyNames(Object.getPrototypeOf(this)));
-
-if (typeof this.scene1 === 'function') {
-    console.log('Calling scene1...');
-    this.scene1();
-} else {
-    console.error('scene1 is not a function! Type:', typeof this.scene1);
-    // Let's try calling it anyway after a delay
-    setTimeout(() => {
-        console.log('Trying scene1 after delay...');
-        console.log('this.scene1 exists now?', typeof this.scene1);
-        if (typeof this.scene1 === 'function') {
-            this.scene1();
-        } else {
-            console.error('Still not a function after delay');
-        }
-    }, 500);
-}
+                this.scene1();
                 
             } catch (error) {
                 console.error('Failed to start:', error);
@@ -432,4 +412,4 @@ if (typeof this.scene1 === 'function') {
         
         this.renderer.render(this.scene, this.camera);
     }
-};
+}

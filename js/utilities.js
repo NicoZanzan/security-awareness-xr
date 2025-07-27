@@ -1,4 +1,5 @@
 // utilities.js - Helper functions and cleanup
+console.log('utilities.js loading...');
 
 ARExperience.prototype.scaleModel = function(model, targetSize) {
     // Auto-scale models to reasonable size

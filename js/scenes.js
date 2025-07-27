@@ -1,4 +1,5 @@
 // scenes.js - Scene management and story flow
+console.log('scenes.js loading...');
 
 ARExperience.prototype.scene1 = function() {
     // Initial text plate creation

@@ -1,4 +1,5 @@
 // interactions.js - User interaction handling
+console.log('interactions.js loading...');
 
 ARExperience.prototype.makeModelClickable = function(model, callback, once = false) {
     if (!model || typeof callback !== 'function') {
