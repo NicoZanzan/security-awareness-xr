@@ -15,6 +15,7 @@ class ARExperience {
         this.laptopModel = null;
         this.wendy = null;
         this.mendy = null;
+        this.tableModel = null;  
         
         // Audio
         this.wendyAudio_1 = null;
@@ -153,7 +154,17 @@ class ARExperience {
 
             const tableGLB = await loadGLB('./assets/models/table.glb');
             this.tableModel = tableGLB.scene;
-            this.tableAnimation = tableGLB.animations;        
+            this.tableModel.name = "tableModel";            
+            this.tableAnimation = tableGLB.animations; 
+            this.scene.add(this.tableModel);
+            this.tableModel.visible = false;
+
+            // Position it if needed
+            this.tableModel.position.set(0, 0, -1.5); // Adjust position as needed
+
+            if (tableGLB.animations && tableGLB.animations.length > 0) {
+                this.TableAnimation = tableGLB.animations[0];
+            }
 
             const pauseGLB = await loadGLB('./assets/models/pauseButton.glb');
             this.pauseButtonModel = pauseGLB.scene;        
@@ -170,20 +181,26 @@ class ARExperience {
             
             // Load Wendy
             const wendyGLB = await loadGLB('./assets/models/wendy.glb');
-            this.wendy = wendyGLB.scene;      
-          
+            this.wendy = wendyGLB.scene;           
             
             // Load Mendy
             const mendyGLB = await loadGLB('./assets/models/mendy.glb');
             this.mendy = mendyGLB.scene;
+
+            console.log('Table animations found:', tableGLB.animations);
+            if (tableGLB.animations.length > 0) {
+                tableGLB.animations.forEach((clip, index) => {
+                    console.log(`Animation ${index}: ${clip.name}, duration: ${clip.duration}`);
+                });
+              }
            
             
             console.log('All models loaded successfully');
             
-        } catch (error) {
-            console.error('Model loading failed:', error);
-            throw error;
-        }
+            } catch (error) {
+                console.error('Model loading failed:', error);
+                throw error;
+            }
         
         // Load audio
         this.wendyAudio_1 = new Audio('./assets/audio/wendy_test.mp3');
@@ -195,13 +212,11 @@ class ARExperience {
         
         // Playback assets for scene2
 
-        this.scene2ModelAnimations = [
-            { model: this.tableModel, animations: this.TableAnimation},         
+       this.scene2ModelAnimations = [
+            { modelName: 'tableModel', animationName: 'TableAnimation' }
         ];
 
-        this.scene2AudioTracks = [
-            { audio: this.wendyAudio_1, delay: 0 },
-        ];
+        this.scene2AudioTracks = ['wendyAudio_1'];
 
     }  
    

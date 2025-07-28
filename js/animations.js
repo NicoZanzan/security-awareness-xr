@@ -130,48 +130,37 @@ ARExperience.prototype.moveModel = function(modelName, targetPos, speed) {
 };
 
 ARExperience.prototype.playModelAnimation = function(modelName, animationName, loop = false) {
-    // Find the model in the scene
-    const model = this.scene.getObjectByName(modelName);
+    // Use the model stored as class property
+    const model = this[modelName];
     
     if (!model) {
-        console.error(`Model "${modelName}" not found in the scene`);
+        console.error(`Model "${modelName}" not found as class property`);
         return null;
     }
     
-    // Find animations for this model using a more dynamic approach
-    // Check if the animations are stored in a property named after the model
-    let animations;
-    const animationsPropertyName = `${modelName}Animations`;
-    
-    if (this[animationsPropertyName]) {
-        // If we have animations stored in a property like this.tableAnimations
-        animations = this[animationsPropertyName];
-    } else if (model.animations) {
-        // Check if animations are stored directly on the model
-        animations = model.animations;
-    } else {
-        // Look for animations stored in userData
-        animations = model.userData?.animations;
-    }
-    
-    if (!animations || animations.length === 0) {
-        console.error(`No animations found for model "${modelName}"`);
-        return null;
-    }
-    
-    // Find the requested animation
-    const animation = animations.find(anim => anim.name === animationName);
+    // Get the animation from class property (the stored animation clip)
+    const animation = this[animationName];
     
     if (!animation) {
-        console.error(`Animation "${animationName}" not found for model "${modelName}"`);
-        console.log("Available animations:", animations.map(a => a.name));
+        console.error(`Animation "${animationName}" not found as class property`);
+        console.log('Available animation properties:', Object.keys(this).filter(key => 
+            key.includes('Animation') || key.includes('animation')
+        ));
         return null;
     }
     
+    console.log(`Found animation "${animationName}":`, animation);
+    console.log(`Animation name: ${animation.name}, duration: ${animation.duration}`);
+    
     // Create a mixer if it doesn't exist
+    if (!model.userData) {
+        model.userData = {};
+    }
+    
     if (!model.userData.mixer) {
         model.userData.mixer = new THREE.AnimationMixer(model);
         this.mixers.push(model.userData.mixer);
+        console.log(`Created new mixer for model "${modelName}"`);
     }
     
     // Create and play the animation action
@@ -179,15 +168,21 @@ ARExperience.prototype.playModelAnimation = function(modelName, animationName, l
     
     // Set loop mode
     action.loop = loop ? THREE.LoopRepeat : THREE.LoopOnce;
+    action.clampWhenFinished = true; // Keep final pose when animation ends
+    
+    // Stop any existing actions on this mixer (optional)
+    model.userData.mixer.stopAllAction();
     
     // Play the animation
     action.reset();
     action.play();
     
-    console.log(`Playing animation "${animationName}" on model "${modelName}"`);
+    console.log(`✅ Playing animation "${animationName}" on model "${modelName}"`);
+    console.log(`Loop: ${loop}, Duration: ${animation.duration}s`);
     
     return action;
 };
+
 
 ARExperience.prototype.idleMove = function(model, timestamp, amplitude = 0.05, speed = 0.001, axis = 'y') {
     if (!model || !model.visible) return;

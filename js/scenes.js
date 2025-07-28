@@ -38,7 +38,9 @@ ARExperience.prototype.scene1 = function() {
 ARExperience.prototype.scene2 = function() {
     this.nextScene('scene3');
     console.log('Starting scene 2 - interactive demo');
-    this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 500);
+
+    this.scene.add(this.tableModel); // Ensure the table is added to the scene
+    this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 0);
 };
 
 ARExperience.prototype.scene3 = function() {
@@ -77,8 +79,7 @@ ARExperience.prototype.nextScene = function(sceneName) {
     this.nextButtonModel.position.set(0, 0, 0);   
     this.nextButtonModel.rotation.set(0, 0, 0);   
     this.nextButtonModel.scale.set(1, 1, 1);     
-    this.nextButtonModel.updateMatrixWorld(true); /
-
+    this.nextButtonModel.updateMatrixWorld(true);
     
     this.scene.add(this.nextButtonModel);
     this.nextButtonModel.name = 'nextButton'; 
