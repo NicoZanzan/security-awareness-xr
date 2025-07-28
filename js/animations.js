@@ -136,7 +136,7 @@ ARExperience.prototype.playModelAnimation = function(modelName, animationName, l
     if (!model) {
         console.error(`Model "${modelName}" not found as class property`);
         return null;
-    }
+    }    
     
     // Get the animation from class property (the stored animation clip)
     const animation = this[animationName];

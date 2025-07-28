@@ -15,7 +15,7 @@ class ARExperience {
         this.laptopModel = null;
         this.wendy = null;
         this.mendy = null;
-        this.tableModel = null;  
+        this.tableModel = null;     
         
         // Audio
         this.wendyAudio_1 = null;
@@ -147,20 +147,22 @@ class ARExperience {
             this.startButtonModel = buttonGLB.scene;       
 
             const laptopGLB = await loadGLB('./assets/models/laptop.glb');
-            this.laptopModel = laptopGLB.scene;       
-
+            this.laptopModel = laptopGLB.scene; 
+            
             const flatTableGLB = await loadGLB('./assets/models/flatTable.glb');
             this.flatTableModel = flatTableGLB.scene;      
 
-            const tableGLB = await loadGLB('./assets/models/table.glb');
-            this.tableModel = tableGLB.scene;
-            this.tableModel.name = "tableModel";            
-            this.tableAnimation = tableGLB.animations; 
-            this.scene.add(this.tableModel);
-            this.tableModel.visible = false;
+            const roomGLB = await loadGLB('./assets/models/room.glb');
+            this.roomModel = roomGLB.scene; 
+             this.roomAnimation = roomGLB.animations; 
 
-            // Position it if needed
-            this.tableModel.position.set(0, 0, -1.5); // Adjust position as needed
+            if (roomGLB.animations && roomGLB.animations.length > 0) {
+                this.RoomAnimation = roomGLB.animations[0];
+            }           
+
+            const tableGLB = await loadGLB('./assets/models/table.glb');
+            this.tableModel = tableGLB.scene;       
+            this.tableAnimation = tableGLB.animations; 
 
             if (tableGLB.animations && tableGLB.animations.length > 0) {
                 this.TableAnimation = tableGLB.animations[0];
@@ -185,15 +187,7 @@ class ARExperience {
             
             // Load Mendy
             const mendyGLB = await loadGLB('./assets/models/mendy.glb');
-            this.mendy = mendyGLB.scene;
-
-            console.log('Table animations found:', tableGLB.animations);
-            if (tableGLB.animations.length > 0) {
-                tableGLB.animations.forEach((clip, index) => {
-                    console.log(`Animation ${index}: ${clip.name}, duration: ${clip.duration}`);
-                });
-              }
-           
+            this.mendy = mendyGLB.scene;            
             
             console.log('All models loaded successfully');
             
@@ -207,17 +201,15 @@ class ARExperience {
         this.wendyAudio_1.preload = 'auto';
 
         this.wendyAudio_2 = new Audio('./assets/audio/wendy_2.mp3');
-        this.wendyAudio_2.preload = 'auto'; 
+        this.wendyAudio_2.preload = 'auto';         
         
-        
-        // Playback assets for scene2
-
-       this.scene2ModelAnimations = [
-            { modelName: 'tableModel', animationName: 'TableAnimation' }
+        // Playback assets for scene2:
+        this.scene2ModelAnimations = [
+            { modelName: 'tableModel', animationName: 'TableAnimation' },
+            { modelName: 'roomModel', animationName: 'RoomAnimation' },
         ];
 
-        this.scene2AudioTracks = ['wendyAudio_1'];
-
+        this.scene2AudioTracks = ['wendyAudio_1', 'wendyAudio_2'];
     }  
    
     async setupControls() {

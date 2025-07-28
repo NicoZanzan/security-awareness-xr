@@ -123,11 +123,13 @@ ARExperience.prototype.finishAR = function() {
     if (this.nextButtonModel) this.disposeObject(this.nextButtonModel);
     if (this.wendy) this.disposeObject(this.wendy);
     if (this.mendy) this.disposeObject(this.mendy);
+    if (this.tableModel) this.disposeObject(this.tableModel);
     
     // Clear all models
     this.startButtonModel = null;
     this.pauseButtonModel = null;
     this.nextButtonModel = null;
+    this.tableModel = null;
     this.wendy = null;
     this.mendy = null;
     

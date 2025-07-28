@@ -36,11 +36,20 @@ ARExperience.prototype.scene1 = function() {
 };
 
 ARExperience.prototype.scene2 = function() {
-    this.nextScene('scene3');
+   
     console.log('Starting scene 2 - interactive demo');
 
-    this.scene.add(this.tableModel); // Ensure the table is added to the scene
-    this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 0);
+    this.tableModel.position.set(0, -1.4, -15); // 2m in front  
+    this.scene.add(this.tableModel);     
+    this.tableModel.name = "tableModel";    
+
+    this.roomModel.position.set(0, 4.4, -5); // 2m in front  
+    this.scene.add(this.roomModel);     
+    this.roomModel.name = "roomModel";    
+    
+    this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
+
+    this.nextScene('scene3');
 };
 
 ARExperience.prototype.scene3 = function() {
