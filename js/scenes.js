@@ -38,6 +38,7 @@ ARExperience.prototype.scene1 = function() {
 ARExperience.prototype.scene2 = function() {
     this.nextScene('scene3');
     console.log('Starting scene 2 - interactive demo');
+    this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 500);
 };
 
 ARExperience.prototype.scene3 = function() {
@@ -72,27 +73,22 @@ ARExperience.prototype.nextScene = function(sceneName) {
         this.scene.remove(this.nextButtonModel);
         console.log("Next Button explizit aus der Szene entfernt vor dem erneuten Hinzufügen.");
     }
+   
+    this.nextButtonModel.position.set(0, 0, 0);   
+    this.nextButtonModel.rotation.set(0, 0, 0);   
+    this.nextButtonModel.scale.set(1, 1, 1);     
+    this.nextButtonModel.updateMatrixWorld(true); /
 
-    // NEUE ZEILEN: Lokale Transformation des Models auf Identität zurücksetzen
-    // Dies ist entscheidend, da das Objekt wiederverwendet wird und seine interne Matrix
-    // möglicherweise nicht vollständig zurückgesetzt wird, wenn es nur entfernt und hinzugefügt wird.
-    this.nextButtonModel.position.set(0, 0, 0);   // Setzt die lokale Position auf den Ursprung
-    this.nextButtonModel.rotation.set(0, 0, 0);   // Setzt die lokale Rotation zurück
-    this.nextButtonModel.scale.set(1, 1, 1);     // Setzt die lokale Skalierung zurück
-    this.nextButtonModel.updateMatrixWorld(true); // Aktualisiert die Weltmatrix des Objekts sofort
-
-    // 2. Den Next Button immer zur Szene hinzufügen
+    
     this.scene.add(this.nextButtonModel);
-    this.nextButtonModel.name = 'nextButton'; // Name sicherstellen
+    this.nextButtonModel.name = 'nextButton'; 
     
-    // 3. Positionieren, skalieren und sichtbar machen
-    // Diese Position wird nun auf ein "sauberes" Objekt angewendet
-    this.nextButtonModel.position.set(0, -0.8, -1.5); // Feste Position
-    this.scaleModel(this.nextButtonModel, 1); // Dies wird die Skalierung erneut anwenden
-    this.nextButtonModel.visible = true; // Sichtbar machen
+   
+    this.nextButtonModel.position.set(0, -0.8, -1.5); 
+    this.scaleModel(this.nextButtonModel, 1); 
+    this.nextButtonModel.visible = true;
     console.log(`Next Button sichtbar gemacht und positioniert bei (0, -0.3, -1.5) für: ${sceneName}`);
-    
-    // 4. Textplatte anzeigen (unverändert)
+       
     this.createTextPlate('Click NEXT to proceed to the next scene', {
         backgroundColor: 0x3366cc,
         width: 0.5,
@@ -100,19 +96,14 @@ ARExperience.prototype.nextScene = function(sceneName) {
         yOffset: -0.29
     });
     
-    // 5. Click-Handler für den Next Button einrichten
-    this.makeModelClickable(this.nextButtonModel, () => {
-        // WICHTIG: Den Next Button KOMPLETT aus der Szene entfernen, nachdem er geklickt wurde.
+   
+    this.makeModelClickable(this.nextButtonModel, () => {        
         if (this.nextButtonModel && this.nextButtonModel.parent === this.scene) {
             this.scene.remove(this.nextButtonModel);
         }
-
-        // Szene aufräumen und nächste Szene aufrufen
-        // clearScene() wird hier noch aufgerufen, um andere dynamische Objekte zu bereinigen,
-        // aber der Next Button wird explizit vorher behandelt.
-        this.clearScene(); 
         
-        // Nächste Szene aufrufen
+        this.clearScene();         
+        
         if (typeof this[sceneName] === 'function') {
             setTimeout(() => {
                 this[sceneName]();

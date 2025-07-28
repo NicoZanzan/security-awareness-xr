@@ -2,7 +2,6 @@ todo:
 
 - replace model.name by model in moveModel() and placeModel()
 - create animations array
-- get 
  
 - Quiz: choose an object that might be dangerous 
 - anchor buttons in ar mode (and create HUD)

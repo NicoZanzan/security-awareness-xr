@@ -153,7 +153,7 @@ class ARExperience {
 
             const tableGLB = await loadGLB('./assets/models/table.glb');
             this.tableModel = tableGLB.scene;
-            this.tableAnimations = tableGLB.animations;        
+            this.tableAnimation = tableGLB.animations;        
 
             const pauseGLB = await loadGLB('./assets/models/pauseButton.glb');
             this.pauseButtonModel = pauseGLB.scene;        
@@ -190,8 +190,19 @@ class ARExperience {
         this.wendyAudio_1.preload = 'auto';
 
         this.wendyAudio_2 = new Audio('./assets/audio/wendy_2.mp3');
-        this.wendyAudio_2.preload = 'auto';        
-      
+        this.wendyAudio_2.preload = 'auto'; 
+        
+        
+        // Playback assets for scene2
+
+        this.scene2ModelAnimations = [
+            { model: this.tableModel, animations: this.TableAnimation},         
+        ];
+
+        this.scene2AudioTracks = [
+            { audio: this.wendyAudio_1, delay: 0 },
+        ];
+
     }  
    
     async setupControls() {
