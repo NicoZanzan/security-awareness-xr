@@ -209,7 +209,7 @@ class ARExperience {
             { modelName: 'roomModel', animationName: 'RoomAnimation' },
         ];
 
-        this.scene2AudioTracks = ['wendyAudio_1', 'wendyAudio_2'];
+        this.scene2AudioTracks = ['wendyAudio_1'];
     }  
    
     async setupControls() {

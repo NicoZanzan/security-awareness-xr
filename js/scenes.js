@@ -39,17 +39,33 @@ ARExperience.prototype.scene2 = function() {
    
     console.log('Starting scene 2 - interactive demo');
 
-    this.tableModel.position.set(0, -1.4, -15); // 2m in front  
+    this.tableModel.position.set(-2, 0, -7); // 2m in front  
     this.scene.add(this.tableModel);     
     this.tableModel.name = "tableModel";    
 
-    this.roomModel.position.set(0, 4.4, -5); // 2m in front  
+    this.roomModel.position.set(2, 0, -7); // 2m in front  
     this.scene.add(this.roomModel);     
     this.roomModel.name = "roomModel";    
     
+    this.createTextPlate('You now see two models, animation and audio playback!', {
+        backgroundColor: 0x3366cc,
+        width: 0.5,
+        height: 0.2,
+        yOffset: -0.29  // Slightly below center
+        });    
     this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
 
-    this.nextScene('scene3');
+    setTimeout(() => { 
+        this.moveModel("roomModel", 
+            {x: 1, y: 15, z: -5.5},  
+            7                   
+        );    
+         this.moveModel("tableModel", 
+            {x: 1, y: -15, z: -5.5},  
+            7                   
+        );        
+        this.nextScene('scene3');
+    }, 5000);  
 };
 
 ARExperience.prototype.scene3 = function() {
