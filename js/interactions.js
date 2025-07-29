@@ -18,8 +18,7 @@ ARExperience.prototype.makeModelClickable = function(model, callback, once = fal
         once,
         active: true,
         triggered: false
-    });   
-
+    }); 
     
     // Return methods to control this interactive model
     return {

@@ -11,16 +11,16 @@ ARExperience.prototype.scene1 = function() {
     });    
     
     // Start button
-    this.startButtonModel.position.set(0, -0.8, -1.5); 
-    this.scaleModel(this.startButtonModel, 1);// 1m in front
-    this.scene.add(this.startButtonModel);  
+    this.startButton.position.set(0, -0.8, -1.5); 
+    this.scaleModel(this.startButton, 1);// 1m in front
+    this.scene.add(this.startButton);  
     
     // Start button
     this.flatTableModel.position.set(0.5, 2.6, -5.5); // 1m in front
     this.scene.add(this.flatTableModel);
     this.flatTableModel.name = "flatTable"; 
         
-    this.makeModelClickable(this.startButtonModel, () => {
+    this.makeModelClickable(this.startButton, () => {
         this.moveModel("flatTable", 
             {x: 1, y: 10, z: -5.5},  
             7                   
@@ -29,7 +29,7 @@ ARExperience.prototype.scene1 = function() {
         setTimeout(() => {
             //this.firstScene();
             this.flatTableModel.visible = false;
-            this.startButtonModel.visible = false;
+            this.startButton.visible = false;
             this.nextScene('scene2');
         }, 2000);
     });         

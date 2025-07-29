@@ -143,11 +143,11 @@ class ARExperience {
         try {
             
             //Load all assets        
-            const buttonGLB = await loadGLB('./assets/models/button.glb');
-            this.startButtonModel = buttonGLB.scene;       
+            const startButtonGLB = await loadGLB('./assets/models/startButton.glb');
+            this.startButton = startButtonGLB.scene;       
 
             const laptopGLB = await loadGLB('./assets/models/laptop.glb');
-            this.laptopModel = laptopGLB.scene; 
+            this.laptop = laptopGLB.scene; 
             
             const flatTableGLB = await loadGLB('./assets/models/flatTable.glb');
             this.flatTableModel = flatTableGLB.scene;      
@@ -175,7 +175,7 @@ class ARExperience {
             this.quitButtonModel = quitGLB.scene;       
                   
             // Load next button
-            const nextGLB = await loadGLB('./assets/models/next.glb');
+            const nextGLB = await loadGLB('./assets/models/nextButton.glb');
             this.nextButtonModel = nextGLB.scene;      
 
             const doc1GLB = await loadGLB('./assets/models/doc1.glb');
