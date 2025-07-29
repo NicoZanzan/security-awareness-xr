@@ -178,7 +178,7 @@ class ARExperience {
             const nextGLB = await loadGLB('./assets/models/nextButton.glb');
             this.nextButtonModel = nextGLB.scene;      
 
-            const doc1GLB = await loadGLB('./assets/models/doc1.glb');
+            const doc1GLB = await loadGLB('./assets/models/doc.glb');
             this.doc1Model = doc1GLB.scene;      
             
             // Load Wendy
