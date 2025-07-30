@@ -154,7 +154,12 @@ class ARExperience {
 
             const roomGLB = await loadGLB('./assets/models/room.glb');
             this.roomModel = roomGLB.scene; 
-             this.roomAnimation = roomGLB.animations; 
+
+           
+            console.log('Available animations in room:', roomGLB.animations.map(anim => anim.name));
+
+            //If we have more than obe animation in the model we chose the first one
+
 
             if (roomGLB.animations && roomGLB.animations.length > 0) {
                 this.RoomAnimation = roomGLB.animations[0];
@@ -162,7 +167,10 @@ class ARExperience {
 
             const tableGLB = await loadGLB('./assets/models/table.glb');
             this.tableModel = tableGLB.scene;       
-            this.tableAnimation = tableGLB.animations; 
+
+            console.log('Available animations in table:', tableGLB.animations.map(anim => anim.name));
+
+            //If we have more than obe animation in the model we chose the first one
 
             if (tableGLB.animations && tableGLB.animations.length > 0) {
                 this.TableAnimation = tableGLB.animations[0];
