@@ -117,101 +117,94 @@ class ARExperience {
     }
 
     // New helper method to load resources
-async loadResources() {
-    const loader = new THREE.GLTFLoader();
+    async loadResources() {
+        const loader = new THREE.GLTFLoader();
+                
+        // Internal helper function to load GLB models
+        const loadGLB = (path) => {
+            return new Promise((resolve, reject) => {
+                loader.load(
+                    path,
+                    (gltf) => {
+                        //console.log(`Loaded: ${path}`);
+                        resolve(gltf);
+                    },
+                    (progress) => {
+                        //console.log(`Loading ${path}: ${(progress.loaded / progress.total * 100)}%`);
+                    },
+                    (error) => {
+                        console.error(`Failed to load ${path}:`, error);
+                        reject(error);
+                    }
+                );
+            });
+        };
+        
+        try {
             
-    // Internal helper function to load GLB models
-    const loadGLB = (path) => {
-        return new Promise((resolve, reject) => {
-            loader.load(
-                path,
-                (gltf) => {
-                    //console.log(`Loaded: ${path}`);
-                    resolve(gltf);
-                },
-                (progress) => {
-                    //console.log(`Loading ${path}: ${(progress.loaded / progress.total * 100)}%`);
-                },
-                (error) => {
-                    console.error(`Failed to load ${path}:`, error);
-                    reject(error);
-                }
-            );
-        });
-    };
-    
-    try {
-          
-        this.startButtonModelGLB = await loadGLB('./assets/models/startButtonModel.glb');
-        this.startButtonModel = this.startButtonModelGLB.scene;       
+            this.startButtonModelGLB = await loadGLB('./assets/models/startButtonModel.glb');
+            this.startButtonModel = this.startButtonModelGLB.scene;   
+            
+            this.wendyGlassesModelS2GLB = await loadGLB('./assets/models/wendyGlassesModelS2.glb');
+            this.wendyGlassesModelS2 = this.wendyGlassesModelS2GLB.scene;   
 
-        this.laptopModelGLB = await loadGLB('./assets/models/laptopModel.glb');
-        this.laptopModel = this.laptopModelGLB.scene; 
+            this.wendyModelS2GLB = await loadGLB('./assets/models/wendyModelS2.glb');
+            this.wendyModelS2 = this.wendyModelS2GLB.scene;   
+
+            this.laptopModelGLB = await loadGLB('./assets/models/laptopModel.glb');
+            this.laptopModel = this.laptopModelGLB.scene; 
+            
+            this.flatTableModelGLB = await loadGLB('./assets/models/flatTableModel.glb');
+            this.flatTableModel = this.flatTableModelGLB.scene;      
+
+            this.roomModelGLB = await loadGLB('./assets/models/roomModel.glb');
+            this.roomModel = this.roomModelGLB.scene; 
         
-        this.flatTableModelGLB = await loadGLB('./assets/models/flatTableModel.glb');
-        this.flatTableModel = this.flatTableModelGLB.scene;      
+            this.tableModelGLB = await loadGLB('./assets/models/tableModel.glb');
+            this.tableModel = this.tableModelGLB.scene;       
 
-        this.roomModelGLB = await loadGLB('./assets/models/roomModel.glb');
-        this.roomModel = this.roomModelGLB.scene; 
+            this.pauseButtonModelGLB = await loadGLB('./assets/models/pauseButtonModel.glb');
+            this.pauseButtonModel = this.pauseButtonModelGLB.scene;        
+
+            this.quitButtonModelGLB = await loadGLB('./assets/models/quitButtonModel.glb');
+            this.quitButtonModel = this.quitButtonModelGLB.scene;       
+                
+            // Load next button
+            this.nextButtonModelGLB = await loadGLB('./assets/models/nextButtonModel.glb');
+            this.nextButtonModel = this.nextButtonModelGLB.scene;      
+
+            this.doc1ModelGLB = await loadGLB('./assets/models/doc1Model.glb');
+            this.doc1Model = this.doc1ModelGLB.scene; 
+            
+            // Load Wendy
+            this.wendyModelGLB = await loadGLB('./assets/models/wendyModel.glb');
+            this.wendyModel = this.wendyModelGLB.scene;           
+            
+            // Load Mendy
+            this.mendyModelGLB = await loadGLB('./assets/models/mendyModel.glb');
+            this.mendyModel = this.mendyModelGLB.scene;   
+            
+            this.showModelsAnimations();
+            
+            } catch (error) {
+                console.error('Model loading failed:', error);
+                throw error;
+            }
+        
+        // SCENE 2 playback3D assets
+        this.audioS2 = new Audio('./assets/audio/audioS2.mp3');
+        this.audioS2.preload = 'auto';
+        
+        this.scene2ModelAnimations = [
+            { modelName: 'wendyModelS2', animationName: 'WendyAction.002' },
+            { modelName: 'wendyGlassesModelS2', animationName: 'WendyAction.003' },
+        ];
+
+        this.scene2AudioTracks = ['audioS2'];
+
        
-        if (this.roomModelGLB.animations && this.roomModelGLB.animations.length > 0) {
-            this.RoomAnimation = this.roomModelGLB.animations[0];
-        }           
+    }
 
-        this.tableModelGLB = await loadGLB('./assets/models/tableModel.glb');
-        this.tableModel = this.tableModelGLB.scene;       
-
-        if (this.tableModelGLB.animations && this.tableModelGLB.animations.length > 0) {
-            this.TableAnimation = this.tableModelGLB.animations[0];
-        }
-
-        this.pauseButtonModelGLB = await loadGLB('./assets/models/pauseButtonModel.glb');
-        this.pauseButtonModel = this.pauseButtonModelGLB.scene;        
-
-        this.quitButtonModelGLB = await loadGLB('./assets/models/quitButtonModel.glb');
-        this.quitButtonModel = this.quitButtonModelGLB.scene;       
-              
-        // Load next button
-        this.nextButtonModelGLB = await loadGLB('./assets/models/nextButtonModel.glb');
-        this.nextButtonModel = this.nextButtonModelGLB.scene;      
-
-        this.doc1ModelGLB = await loadGLB('./assets/models/doc1Model.glb');
-        this.doc1Model = this.doc1ModelGLB.scene; 
-        
-        // Load Wendy
-        this.wendyModelGLB = await loadGLB('./assets/models/wendyModel.glb');
-        this.wendyModel = this.wendyModelGLB.scene;           
-        
-        // Load Mendy
-        this.mendyModelGLB = await loadGLB('./assets/models/mendyModel.glb');
-        this.mendyModel = this.mendyModelGLB.scene;            
-        
-        console.log('All models loaded successfully');
-        
-        } catch (error) {
-            console.error('Model loading failed:', error);
-            throw error;
-        }
-    
-    // Load audio
-    this.wendyAudio_1 = new Audio('./assets/audio/wendy_test.mp3');
-    this.wendyAudio_1.preload = 'auto';
-
-    this.wendyAudio_2 = new Audio('./assets/audio/wendy_2.mp3');
-    this.wendyAudio_2.preload = 'auto';         
-    
-    // Playback assets for scene2:
-    this.scene2ModelAnimations = [
-        { modelName: 'tableModel', animationName: 'TableAnimation' },
-        { modelName: 'roomModel', animationName: 'laptopbackscreenAction' },
-    ];
-
-    this.scene2AudioTracks = ['wendyAudio_1'];
-
-    this.showModelsAnimations();
-}
-
-   
     async setupControls() {
         // 1. Check for WebXR support
         if (navigator.xr) {
