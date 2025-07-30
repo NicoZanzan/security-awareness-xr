@@ -39,11 +39,11 @@ ARExperience.prototype.scene2 = function() {
    
     console.log('Starting scene 2 - interactive demo');
 
-    this.wendyModelS2.position.set(-2, 0, -7); // 2m in front  
+    this.wendyModelS2.position.set(0, 0, -7); // 2m in front  
     this.scene.add(this.wendyModelS2);     
     this.wendyModelS2.name = "wendyModelS2";    
 
-    this.wendyGlassesModelS2.position.set(2, 0, -7); // 2m in front  
+    this.wendyGlassesModelS2.position.set(0, 0, -7); // 2m in front  
     this.scene.add(this.wendyGlassesModelS2)  ;     
     this.wendyGlassesModelS2.name = "wendyGlassesModelS2";    
     
@@ -61,6 +61,31 @@ ARExperience.prototype.scene2 = function() {
 };
 
 ARExperience.prototype.scene3 = function() {
+   
+    console.log('Starting scene 3 - interactive demo');
+
+    this.wendyModelS2.position.set(-2, 0, -7); // 2m in front  
+    this.scene.add(this.wendyModelS2);     
+    this.wendyModelS2.name = "wendyModelS2";    
+
+    this.wendyGlassesModelS2.position.set(2, 0, -7); // 2m in front  
+    this.scene.add(this.wendyGlassesModelS2)  ;     
+    this.wendyGlassesModelS2.name = "wendyGlassesModelS2";    
+    
+    this.createTextPlate('You now see two models, animation and audio playback!', {
+        backgroundColor: 0x3366cc,
+        width: 0.5,
+        height: 0.2,
+        yOffset: -0.29  // Slightly below center
+        });    
+    this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
+
+    setTimeout(() => {
+        this.nextScene('scene4');
+    }, 5000);  
+};
+
+ARExperience.prototype.scene4 = function() {
     console.log('Starting scene 3 - interactive demo');
     
     this.createTextPlate('Click QUIT to finish the experience', {
