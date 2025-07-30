@@ -141,10 +141,7 @@ async loadResources() {
     };
     
     try {
-        
-        //TODO: Load all models at once, list model name + respective animation(s) names
-        
-        //Load all assets - Store GLB objects as class properties        
+          
         this.startButtonModelGLB = await loadGLB('./assets/models/startButtonModel.glb');
         this.startButtonModel = this.startButtonModelGLB.scene;       
 
@@ -157,7 +154,6 @@ async loadResources() {
         this.roomModelGLB = await loadGLB('./assets/models/roomModel.glb');
         this.roomModel = this.roomModelGLB.scene; 
        
-        //If we have more than one animation in the model we choose the first one
         if (this.roomModelGLB.animations && this.roomModelGLB.animations.length > 0) {
             this.RoomAnimation = this.roomModelGLB.animations[0];
         }           
@@ -180,7 +176,7 @@ async loadResources() {
         this.nextButtonModel = this.nextButtonModelGLB.scene;      
 
         this.doc1ModelGLB = await loadGLB('./assets/models/doc1Model.glb');
-        this.doc1Model = this.doc1ModelGLB.scene;  // Fixed typo: was doc1Modeel    
+        this.doc1Model = this.doc1ModelGLB.scene; 
         
         // Load Wendy
         this.wendyModelGLB = await loadGLB('./assets/models/wendyModel.glb');
@@ -207,7 +203,7 @@ async loadResources() {
     // Playback assets for scene2:
     this.scene2ModelAnimations = [
         { modelName: 'tableModel', animationName: 'TableAnimation' },
-        { modelName: 'roomModel', animationName: 'RoomAnimation' },
+        { modelName: 'roomModel', animationName: 'laptopbackscreenAction' },
     ];
 
     this.scene2AudioTracks = ['wendyAudio_1'];
