@@ -2,6 +2,7 @@
 console.log('scenes.js loading...');
 
 ARExperience.prototype.scene1 = function() {
+    
     // Initial text plate creation
     this.createTextPlate('Welcome! Use START to begin', {
         backgroundColor: 0x3366cc,
@@ -10,12 +11,12 @@ ARExperience.prototype.scene1 = function() {
         yOffset: -0.29  // Slightly below center
     });    
     
-    // Start button
+    // Start button creation and placement
     this.startButtonModel.position.set(0, -0.8, -1.5); 
     this.scaleModel(this.startButtonModel, 1);// 1m in front
     this.scene.add(this.startButtonModel);  
     
-    // Start button
+    // Flat table creation and placement
     this.flatTableModel.position.set(0.5, 2.6, -5.5); // 1m in front
     this.scene.add(this.flatTableModel);
     this.flatTableModel.name = "flatTable"; 
@@ -53,7 +54,8 @@ ARExperience.prototype.scene2 = function() {
         height: 0.2,
         yOffset: -0.29  // Slightly below center
         });    
-    this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
+    
+        this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
 
     setTimeout(() => {
         this.nextScene('scene3');
