@@ -11,16 +11,16 @@ ARExperience.prototype.scene1 = function() {
     });    
     
     // Start button
-    this.startButton.position.set(0, -0.8, -1.5); 
-    this.scaleModel(this.startButton, 1);// 1m in front
-    this.scene.add(this.startButton);  
+    this.startButtonModel.position.set(0, -0.8, -1.5); 
+    this.scaleModel(this.startButtonModel, 1);// 1m in front
+    this.scene.add(this.startButtonModel);  
     
     // Start button
     this.flatTableModel.position.set(0.5, 2.6, -5.5); // 1m in front
     this.scene.add(this.flatTableModel);
     this.flatTableModel.name = "flatTable"; 
         
-    this.makeModelClickable(this.startButton, () => {
+    this.makeModelClickable(this.startButtonModel, () => {
         this.moveModel("flatTable", 
             {x: 1, y: 10, z: -5.5},  
             7                   
@@ -29,7 +29,7 @@ ARExperience.prototype.scene1 = function() {
         setTimeout(() => {
             //this.firstScene();
             this.flatTableModel.visible = false;
-            this.startButton.visible = false;
+            this.startButtonModel.visible = false;
             this.nextScene('scene2');
         }, 2000);
     });         
@@ -44,7 +44,7 @@ ARExperience.prototype.scene2 = function() {
     this.tableModel.name = "tableModel";    
 
     this.roomModel.position.set(2, 0, -7); // 2m in front  
-    this.scene.add(this.roomModel);     
+    this.scene.add(this.roomModel)  ;     
     this.roomModel.name = "roomModel";    
     
     this.createTextPlate('You now see two models, animation and audio playback!', {
@@ -107,7 +107,7 @@ ARExperience.prototype.nextScene = function(sceneName) {
     this.nextButtonModel.updateMatrixWorld(true);
     
     this.scene.add(this.nextButtonModel);
-    this.nextButtonModel.name = 'nextButton'; 
+    this.nextButtonModel.name = 'nextButtonModel'; 
     
    
     this.nextButtonModel.position.set(0, -0.8, -1.5); 

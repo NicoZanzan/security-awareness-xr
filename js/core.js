@@ -142,60 +142,61 @@ class ARExperience {
         
         try {
             
-            //Load all assets        
-            const startButtonGLB = await loadGLB('./assets/models/startButton.glb');
-            this.startButton = startButtonGLB.scene;       
-
-            const laptopGLB = await loadGLB('./assets/models/laptop.glb');
-            this.laptop = laptopGLB.scene; 
+            //TODO: Load all models at once, list model name + respective animation(s) names
             
-            const flatTableGLB = await loadGLB('./assets/models/flatTable.glb');
-            this.flatTableModel = flatTableGLB.scene;      
+            //Load all assets        
+            const startButtonModelGLB = await loadGLB('./assets/models/startButtonModel.glb');
+            this.startButtonModel = startButtonModelGLB.scene;       
 
-            const roomGLB = await loadGLB('./assets/models/room.glb');
-            this.roomModel = roomGLB.scene; 
+            const laptopModelGLB = await loadGLB('./assets/models/laptopModel.glb');
+            this.laptopModel = laptopModelGLB.scene; 
+            
+            const flatTableModelGLB = await loadGLB('./assets/models/flatTableModel.glb');
+            this.flatTableModel = flatTableModelGLB.scene;      
+
+            const roomModelGLB = await loadGLB('./assets/models/roomModel.glb');
+            this.roomModel = roomModelGLB.scene; 
 
            
-            console.log('Available animations in room:', roomGLB.animations.map(anim => anim.name));
+            console.log('Available animations in room:', roomModelGLB.animations.map(anim => anim.name));
 
             //If we have more than obe animation in the model we chose the first one
 
-
-            if (roomGLB.animations && roomGLB.animations.length > 0) {
-                this.RoomAnimation = roomGLB.animations[0];
+            if (roomModelGLB.animations && roomModelGLB.animations.length > 0) {
+                this.RoomAnimation = roomModelGLB.animations[0];
             }           
 
-            const tableGLB = await loadGLB('./assets/models/table.glb');
-            this.tableModel = tableGLB.scene;       
+            const tableModelGLB = await loadGLB('./assets/models/tableModel.glb');
+            this.tableModel = tableModelGLB.scene;       
 
-            console.log('Available animations in table:', tableGLB.animations.map(anim => anim.name));
+            console.log('Available animations in table:', tableModelGLB.animations.map(anim => anim.name));
 
             //If we have more than obe animation in the model we chose the first one
 
-            if (tableGLB.animations && tableGLB.animations.length > 0) {
-                this.TableAnimation = tableGLB.animations[0];
+            if (tableModelGLB.animations && tableModelGLB.animations.length > 0) {
+                this.TableAnimation = tableModelGLB.animations[0];
             }
 
-            const pauseGLB = await loadGLB('./assets/models/pauseButton.glb');
-            this.pauseButtonModel = pauseGLB.scene;        
+            const pauseButtonModelGLB = await loadGLB('./assets/models/pauseButtonModel.glb');
+            this.pauseButtonModel = pauseButtonModelGLB.scene;        
 
-            const quitGLB = await loadGLB('./assets/models/quitButton.glb');
-            this.quitButtonModel = quitGLB.scene;       
+            const quitButtonModelGLB = await loadGLB('./assets/models/quitButtonModel.glb');
+            this.quitButtonModel = quitButtonModelGLB.scene;       
                   
             // Load next button
-            const nextGLB = await loadGLB('./assets/models/nextButton.glb');
-            this.nextButtonModel = nextGLB.scene;      
+            const nextButtonModelGLB = await loadGLB('./assets/models/nextButtonModel.glb');
+            this.nextButtonModel = nextButtonModelGLB.scene;      
 
-            const doc1GLB = await loadGLB('./assets/models/doc.glb');
-            this.doc1Model = doc1GLB.scene;      
+            const doc1ModelGLB = await loadGLB('./assets/models/doc1Model.glb');
+            this.doc1Modeel = doc1ModelGLB.scene;      
             
             // Load Wendy
-            const wendyGLB = await loadGLB('./assets/models/wendy.glb');
-            this.wendy = wendyGLB.scene;           
+            const wendyModelGLB = await loadGLB('./assets/models/wendyModel.glb');
+            this.wendyModel = wendyModelGLB.scene;           
             
             // Load Mendy
-            const mendyGLB = await loadGLB('./assets/models/mendy.glb');
-            this.mendy = mendyGLB.scene;            
+            const mendyModelGLB = await loadGLB('./assets/models/mendyModel.glb');
+            this.mendyModel = mendyModelGLB.scene;            
             
             console.log('All models loaded successfully');
             
