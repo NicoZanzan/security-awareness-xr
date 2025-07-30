@@ -209,6 +209,15 @@ ARExperience.prototype.playback3D = function(modelAnimationPairs, audioFileNames
         }
     });
 
+    // Calculate total audio length before playing
+    let totalAudioLength = 0;
+    audioFileNames.forEach(audioName => {
+        const audio = this[audioName];
+        if (audio instanceof Audio && !isNaN(audio.duration) && audio.duration > 0) {
+            totalAudioLength = Math.max(totalAudioLength, audio.duration * 1000); // Convert to ms
+        }
+    });
+
     // 2. Play audio files with the specified offset
     setTimeout(() => {
         audioFileNames.forEach(audioName => {
@@ -228,6 +237,11 @@ ARExperience.prototype.playback3D = function(modelAnimationPairs, audioFileNames
     }, offsetMs);
 
     console.log('Request for animations and audio playback initiated.');
+    
+    // Return object with audio length (without offset)
+    return {
+        audioLength: totalAudioLength
+    };
 };
 
 ARExperience.prototype.createTextPlate = function(text, options = {}) {
@@ -470,3 +484,45 @@ ARExperience.prototype.togglePause = function(audio, textPlate = null) {
         }
     }
 };
+
+ARExperience.prototype.showModelsAnimations = function() {
+console.log('📋 Loaded Models and Animations Overview');
+    console.log('=======================================\n');
+
+    const loadedModels = [];
+    
+    // Check for GLB objects that contain animations
+    for (const prop in this) {
+        if (prop.endsWith('GLB') && this[prop] && this[prop].scene) {
+            const glbObj = this[prop];
+            const modelName = prop.replace('GLB', '');
+            
+            let animationNames = [];
+            if (glbObj.animations && glbObj.animations.length > 0) {
+                animationNames = glbObj.animations.map(anim => anim.name);
+            }
+
+            loadedModels.push({
+                name: modelName,
+                animationCount: animationNames.length,
+                animationNames: animationNames
+            });
+        }
+    }
+
+    if (loadedModels.length === 0) {
+        console.log('❌ No GLB objects found');
+        return [];
+    }
+
+    // Overview Table
+    console.log('Model'.padEnd(20) + 'Animations');
+    console.log('-'.repeat(50));
+    
+    loadedModels.forEach(info => {
+        const animNames = info.animationNames.length > 0 ? info.animationNames.join(', ') : 'None';
+        console.log(info.name.padEnd(20) + animNames);
+    });
+
+    return loadedModels;
+}

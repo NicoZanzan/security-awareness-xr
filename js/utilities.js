@@ -176,44 +176,4 @@ ARExperience.prototype.finishAR = function() {
     window.removeEventListener('resize', this.onWindowResize);
 };
 
-ARExperience.prototype.showModelsAnimations = function() {
-console.log('📋 Loaded Models and Animations Overview');
-    console.log('=======================================\n');
 
-    const loadedModels = [];
-    
-    // Check for GLB objects that contain animations
-    for (const prop in this) {
-        if (prop.endsWith('GLB') && this[prop] && this[prop].scene) {
-            const glbObj = this[prop];
-            const modelName = prop.replace('GLB', '');
-            
-            let animationNames = [];
-            if (glbObj.animations && glbObj.animations.length > 0) {
-                animationNames = glbObj.animations.map(anim => anim.name);
-            }
-
-            loadedModels.push({
-                name: modelName,
-                animationCount: animationNames.length,
-                animationNames: animationNames
-            });
-        }
-    }
-
-    if (loadedModels.length === 0) {
-        console.log('❌ No GLB objects found');
-        return [];
-    }
-
-    // Overview Table
-    console.log('Model'.padEnd(20) + 'Animations');
-    console.log('-'.repeat(50));
-    
-    loadedModels.forEach(info => {
-        const animNames = info.animationNames.length > 0 ? info.animationNames.join(', ') : 'None';
-        console.log(info.name.padEnd(20) + animNames);
-    });
-
-    return loadedModels;
-}

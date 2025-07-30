@@ -55,24 +55,42 @@ ARExperience.prototype.scene2 = function() {
         yOffset: -0.29  // Slightly below center
         });    
     
-        this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
+        const playback3D = this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
+
+
+    // Access the audioLength property
+    const audioLength = playback3D.audioLength;
+    console.log(`Audio will play for ${audioLength}ms`);
+
 
     setTimeout(() => {
         this.nextScene('scene3');
-    }, 5000);  
+    }, audioLength);  
 };
 
 ARExperience.prototype.scene3 = function() {
    
     console.log('Starting scene 3 - interactive demo');
 
-    this.wendyModelS2.position.set(-2, 0, -7); // 2m in front  
-    this.scene.add(this.wendyModelS2);     
-    this.wendyModelS2.name = "wendyModelS2";    
+    this.cafeModelS3.position.set(-2, 0, -7); // 2m in front  
+    this.scene.add(this.cafeModelS3);     
+    this.cafeModelS3.name = "cafeModelS3";    
 
-    this.wendyGlassesModelS2.position.set(2, 0, -7); // 2m in front  
-    this.scene.add(this.wendyGlassesModelS2)  ;     
-    this.wendyGlassesModelS2.name = "wendyGlassesModelS2";    
+    this.glassesModelS3.position.set(2, 0, -7); // 2m in front  
+    this.scene.add(this.glassesModelS3)  ;     
+    this.glassesModelS3.name = "glassesModelS3";   
+    
+    this.wendyGlassesModelS3.position.set(2, 0, -7); // 2m in front  
+    this.scene.add(this.wendyGlassesModelS3)  ;     
+    this.wendyGlassesModelS3.name = "wendyGlassesModelS3";  
+
+    this.wendyModelS3.position.set(2, 0, -7); // 2m in front  
+    this.scene.add(this.wendyModelS3)  ;     
+    this.wendyModelS3.name = "wendyModelS3";  
+
+    this.wordModelS3.position.set(2, 0, -7); // 2m in front  
+    this.scene.add(this.wordModelS3)  ;     
+    this.wordModelS3.name = "wordModelS3";  
     
     this.createTextPlate('You now see two models, animation and audio playback!', {
         backgroundColor: 0x3366cc,
@@ -80,7 +98,7 @@ ARExperience.prototype.scene3 = function() {
         height: 0.2,
         yOffset: -0.29  // Slightly below center
         });    
-    this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
+    this.playback3D(this.scene3ModelAnimations, this.scene3AudioTracks, 10);
 
     setTimeout(() => {
         this.nextScene('scene4');
