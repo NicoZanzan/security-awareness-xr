@@ -5,4 +5,4 @@ COMMIT_MESSAGE=${1:-$DEFAULT_COMMIT_MESSAGE}
 
 git add -A
 git commit -m "$COMMIT_MESSAGE"
-git push origin nico
+git push origin dietrich
