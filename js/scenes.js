@@ -17,12 +17,15 @@ ARExperience.prototype.scene1 = function() {
     this.scene.add(this.startButtonModel);  
     
     // Flat table creation and placement
-    this.flatTableModel.position.set(0.5, 2.6, -5.5); // 1m in front
-    this.scene.add(this.flatTableModel);
-    this.flatTableModel.name = "flatTable"; 
+    this.wendyNTModel.position.set(0, 0, -7); 
+    this.wendyNTModel.rotation.y = -Math.PI / 2; // 90 degrees clockwise
+    this.scene.add(this.wendyNTModel);     
+    this.wendyNTModel.name = "wendyNTModel";
+
+    this.playModelAnimation('wendyNTModel', 'humping');
         
     this.makeModelClickable(this.startButtonModel, () => {
-        this.moveModel("flatTable", 
+        this.moveModel("wendyNTModel", 
             {x: 1, y: 10, z: -5.5},  
             7                   
         );  
@@ -148,7 +151,7 @@ ARExperience.prototype.nextScene = function(sceneName) {
         console.log("Next Button explizit aus der Szene entfernt vor dem erneuten Hinzufügen.");
     }
    
-    this.nextButtonModel.position.set(0, 0, 0);   
+    //this.nextButtonModel.position.set(0, 0, 0);   
     this.nextButtonModel.rotation.set(0, 0, 0);   
     this.nextButtonModel.scale.set(1, 1, 1);     
     this.nextButtonModel.updateMatrixWorld(true);
@@ -157,7 +160,7 @@ ARExperience.prototype.nextScene = function(sceneName) {
     this.nextButtonModel.name = 'nextButtonModel'; 
     
    
-    this.nextButtonModel.position.set(0, -0.8, -1.5); 
+    this.nextButtonModel.position.set(0, -1.8, -1.5); 
     this.scaleModel(this.nextButtonModel, 1); 
     this.nextButtonModel.visible = true;
     console.log(`Next Button sichtbar gemacht und positioniert bei (0, -0.3, -1.5) für: ${sceneName}`);
