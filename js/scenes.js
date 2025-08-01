@@ -32,7 +32,7 @@ ARExperience.prototype.scene1 = function() {
 
         setTimeout(() => {
             //this.firstScene();
-            this.flatTableModel.visible = false;
+            this.wendyNTModel.visible = false;
             this.startButtonModel.visible = false;
             this.nextScene('scene2');
         }, 2000);
@@ -59,7 +59,7 @@ ARExperience.prototype.scene2 = function() {
     this.scene.add(this.wendyModel);     
     this.wendyModel.name = "wendyModel";
 
-    this.mendyModel.position.set(0, -5, -7); 
+    this.mendyModel.position.set(0, 0, -3); 
     this.scene.add(this.mendyModel);     
     this.mendyModel.name = "mendyModel";
 
@@ -151,19 +151,18 @@ ARExperience.prototype.nextScene = function(sceneName) {
         console.log("Next Button explizit aus der Szene entfernt vor dem erneuten Hinzufügen.");
     }
    
-    //this.nextButtonModel.position.set(0, 0, 0);   
+   // Set all transformations first
+    this.nextButtonModel.position.set(0, -2.3, -1.5);    // Or use the logged position (0, -0.3, -1.5)?
     this.nextButtonModel.rotation.set(0, 0, 0);   
     this.nextButtonModel.scale.set(1, 1, 1);     
-    this.nextButtonModel.updateMatrixWorld(true);
-    
-    this.scene.add(this.nextButtonModel);
-    this.nextButtonModel.name = 'nextButtonModel'; 
-    
-   
-    this.nextButtonModel.position.set(0, -1.8, -1.5); 
-    this.scaleModel(this.nextButtonModel, 1); 
     this.nextButtonModel.visible = true;
-    console.log(`Next Button sichtbar gemacht und positioniert bei (0, -0.3, -1.5) für: ${sceneName}`);
+
+    // Update matrix after all transformations
+    this.nextButtonModel.updateMatrixWorld(true);
+
+    // Add to scene last
+    this.scene.add(this.nextButtonModel);
+    this.nextButtonModel.name = 'nextButtonModel';     
        
     this.createTextPlate('Click NEXT to proceed to the next scene', {
         backgroundColor: 0x3366cc,
