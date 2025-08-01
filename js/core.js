@@ -140,44 +140,40 @@ class ARExperience {
             });
         };
         
-        try {
+        try {            
             
-            this.startButtonModelGLB = await loadGLB('./assets/models/startButtonModel.glb');
-            this.startButtonModel = this.startButtonModelGLB.scene;   
-
+            //Auto playback models
             this.cafeModelS3GLB = await loadGLB('./assets/models/cafeModelS3.glb');
             this.cafeModelS3 = this.cafeModelS3GLB.scene;  
 
-            this.glassesModelS3GLB = await loadGLB('./assets/models/glassesModelS3.glb');
-            this.glassesModelS3 = this.glassesModelS3GLB.scene;  
+            this.doc1ModelGLB = await loadGLB('./assets/models/doc1Model.glb');
+            this.doc1Model = this.doc1ModelGLB.scene;    
+            
+            this.doc2ModelGLB = await loadGLB('./assets/models/doc2Model.glb');
+            this.doc2Model = this.doc2ModelGLB.scene;   
+            
+            this.wendyModelGLB = await loadGLB('./assets/models/wendyModel.glb');
+            this.wendyModel = this.wendyModelGLB.scene;  
+
+            this.mendyModelGLB = await loadGLB('./assets/models/mendyModel.glb');
+            this.mendyModel = this.mendyModelGLB.scene;   
+
+            this.word1ModelGLB = await loadGLB('./assets/models/word1Model.glb');
+            this.word1Model = this.word1ModelGLB.scene;   
+            
+            this.word2ModelGLB = await loadGLB('./assets/models/word2Model.glb');
+            this.word2Model = this.word2ModelGLB.scene;  
+            
+            this.word3ModelGLB = await loadGLB('./assets/models/word3Model.glb');
+            this.word3Model = this.word3ModelGLB.scene; 
+
+            this.sunglassesModelGLB = await loadGLB('./assets/models/sunglassesModel.glb');
+            this.sunglassesModel = this.sunglassesModelGLB.scene;  
 
             this.wendyGlassesModelS3GLB = await loadGLB('./assets/models/wendyGlassesModelS3.glb');
             this.wendyGlassesModelS3 = this.wendyGlassesModelS3GLB.scene; 
 
-            this.wendyModelS3GLB = await loadGLB('./assets/models/wendyModelS3.glb');
-            this.wendyModelS3 = this.wendyModelS3GLB.scene; 
-
-            this.wordModelS3GLB = await loadGLB('./assets/models/wordModelS3.glb');
-            this.wordModelS3 = this.wordModelS3GLB.scene; 
-
-            this.wendyGlassesModelS2GLB = await loadGLB('./assets/models/wendyGlassesModelS2.glb');
-            this.wendyGlassesModelS2 = this.wendyGlassesModelS2GLB.scene;   
-
-            this.wendyModelS2GLB = await loadGLB('./assets/models/wendyModelS2.glb');
-            this.wendyModelS2 = this.wendyModelS2GLB.scene;   
-
-            this.laptopModelGLB = await loadGLB('./assets/models/laptopModel.glb');
-            this.laptopModel = this.laptopModelGLB.scene; 
-            
-            this.flatTableModelGLB = await loadGLB('./assets/models/flatTableModel.glb');
-            this.flatTableModel = this.flatTableModelGLB.scene;      
-
-            this.roomModelGLB = await loadGLB('./assets/models/roomModel.glb');
-            this.roomModel = this.roomModelGLB.scene; 
-        
-            this.tableModelGLB = await loadGLB('./assets/models/tableModel.glb');
-            this.tableModel = this.tableModelGLB.scene;       
-
+            //Other models 
             this.pauseButtonModelGLB = await loadGLB('./assets/models/pauseButtonModel.glb');
             this.pauseButtonModel = this.pauseButtonModelGLB.scene;        
 
@@ -185,16 +181,16 @@ class ARExperience {
             this.quitButtonModel = this.quitButtonModelGLB.scene;       
                 
             this.nextButtonModelGLB = await loadGLB('./assets/models/nextButtonModel.glb');
-            this.nextButtonModel = this.nextButtonModelGLB.scene;      
+            this.nextButtonModel = this.nextButtonModelGLB.scene;   
 
-            this.doc1ModelGLB = await loadGLB('./assets/models/doc1Model.glb');
-            this.doc1Model = this.doc1ModelGLB.scene; 
-            
-            this.wendyModelGLB = await loadGLB('./assets/models/wendyModel.glb');
-            this.wendyModel = this.wendyModelGLB.scene;           
+            this.startButtonModelGLB = await loadGLB('./assets/models/startButtonModel.glb');
+            this.startButtonModel = this.startButtonModelGLB.scene;   
+
+            this.flatTableModelGLB = await loadGLB('./assets/models/flatTableModel.glb');
+            this.flatTableModel = this.flatTableModelGLB.scene;            
         
-            this.mendyModelGLB = await loadGLB('./assets/models/mendyModel.glb');
-            this.mendyModel = this.mendyModelGLB.scene;   
+            this.tableModelGLB = await loadGLB('./assets/models/tableModel.glb');
+            this.tableModel = this.tableModelGLB.scene;              
             
             this.showModelsAnimations();
             
@@ -208,25 +204,19 @@ class ARExperience {
             this.audioS2.preload = 'auto';
             
             this.scene2ModelAnimations = [
-                { modelName: 'wendyModelS2', animationName: 'WendyAction.002' },
-                { modelName: 'wendyGlassesModelS2', animationName: 'WendyAction.003' },
+                { modelName: 'cafeModelS3', animationName: 'CafeAction' },
+                { modelName: 'doc1Model', animationName: 'document_1Action' },
+                { modelName: 'doc2Model', animationName: 'document_2Action' },
+                { modelName: 'mendyModel', animationName: 'MendyAction' },
+                { modelName: 'wendyModel', animationName: 'WendyAction' },
+                { modelName: 'word1Model', animationName: 'S1_wordAction' },
+                { modelName: 'word2Model', animationName: 'S2_wordAction' },
+                { modelName: 'word3Model', animationName: 'S3_wordAction' },
+                { modelName: 'sunglassesModel', animationName: 'sunglassesAction' },
+                { modelName: 'wendyGlassesModelS3', animationName: 'WendyAction.001' },              
             ];
 
-            this.scene2AudioTracks = ['audioS2'];
-
-             // SCENE 3 playback3D assets
-            this.audioS3 = new Audio('./assets/audio/audioS3.mp3');
-            this.audioS3.preload = 'auto';
-            
-            this.scene3ModelAnimations = [
-                { modelName: 'cafeModelS3', animationName: 'CafeAction.004' },
-                { modelName: 'glassesModelS3', animationName: 'WendyAction.003' },
-                { modelName: 'wendyGlassesModelS3', animationName: 'WendyAction.003' },
-                { modelName: 'wendyModelS3', animationName: 'WendyAction.004' },
-                { modelName: 'wordModelS3', animationName: 'Word1Action.001' },
-            ];
-
-            this.scene3AudioTracks = ['audioS3'];
+            this.scene2AudioTracks = ['audioS2'];            
 
     }
 

@@ -162,6 +162,9 @@ ARExperience.prototype.playModelAnimation = function(modelName, animationName) {
     // Create mixer and play the animation
     const mixer = new THREE.AnimationMixer(model);
     const action = mixer.clipAction(animation);
+
+    action.setLoop(THREE.LoopOnce);
+    action.clampWhenFinished = true;
     
     // Store mixer for updates in render loop
     if (!this.mixers) {

@@ -40,28 +40,58 @@ ARExperience.prototype.scene2 = function() {
    
     console.log('Starting scene 2 - interactive demo');
 
-    this.wendyModelS2.position.set(0, 0, -7); // 2m in front  
-    this.scene.add(this.wendyModelS2);     
-    this.wendyModelS2.name = "wendyModelS2";    
+    this.cafeModelS3.position.set(0, 0, -7); 
+    this.scene.add(this.cafeModelS3);     
+    this.cafeModelS3.name = "cafeModelS3";
 
-    this.wendyGlassesModelS2.position.set(0, 0, -7); // 2m in front  
-    this.scene.add(this.wendyGlassesModelS2)  ;     
-    this.wendyGlassesModelS2.name = "wendyGlassesModelS2";    
+    this.doc1Model.position.set(0, 0, -7); 
+    this.scene.add(this.doc1Model);     
+    this.doc1Model.name = "doc1Model";
+
+    this.doc2Model.position.set(0, 0, -7); 
+    this.scene.add(this.doc2Model);     
+    this.doc2Model.name = "doc2Model";
+
+    this.wendyModel.position.set(0, 0, -7); 
+    this.scene.add(this.wendyModel);     
+    this.wendyModel.name = "wendyModel";
+
+    this.mendyModel.position.set(0, -5, -7); 
+    this.scene.add(this.mendyModel);     
+    this.mendyModel.name = "mendyModel";
+
+    this.word1Model.position.set(0, 0, -7); 
+    this.scene.add(this.word1Model);     
+    this.word1Model.name = "word1Model";
+
+    this.word2Model.position.set(0, 0, -7); 
+    this.scene.add(this.word2Model);     
+    this.word2Model.name = "word2Model";
+
+    this.word3Model.position.set(0, 0, -7); 
+    this.scene.add(this.word3Model);     
+    this.word3Model.name = "word3Model";
+
+    this.sunglassesModel.position.set(0, 0, -7); 
+    this.scene.add(this.sunglassesModel);     
+    this.sunglassesModel.name = "sunglassesModel";
+
+    this.wendyGlassesModelS3.position.set(0, 0, -7); 
+    this.scene.add(this.wendyGlassesModelS3);     
+    this.wendyGlassesModelS3.name = "wendyGlassesModelS3";    
     
-    this.createTextPlate('You now see two models, animation and audio playback!', {
+    this.createTextPlate('Welcome to Scene 2!', {
         backgroundColor: 0x3366cc,
         width: 0.5,
         height: 0.2,
         yOffset: -0.29  // Slightly below center
-        });    
+    });    
     
-        const playback3D = this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
-
+    const playback3D = this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
 
     // Access the audioLength property
     const audioLength = playback3D.audioLength;
     console.log(`Audio will play for ${audioLength}ms`);
-
 
     setTimeout(() => {
         this.nextScene('scene3');
@@ -70,35 +100,15 @@ ARExperience.prototype.scene2 = function() {
 
 ARExperience.prototype.scene3 = function() {
    
-    console.log('Starting scene 3 - interactive demo');
-
-    this.cafeModelS3.position.set(-2, 0, -7); // 2m in front  
-    this.scene.add(this.cafeModelS3);     
-    this.cafeModelS3.name = "cafeModelS3";    
-
-    this.glassesModelS3.position.set(2, 0, -7); // 2m in front  
-    this.scene.add(this.glassesModelS3)  ;     
-    this.glassesModelS3.name = "glassesModelS3";   
+    console.log('Starting scene 3 - interactive demo');   
     
-    this.wendyGlassesModelS3.position.set(2, 0, -7); // 2m in front  
-    this.scene.add(this.wendyGlassesModelS3)  ;     
-    this.wendyGlassesModelS3.name = "wendyGlassesModelS3";  
-
-    this.wendyModelS3.position.set(2, 0, -7); // 2m in front  
-    this.scene.add(this.wendyModelS3)  ;     
-    this.wendyModelS3.name = "wendyModelS3";  
-
-    this.wordModelS3.position.set(2, 0, -7); // 2m in front  
-    this.scene.add(this.wordModelS3)  ;     
-    this.wordModelS3.name = "wordModelS3";  
-    
-    this.createTextPlate('You now see two models, animation and audio playback!', {
+    this.createTextPlate('Welcome to Scene 3!', {
         backgroundColor: 0x3366cc,
         width: 0.5,
         height: 0.2,
         yOffset: -0.29  // Slightly below center
         });    
-    this.playback3D(this.scene3ModelAnimations, this.scene3AudioTracks, 10);
+   
 
     setTimeout(() => {
         this.nextScene('scene4');
