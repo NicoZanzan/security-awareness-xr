@@ -1,7 +1,73 @@
 // scenes.js - Scene management and story flow
-console.log('scenes.js loading...');
+
+// ============== NEW SCENE MANAGEMENT SYSTEM ==============
+
+ARExperience.prototype.startExperience = function() {
+    console.log('🎬 Starting AR Experience...');
+    this.currentScene = 'scene1';
+    this.scene1();
+};
+
+ARExperience.prototype.goToScene = function(sceneName) {
+    console.log(`🔄 Transitioning to ${sceneName}`);
+    this.clearScene();
+    this.currentScene = sceneName;
+    
+    if (typeof this[sceneName] === 'function') {
+        setTimeout(() => {
+            this[sceneName]();
+        }, 300);
+    } else {
+        console.error(`❌ Scene ${sceneName} not found`);
+    }
+};
+
+ARExperience.prototype.addModelsToScene = function(modelConfigs) {
+    modelConfigs.forEach(config => {
+        const model = this[config.name];
+        if (model) {
+            model.position.set(config.x || 0, config.y || 0, config.z || -7);
+            if (config.rotation) model.rotation.y = config.rotation;
+            this.scene.add(model);
+            model.name = config.name;
+        } else {
+            console.warn(`⚠️ Model ${config.name} not found`);
+        }
+    });
+};
+
+ARExperience.prototype.showNextButton = function(targetScene) {
+    if (!this.nextButtonModel) {
+        console.error("nextButtonModel not found. Please ensure it is loaded.");
+        return;
+    }
+
+    // Reset and position next button
+    this.nextButtonModel.position.set(0, -0.8, -1.5);
+    this.nextButtonModel.rotation.set(0, 0, 0);
+    this.nextButtonModel.scale.set(1, 1, 1);
+    this.nextButtonModel.visible = true;
+    this.nextButtonModel.updateMatrixWorld(true);
+    
+    this.scene.add(this.nextButtonModel);
+    this.nextButtonModel.name = 'nextButtonModel';
+    
+    this.createTextPlate('Click NEXT to proceed to the next scene', {
+        backgroundColor: 0x3366cc,
+        width: 0.5,
+        height: 0.2,
+        yOffset: -0.29
+    });
+    
+    this.makeModelClickable(this.nextButtonModel, () => {
+        this.goToScene(targetScene);
+    });
+};
+
+// ============== INDIVIDUAL SCENES ==============
 
 ARExperience.prototype.scene1 = function() {
+    console.log('🎭 Starting Scene 1 - Welcome');
     
     // Initial text plate creation
     this.createTextPlate('Welcome! Use START to begin', {
@@ -16,7 +82,7 @@ ARExperience.prototype.scene1 = function() {
     this.scaleModel(this.startButtonModel, 1);// 1m in front
     this.scene.add(this.startButtonModel);  
     
-    // Flat table creation and placement
+    // Wendy NT model creation and placement
     this.wendyNTModel.position.set(0, 0, -7); 
     this.wendyNTModel.rotation.y = -Math.PI / 2; // 90 degrees clockwise
     this.scene.add(this.wendyNTModel);     
@@ -31,57 +97,29 @@ ARExperience.prototype.scene1 = function() {
         );  
 
         setTimeout(() => {
-            //this.firstScene();
             this.wendyNTModel.visible = false;
             this.startButtonModel.visible = false;
-            this.nextScene('scene2');
+            this.goToScene('scene2'); // NC: Use scene manager
         }, 2000);
     });         
 };
 
 ARExperience.prototype.scene2 = function() {
-   
-    console.log('Starting scene 2 - interactive demo');
+    console.log('🎪 Starting Scene 2 - Interactive Demo');
 
-    this.cafeModelS3.position.set(0, 0, -7); 
-    this.scene.add(this.cafeModelS3);     
-    this.cafeModelS3.name = "cafeModelS3";
-
-    this.doc1Model.position.set(0, 0, -7); 
-    this.scene.add(this.doc1Model);     
-    this.doc1Model.name = "doc1Model";
-
-    this.doc2Model.position.set(0, 0, -7); 
-    this.scene.add(this.doc2Model);     
-    this.doc2Model.name = "doc2Model";
-
-    this.wendyModel.position.set(0, 0, -7); 
-    this.scene.add(this.wendyModel);     
-    this.wendyModel.name = "wendyModel";
-
-    this.mendyModel.position.set(0, 0, -3); 
-    this.scene.add(this.mendyModel);     
-    this.mendyModel.name = "mendyModel";
-
-    this.word1Model.position.set(0, 0, -7); 
-    this.scene.add(this.word1Model);     
-    this.word1Model.name = "word1Model";
-
-    this.word2Model.position.set(0, 0, -7); 
-    this.scene.add(this.word2Model);     
-    this.word2Model.name = "word2Model";
-
-    this.word3Model.position.set(0, 0, -7); 
-    this.scene.add(this.word3Model);     
-    this.word3Model.name = "word3Model";
-
-    this.sunglassesModel.position.set(0, 0, -7); 
-    this.scene.add(this.sunglassesModel);     
-    this.sunglassesModel.name = "sunglassesModel";
-
-    this.wendyGlassesModelS3.position.set(0, 0, -7); 
-    this.scene.add(this.wendyGlassesModelS3);     
-    this.wendyGlassesModelS3.name = "wendyGlassesModelS3";    
+    // NC: Use helper function to add multiple models
+    this.addModelsToScene([
+        { name: 'cafeModelS3' },
+        { name: 'doc1Model' },
+        { name: 'doc2Model' },
+        { name: 'wendyModel' },
+        { name: 'mendyModel', z: -3 },
+        { name: 'word1Model' },
+        { name: 'word2Model' },
+        { name: 'word3Model' },
+        { name: 'sunglassesModel' },
+        { name: 'wendyGlassesModelS3' }
+    ]);
     
     this.createTextPlate('Welcome to Scene 2!', {
         backgroundColor: 0x3366cc,
@@ -90,41 +128,48 @@ ARExperience.prototype.scene2 = function() {
         yOffset: -0.29  // Slightly below center
     });    
     
-    const playback3D = this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
+    // Start animations and audio
+    this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
 
-    // Access the audioLength property
-    const audioLength = playback3D.audioLength;
-    console.log(`Audio will play for ${audioLength}ms`);
-
+    // NC: Use estimated duration instead of problematic audioLength
+    const estimatedDuration = 35000; // 35 seconds
     setTimeout(() => {
-        this.nextScene('scene3');
-    }, audioLength);  
+        this.showNextButton('scene3'); // NC: Show next button instead of direct transition
+    }, estimatedDuration);  
 };
 
 ARExperience.prototype.scene3 = function() {
-   
-    console.log('Starting scene 3 - interactive demo');   
+    console.log('🎨 Starting Scene 3 - Interaction Demo');   
     
     this.createTextPlate('Welcome to Scene 3!', {
         backgroundColor: 0x3366cc,
         width: 0.5,
         height: 0.2,
         yOffset: -0.29  // Slightly below center
-        });    
-   
+    });    
+
+    // You can add content here for scene 3
+    // Example: this.addModelsToScene([...]);
 
     setTimeout(() => {
-        this.nextScene('scene4');
+        this.showNextButton('scene4'); // NC: Transition to scene4
     }, 5000);  
 };
 
 ARExperience.prototype.scene4 = function() {
-    console.log('Starting scene 3 - interactive demo');
+    console.log('🎬 Starting Scene 4 - Finale');
     
-    this.createTextPlate('Click QUIT to finish the experience', {
+    this.createTextPlate('Thank you for experiencing our AR story!', {
         backgroundColor: 0x336633,
-        width: 0.5,
+        width: 0.6,
         height: 0.2,
+        yOffset: 0.2
+    });
+
+    this.createTextPlate('Click QUIT to finish the experience', {
+        backgroundColor: 0x663333,
+        width: 0.5,
+        height: 0.15,
         yOffset: -0.29
     });
 
@@ -133,64 +178,28 @@ ARExperience.prototype.scene4 = function() {
     this.scene.add(this.quitButtonModel);  
 
     this.makeModelClickable(this.quitButtonModel, () => {
+        console.log('🎬 Experience completed!');
         this.finishAR();
-    });      
+    });
+
+    // Optional: Add farewell animation
+    if (this.wendyModel) {
+        this.wendyModel.position.set(-2, 0, -5);
+        this.scene.add(this.wendyModel);
+        // Uncomment if you have a goodbye animation:
+        // this.playModelAnimation('wendyModel', 'WaveGoodbye');
+    }
 };
 
+// ============== LEGACY METHODS (IMPROVED) ==============
+
 ARExperience.prototype.nextScene = function(sceneName) {
-    // Sicherstellen, dass das nextButtonModel geladen ist
-    if (!this.nextButtonModel) {
-        console.error("nextButtonModel not found. Please ensure it is loaded.");
-        return;
-    }
-
-    // 1. WICHTIG: Den Next Button aus der Szene entfernen, falls er bereits existiert.
-    // Dies stellt sicher, dass er immer "frisch" hinzugefügt wird.
-    if (this.nextButtonModel.parent === this.scene) {
-        this.scene.remove(this.nextButtonModel);
-        console.log("Next Button explizit aus der Szene entfernt vor dem erneuten Hinzufügen.");
-    }
-   
-   // Set all transformations first
-    this.nextButtonModel.position.set(0, -2.3, -1.5);    // Or use the logged position (0, -0.3, -1.5)?
-    this.nextButtonModel.rotation.set(0, 0, 0);   
-    this.nextButtonModel.scale.set(1, 1, 1);     
-    this.nextButtonModel.visible = true;
-
-    // Update matrix after all transformations
-    this.nextButtonModel.updateMatrixWorld(true);
-
-    // Add to scene last
-    this.scene.add(this.nextButtonModel);
-    this.nextButtonModel.name = 'nextButtonModel';     
-       
-    this.createTextPlate('Click NEXT to proceed to the next scene', {
-        backgroundColor: 0x3366cc,
-        width: 0.5,
-        height: 0.2,
-        yOffset: -0.29
-    });
-    
-   
-    this.makeModelClickable(this.nextButtonModel, () => {        
-        if (this.nextButtonModel && this.nextButtonModel.parent === this.scene) {
-            this.scene.remove(this.nextButtonModel);
-        }
-        
-        this.clearScene();         
-        
-        if (typeof this[sceneName] === 'function') {
-            setTimeout(() => {
-                this[sceneName]();
-            }, 300);
-        } else {
-            console.log(`Szene ${sceneName} nicht gefunden`);
-        }
-    });
+    // NC: Simplified - just show the next button
+    this.showNextButton(sceneName);
 };
 
 ARExperience.prototype.clearScene = function() {
-    console.log('Clearing scene - disposing all assets');
+    console.log('🧹 Clearing scene - disposing all assets');
 
     // Helper function for disposing objects that skips reusable buttons.
     const disposeSafely = (obj) => {
@@ -261,5 +270,5 @@ ARExperience.prototype.clearScene = function() {
         catch(e) {}
     });
     this.mixers = [];
-    console.log('Scene cleared');
+    console.log('✅ Scene cleared');
 };

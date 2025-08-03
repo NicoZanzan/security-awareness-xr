@@ -25,6 +25,7 @@ class ARExperience {
         this.experienceStarted = false;
         this.isXRActive = false;
         this.isPaused = false;
+        this.currentScene = null; // NEW: Track current scene
         
         // For managing interactive objects
         this.modelInteractions = new Map();
@@ -104,8 +105,8 @@ class ARExperience {
                     this.render(timestamp, frame);
                 });
                 
-                // Start the interactive scene
-                this.scene1();
+                // NEW: Start the experience with the scene manager
+                this.startExperience();
                 
             } catch (error) {
                 console.error('Failed to start:', error);
