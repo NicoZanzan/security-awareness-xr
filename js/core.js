@@ -156,6 +156,13 @@ class ARExperience {
             this.wendyModelGLB = await loadGLB('./assets/models/wendyModel.glb');
             this.wendyModel = this.wendyModelGLB.scene;  
 
+            this.tabletModelGLB = await loadGLB('./assets/models/tabletModel.gltf');
+            this.tabletModel = this.tabletModelGLB.scene;  
+
+            this.laptopModelGLB = await loadGLB('./assets/models/laptopModel.gltf');
+            this.laptopModel = this.laptopModelGLB.scene;  
+
+
             this.wendyNTModelGLB = await loadGLB('./assets/models/wendyNTModel.glb');
             this.wendyNTModel = this.wendyNTModelGLB.scene;  
 

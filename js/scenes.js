@@ -129,14 +129,22 @@ ARExperience.prototype.scene2 = function() {
     });    
     
     // Start animations and audio
-    this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
+    //this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
 
     // NC: Use estimated duration instead of problematic audioLength
     const estimatedDuration = 35000; // 35 seconds
     setTimeout(() => {
         this.showNextButton('scene3'); // NC: Show next button instead of direct transition
-    }, estimatedDuration);  
+    //}, estimatedDuration);
+    }, 1000);  
 };
+
+
+
+
+
+
+
 
 ARExperience.prototype.scene3 = function() {
     console.log('🎨 Starting Scene 3 - Interaction Demo');   
@@ -146,15 +154,55 @@ ARExperience.prototype.scene3 = function() {
         width: 0.5,
         height: 0.2,
         yOffset: -0.29  // Slightly below center
-    });    
+    }); 
 
-    // You can add content here for scene 3
-    // Example: this.addModelsToScene([...]);
+    
+    this.addModelsToScene([
+        { name: 'wendyNTModel', x: -10, y: -10, z: -7, rotation: -Math.PI / 2 }, 
+        { name: 'tabletModel', x: 10, y: 10, z: -7 },
+        { name: 'laptopModel', x: 10, y: 10, z: 7},
+        { name: 'doc1Model', x: 10, y: 10, z: 7 }        
+    ]);   
+    
+    
+    this.wendyNTModel.visible = true; 
+    this.moveModel("wendyNTModel", 
+        {x: 0, y: 0, z: -7},  
+        5                   
+    );
+
+    this.doc1Model.visible = true; 
+    this.moveModel("doc1Model", 
+        {x: 4, y: 0, z: -7},  
+        5                   
+    );
+
+    this.laptopModel.visible = true; 
+    this.moveModel("laptopModel", 
+        {x: 5, y: 0, z: -7},  
+        5                   
+    ); 
+    
+    this.tabletModel.visible = true; 
+    this.moveModel("tabletModel", 
+        {x: -5, y: 0, z: -7},  
+        5                   
+    );   
 
     setTimeout(() => {
-        this.showNextButton('scene4'); // NC: Transition to scene4
-    }, 5000);  
+        this.showNextButton('scene4'); 
+    }, 2000);  
 };
+
+
+
+
+
+
+
+
+
+
 
 ARExperience.prototype.scene4 = function() {
     console.log('🎬 Starting Scene 4 - Finale');
@@ -199,65 +247,37 @@ ARExperience.prototype.nextScene = function(sceneName) {
 };
 
 ARExperience.prototype.clearScene = function() {
-    console.log('🧹 Clearing scene - disposing all assets');
+    console.log('🧹 Clearing scene - hiding all assets');
 
-    // Helper function for disposing objects that skips reusable buttons.
-    const disposeSafely = (obj) => {
-       
-        if (obj === this.nextButtonModel || obj === this.quitButtonModel) {
-            console.log(`Skipping full disposal for reusable button: ${obj.name || obj.uuid}. Setting to invisible and removing from parent.`);
-            obj.visible = false; // Make the button invisible when not needed
-           
-            if (obj.parent) { 
-                obj.parent.remove(obj); 
-            }
-            return; 
-        }
-
+    // Helper function for hiding objects instead of disposing
+    const hideSafely = (obj) => {
         if (!obj) return;
         
-        // Recursively dispose children first
-        // Create a copy of the children list as it is modified during iteration
-        [...(obj.children || [])].forEach(child => {
-            disposeSafely(child); // Recursive call
-            // Ensure the child is removed from the parent after disposal
-            if (obj.isObject3D) obj.remove(child);
-        });
-        
-        // Dispose geometry
-        obj.geometry?.dispose();
-        
-        // Dispose materials (even if there are multiple materials)
-        if (obj.material) {
-            const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
-            materials.forEach(mat => {
-                Object.values(mat).forEach(prop => prop?.isTexture && prop.dispose());
-                mat.dispose?.();
-            });
+        // Simply make the object invisible and remove from parent
+        obj.visible = false;
+        if (obj.parent) { 
+            obj.parent.remove(obj); 
         }
-        // console.log(`Disposed: ${obj.name || obj.uuid}`); // For debugging
+        
+        console.log(`Hidden: ${obj.name || obj.type}`);
     };
 
-   
     if (this.scene) {
-       
         [...this.scene.children].forEach(object => {                
             if (object.type.includes('Light') || object.type === 'PerspectiveCamera') return;              
-            disposeSafely(object);
+            hideSafely(object);
         });
     }
 
-    
     if (this.camera?.children) {
-        // Eine Kopie des Arrays erstellen
         [...this.camera.children].forEach(child => {
-            disposeSafely(child); // Sichere Entsorgungsfunktion aufrufen
+            hideSafely(child);
         });
     }        
    
     if (this.uiGroup && this.camera && this.uiGroup.parent === this.camera) {
         this.camera.remove(this.uiGroup);
-        disposeSafely(this.uiGroup);
+        this.uiGroup.visible = false; // Just hide instead of dispose
         this.uiGroup = null; 
         this.textPlate = null; 
     }
@@ -270,5 +290,5 @@ ARExperience.prototype.clearScene = function() {
         catch(e) {}
     });
     this.mixers = [];
-    console.log('✅ Scene cleared');
+    console.log('✅ Scene cleared (models hidden, not disposed)');
 };
