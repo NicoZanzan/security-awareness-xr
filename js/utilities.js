@@ -176,4 +176,53 @@ ARExperience.prototype.finishAR = function() {
     window.removeEventListener('resize', this.onWindowResize);
 };
 
+ARExperience.prototype.playAudio = function(audioName) {
+    console.log(`🔍 Trying to play: '${audioName}'`);
+    
+    const audio = this[audioName];
+    
+    if (!audio) {
+        console.error(`❌ Audio property '${audioName}' not found`);
+        
+        // Show available audio properties for debugging
+        console.log('🔍 Available audio properties:');
+        Object.getOwnPropertyNames(this).forEach(prop => {
+            if (prop.toLowerCase().includes('audio') && this[prop] instanceof Audio) {
+                console.log(`  - ${prop}`);
+            }
+        });
+        return;
+    }
+    
+    if (!(audio instanceof Audio)) {
+        console.error(`❌ '${audioName}' is not an Audio element`);
+        return;
+    }
+    
+    // Reset audio to beginning
+    audio.currentTime = 0;
+    
+    console.log(`🔊 Playing audio: ${audioName}`);
+    
+    // Play the audio
+    const playPromise = audio.play();
+    
+    if (playPromise !== undefined) {
+        playPromise.then(() => {
+            console.log(`✅ ${audioName} started playing`);
+        }).catch(error => {
+            console.error(`❌ Failed to play ${audioName}:`, error.message);
+            
+            // Common solutions for audio play failures
+            if (error.name === 'NotAllowedError') {
+                console.log('💡 Try playing after user interaction (click/touch)');
+            }
+        });
+    }
+    
+    return audio;
+};
+
+
+
 

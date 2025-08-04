@@ -77,6 +77,8 @@ ARExperience.prototype.scene1 = function() {
         yOffset: -0.29  // Slightly below center
     });    
     
+    this.playAudio('audioIntroMsg');
+
     // Start button creation and placement
     this.startButtonModel.position.set(0, -0.8, -1.5); 
     this.scaleModel(this.startButtonModel, 1);// 1m in front
@@ -129,41 +131,39 @@ ARExperience.prototype.scene2 = function() {
     });    
     
     // Start animations and audio
-    //this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
+    this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
 
     // NC: Use estimated duration instead of problematic audioLength
     const estimatedDuration = 35000; // 35 seconds
     setTimeout(() => {
         this.showNextButton('scene3'); // NC: Show next button instead of direct transition
-    //}, estimatedDuration);
-    }, 1000);  
+    }, estimatedDuration);
+    //}, 1000);  
 };
-
-
-
-
-
-
 
 
 ARExperience.prototype.scene3 = function() {
     console.log('🎨 Starting Scene 3 - Interaction Demo');   
     
-    this.createTextPlate('Welcome to Scene 3!', {
+    // 1. Wendy appears (clickable), 2. when clicked, Docs appear, wendy disappears, 
+    // 3. only when the right doc is clicked, congrat msg appears along with NEXT button, otherwise, error msg appears       
+    
+    
+    this.createTextPlate('Welcome to the Quiz!', {
         backgroundColor: 0x3366cc,
         width: 0.5,
         height: 0.2,
         yOffset: -0.29  // Slightly below center
     }); 
 
+    this.playAudio('audioQuizIntro');
     
     this.addModelsToScene([
         { name: 'wendyNTModel', x: -10, y: -10, z: -7, rotation: -Math.PI / 2 }, 
         { name: 'tabletModel', x: 10, y: 10, z: -7 },
         { name: 'laptopModel', x: 10, y: 10, z: 7},
-        { name: 'doc1Model', x: 10, y: 10, z: 7 }        
-    ]);   
-    
+        
+    ]);     
     
     this.wendyNTModel.visible = true; 
     this.moveModel("wendyNTModel", 
@@ -171,37 +171,38 @@ ARExperience.prototype.scene3 = function() {
         5                   
     );
 
-    this.doc1Model.visible = true; 
-    this.moveModel("doc1Model", 
-        {x: 4, y: 0, z: -7},  
-        5                   
-    );
+    setTimeout(() => {       
 
-    this.laptopModel.visible = true; 
-    this.moveModel("laptopModel", 
-        {x: 5, y: 0, z: -7},  
-        5                   
-    ); 
+        this.laptopModel.visible = true; 
+        this.moveModel("laptopModel", 
+            {x: 5, y: 0, z: -7},  
+            5                   
+        ); 
+        
+        this.tabletModel.visible = true; 
+        this.moveModel("tabletModel", 
+            {x: -5, y: 0, z: -7},  
+            5                   
+        );  
     
-    this.tabletModel.visible = true; 
-    this.moveModel("tabletModel", 
-        {x: -5, y: 0, z: -7},  
-        5                   
-    );   
+    }, 2000);  
 
+    
+    this.makeModelClickable(this.laptopModel, () => {
+        console.log('💻 Laptop clicked!');
+        this.createTextPlate('You clicked the laptop!', {
+            backgroundColor: 0x3366cc,
+            width: 0.5,
+            height: 0.2,
+            yOffset: -0.29
+        });
+    });  
+    
+    
     setTimeout(() => {
         this.showNextButton('scene4'); 
-    }, 2000);  
+    }, 6000);  
 };
-
-
-
-
-
-
-
-
-
 
 
 ARExperience.prototype.scene4 = function() {
