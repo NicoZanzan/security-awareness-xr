@@ -209,11 +209,24 @@ ARExperience.prototype.scene3 = function() {
         5                   
     );        
         
-    this.makeModelClickable(this.laptopModel, () => {
-        console.log('💻 Laptop clicked!');
-        this.playAudio('audioCorrectAnswer'); 
-        this.showNextButton('scene4');       
-    });  
+    // this.makeModelClickable(this.laptopModel, () => {
+    //     console.log('💻 Laptop clicked!');
+    //     this.playAudio('audioCorrectAnswer'); 
+    //     this.showNextButton('scene4');       
+    // });  
+
+    if (this.laptopModel.children && this.laptopModel.children.length > 0) {
+    this.laptopModel.children.forEach(child => {
+        if (child.type === 'Mesh') {
+            console.log('🔧 Making mesh child clickable:', child.name);
+            this.makeModelClickable(child, () => {
+                console.log('💻 Laptop clicked!');
+                this.playAudio('audioCorrectAnswer'); 
+                this.showNextButton('scene4');       
+            });
+        }
+    });
+}
 
     this.makeModelClickable(this.notebookModel, () => {
         console.log('📓 Notebook clicked!');
@@ -233,12 +246,9 @@ ARExperience.prototype.scene3 = function() {
     this.makeModelClickable(this.tabletModel, () => {
         console.log('📱 Tablet clicked!');
         this.playAudio('audioWrongAnswer');       
-    });          
+    });    
    
 };
-
-
-
 
 
 ARExperience.prototype.scene4 = function() {
