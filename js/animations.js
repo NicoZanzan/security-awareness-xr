@@ -77,6 +77,8 @@ ARExperience.prototype.moveModel = function(modelName, targetPos, speed) {
         if (progress >= 1.0) {
             // Set final position precisely
             model.position.copy(moveData.endPos);
+
+            model.updateMatrixWorld(true);
             
             // Mark animation as inactive
             moveData.active = false;

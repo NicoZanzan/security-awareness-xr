@@ -241,6 +241,32 @@ ARExperience.prototype.scene3 = function() {
         }
     
     }, 2000);  
+
+    setTimeout(() => {
+    console.log('🔍 SCENE 3 MODEL DEBUG:');
+    
+    // Check buttons that work
+    console.log('✅ Working button parent:', this.startButtonModel?.parent?.type);
+    console.log('✅ Working button in scene:', this.scene.children.includes(this.startButtonModel));
+    
+    // Check scene 3 models that don't work
+    [this.laptopModel, this.tabletModel, this.notebookModel].forEach(model => {
+        if (model) {
+            console.log(`❓ ${model.name}:`);
+            console.log(`  - parent: ${model.parent?.type}`);
+            console.log(`  - in scene: ${this.scene.children.includes(model)}`);
+            console.log(`  - visible: ${model.visible}`);
+            console.log(`  - position: (${model.position.x}, ${model.position.y}, ${model.position.z})`);
+            console.log(`  - matrixWorld updated: ${model.matrixWorldNeedsUpdate}`);
+        }
+    });
+}, 7000); // After models should be positioned
+
+
+
+
+
+
 };
 
 
