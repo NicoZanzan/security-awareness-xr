@@ -131,14 +131,14 @@ ARExperience.prototype.scene2 = function() {
     });    
     
     // Start animations and audio
-    this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
+    //this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
 
     // NC: Use estimated duration instead of problematic audioLength
     const estimatedDuration = 35000; // 35 seconds
     setTimeout(() => {
         this.showNextButton('scene3'); // NC: Show next button instead of direct transition
-    }, estimatedDuration);
-    //}, 1000);  
+    //}, estimatedDuration);
+    }, 1000);  
 };
 
 
@@ -162,26 +162,47 @@ ARExperience.prototype.scene3 = function() {
         { name: 'wendyNTModel', x: -10, y: -10, z: -7, rotation: -Math.PI / 2 }, 
         { name: 'tabletModel', x: 10, y: 10, z: -7 },
         { name: 'laptopModel', x: 10, y: 10, z: 7},
+        { name: 'tableModel', x: 10, y: 10, z: -7 },
+        { name: 'flatTableModel', x: 10, y: 10, z: -7 },
+        { name: 'notebookModel', x: 10, y: 10, z: -7 },
         
     ]);     
     
     this.wendyNTModel.visible = true; 
     this.moveModel("wendyNTModel", 
         {x: 0, y: 0, z: -7},  
-        5                   
+        8                   
     );
 
     setTimeout(() => {       
 
         this.laptopModel.visible = true; 
         this.moveModel("laptopModel", 
-            {x: 5, y: 0, z: -7},  
+            {x: 6.06, y: 0, z: -3.5},  
             5                   
         ); 
         
         this.tabletModel.visible = true; 
         this.moveModel("tabletModel", 
-            {x: -5, y: 0, z: -7},  
+            {x: 6.06, y: 0, z: 3.5},  
+            5                   
+        );  
+
+        this.tableModel.visible = true; 
+        this.moveModel("tableModel", 
+            {x: 0, y: 0, z: 7},  
+            5                   
+        );  
+
+        this.flatTableModel.visible = true; 
+        this.moveModel("flatTableModel", 
+            {x: -6.06, y: 0, z: 3.57},  
+            5                   
+        );  
+
+        this.notebookModel.visible = true; 
+        this.moveModel("notebookModel", 
+            {x: -6.06, y: 0, z: -3.5},  
             5                   
         );  
     
@@ -190,18 +211,30 @@ ARExperience.prototype.scene3 = function() {
     
     this.makeModelClickable(this.laptopModel, () => {
         console.log('💻 Laptop clicked!');
-        this.createTextPlate('You clicked the laptop!', {
-            backgroundColor: 0x3366cc,
-            width: 0.5,
-            height: 0.2,
-            yOffset: -0.29
-        });
+        this.playAudio('audioCorrectAnswer'); 
+        this.showNextButton('scene4');       
     });  
+
+    this.makeModelClickable(this.notebookModel, () => {
+        console.log('Notebook clicked!');
+        this.playAudio('audioWrongAnswer');       
+    });  
+
+    this.makeModelClickable(this.tableModel, () => {
+        console.log('Table clicked!');
+        this.playAudio('audioWrongAnswer');       
+    });  
+
+    this.makeModelClickable(this.flatTableModel, () => {
+        console.log('Flat Table clicked!');
+        this.playAudio('audioWrongAnswer');       
+    }); 
     
-    
-    setTimeout(() => {
-        this.showNextButton('scene4'); 
-    }, 6000);  
+    this.makeModelClickable(this.tabletModel, () => {
+        console.log('Tablet clicked!');
+        this.playAudio('audioWrongAnswer');       
+    });   
+  
 };
 
 

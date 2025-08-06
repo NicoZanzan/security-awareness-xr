@@ -150,6 +150,9 @@ class ARExperience {
             this.wendyModelGLB = await loadGLB('./assets/models/wendyModel.glb');
             this.wendyModel = this.wendyModelGLB.scene;            
 
+            this.notebookModelGLB = await loadGLB('./assets/models/notebookModel.gltf');
+            this.notebookModel = this.notebookModelGLB.scene; 
+
             this.laptopModelGLB = await loadGLB('./assets/models/laptopModel.gltf');
             this.laptopModel = this.laptopModelGLB.scene; 
 
@@ -177,6 +180,9 @@ class ARExperience {
             //Other models            
             this.tabletModelGLB = await loadGLB('./assets/models/tabletModel.gltf');
             this.tabletModel = this.tabletModelGLB.scene;  
+
+            this.tableModelGLB = await loadGLB('./assets/models/tableModel.glb');
+            this.tableModel = this.tableModelGLB.scene;  
                         
             this.doc1ModelGLB = await loadGLB('./assets/models/doc1Model.glb');
             this.doc1Model = this.doc1ModelGLB.scene;    
@@ -198,10 +204,7 @@ class ARExperience {
 
             this.flatTableModelGLB = await loadGLB('./assets/models/flatTableModel.glb');
             this.flatTableModel = this.flatTableModelGLB.scene;            
-        
-            this.tableModelGLB = await loadGLB('./assets/models/tableModel.glb');
-            this.tableModel = this.tableModelGLB.scene;              
-            
+                 
             this.showModelsAnimations();
             
             } catch (error) {
@@ -214,6 +217,12 @@ class ARExperience {
 
             this.audioQuizIntro = new Audio('./assets/audio/audioQuizIntro.mp3');
             this.audioQuizIntro.preload = 'auto';
+
+            this.audioCorrectAnswer = new Audio('./assets/audio/audioCorrectAnswer.mp3');
+            this.audioCorrectAnswer.preload = 'auto';
+
+            this.audioWrongAnswer = new Audio('./assets/audio/audioWrongAnswer.mp3');
+            this.audioWrongAnswer.preload = 'auto';
         
             // SCENE 2 playback3D assets
             this.audioS2 = new Audio('./assets/audio/audioS2.mp3');
