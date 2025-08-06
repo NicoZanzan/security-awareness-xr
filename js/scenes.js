@@ -171,62 +171,74 @@ ARExperience.prototype.scene3 = function() {
     this.moveModel("wendyNTModel", {x: 0, y: 0, z: -7}, 8);
 
     setTimeout(() => {       
-        // Move models to final positions
+        // Move models to final positions AND register interactions with completion callbacks
         this.laptopModel.visible = true; 
-        this.moveModel("laptopModel", {x: 6.06, y: 0, z: -3.5}, 5); 
+        const laptopMove = this.moveModel("laptopModel", {x: 6.06, y: 0, z: -3.5}, 5);
+        if (laptopMove) {
+            laptopMove.onComplete(() => {
+                console.log('💻 Laptop positioned, registering interaction');
+                this.makeModelClickable(this.laptopModel, () => {
+                    console.log('💻 Laptop clicked!');
+                    this.playAudio('audioCorrectAnswer'); 
+                    this.playModelAnimation('wendyNTModel', 'humping');
+                    this.createTextPlate('Great! Use NEXT to continue', {
+                        backgroundColor: 0x3366cc,
+                        width: 0.5,
+                        height: 0.2,
+                        yOffset: 0.29
+                    });    
+                    this.showNextButton('scene4');       
+                });
+            });
+        }
         
         this.tabletModel.visible = true; 
-        this.moveModel("tabletModel", {x: 6.06, y: 0, z: 3.5}, 5);  
+        const tabletMove = this.moveModel("tabletModel", {x: 6.06, y: 0, z: 3.5}, 5);
+        if (tabletMove) {
+            tabletMove.onComplete(() => {
+                console.log('📱 Tablet positioned, registering interaction');
+                this.makeModelClickable(this.tabletModel, () => {
+                    console.log('📱 Tablet clicked!');
+                    this.playAudio('audioWrongAnswer');       
+                });
+            });
+        }
 
         this.tableModel.visible = true; 
-        this.moveModel("tableModel", {x: 0, y: 0, z: 7}, 5);  
+        const tableMove = this.moveModel("tableModel", {x: 0, y: 0, z: 7}, 5);
+        if (tableMove) {
+            tableMove.onComplete(() => {
+                console.log('🪑 Table positioned, registering interaction');
+                this.makeModelClickable(this.tableModel, () => {
+                    console.log('🪑 Table clicked!');
+                    this.playAudio('audioWrongAnswer');       
+                });
+            });
+        }
 
         this.flatTableModel.visible = true; 
-        this.moveModel("flatTableModel", {x: -6.06, y: 0, z: 3.57}, 5);  
+        const flatTableMove = this.moveModel("flatTableModel", {x: -6.06, y: 0, z: 3.57}, 5);
+        if (flatTableMove) {
+            flatTableMove.onComplete(() => {
+                console.log('📋 Flat Table positioned, registering interaction');
+                this.makeModelClickable(this.flatTableModel, () => {
+                    console.log('📋 Flat Table clicked!');
+                    this.playAudio('audioWrongAnswer');       
+                });
+            });
+        }
 
         this.notebookModel.visible = true; 
-        this.moveModel("notebookModel", {x: -6.06, y: 0, z: -3.5}, 5);  
-
-        // ✅ WAIT for models to finish moving, THEN register interactions
-        setTimeout(() => {
-            console.log('🔧 Registering quiz interactions after positioning...');
-            
-            this.makeModelClickable(this.laptopModel, () => {
-                console.log('💻 Laptop clicked!');
-                this.playAudio('audioCorrectAnswer'); 
-                this.playModelAnimation('wendyNTModel', 'humping');
-                this.createTextPlate('Great! Use NEXT to continue', {
-                    backgroundColor: 0x3366cc,
-                    width: 0.5,
-                    height: 0.2,
-                    yOffset: 0.29
-                });    
-                this.showNextButton('scene4');       
-            });  
-
-            this.makeModelClickable(this.notebookModel, () => {
-                console.log('📓 Notebook clicked!');
-                this.playAudio('audioWrongAnswer');       
-            });  
-
-            this.makeModelClickable(this.tableModel, () => {
-                console.log('🪑 Table clicked!');
-                this.playAudio('audioWrongAnswer');       
-            });  
-
-            this.makeModelClickable(this.flatTableModel, () => {
-                console.log('📋 Flat Table clicked!');
-                this.playAudio('audioWrongAnswer');       
-            }); 
-            
-            this.makeModelClickable(this.tabletModel, () => {
-                console.log('📱 Tablet clicked!');
-                this.playAudio('audioWrongAnswer');       
+        const notebookMove = this.moveModel("notebookModel", {x: -6.06, y: 0, z: -3.5}, 5);
+        if (notebookMove) {
+            notebookMove.onComplete(() => {
+                console.log('📓 Notebook positioned, registering interaction');
+                this.makeModelClickable(this.notebookModel, () => {
+                    console.log('📓 Notebook clicked!');
+                    this.playAudio('audioWrongAnswer');       
+                });
             });
-
-            console.log('✅ All quiz interactions registered at correct positions');
-            
-        }, 6000); // Wait for 5s movement + 1s buffer
+        }
     
     }, 2000);  
 };
