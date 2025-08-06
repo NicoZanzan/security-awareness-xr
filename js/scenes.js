@@ -67,10 +67,9 @@ ARExperience.prototype.showNextButton = function(targetScene) {
 // ============== INDIVIDUAL SCENES ==============
 
 ARExperience.prototype.scene1 = function() {
-    console.log('🎭 Starting Scene 1 - Welcome');
-    
+        
     // Initial text plate creation
-    this.createTextPlate('Welcome! Use START to begin', {
+    this.createTextPlate('Welcome - use START below to begin', {
         backgroundColor: 0x3366cc,
         width: 0.5,
         height: 0.2,
@@ -113,8 +112,8 @@ ARExperience.prototype.scene1 = function() {
 ARExperience.prototype.scene2 = function() {
     console.log('🎪 Starting Scene 2 - Interactive Demo');
 
-    this.createTextPlate('This is a video.', {
-        backgroundColor: 0x3366cc,
+    this.createTextPlate('Chapter 1: 3D Video', {
+       backgroundColor: 0x3366cc,
         width: 0.5,
         height: 0.2,
         yOffset: 0.29  // Slightly below center
@@ -132,8 +131,7 @@ ARExperience.prototype.scene2 = function() {
         { name: 'word3Model' },
         { name: 'sunglassesModel' },
         { name: 'wendyGlassesModelS3' }
-    ]);   
-    
+    ]);      
     
     // Start animations and audio
     //this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
@@ -148,13 +146,12 @@ ARExperience.prototype.scene2 = function() {
 
 
 ARExperience.prototype.scene3 = function() {
-    console.log('🎨 Starting Scene 3 - Interaction Demo');   
-      
-    this.createTextPlate('Welcome to the Quiz!', {
+          
+    this.createTextPlate('Chapter 2: The Quiz', {
         backgroundColor: 0x3366cc,
         width: 0.5,
         height: 0.2,
-        yOffset: -0.29  // Slightly below center
+        yOffset: 0.29  // Slightly below center
     }); 
 
     this.playAudio('audioQuizIntro');
@@ -212,6 +209,13 @@ ARExperience.prototype.scene3 = function() {
     this.makeModelClickable(this.laptopModel, () => {
         console.log('💻 Laptop clicked!');
         this.playAudio('audioCorrectAnswer'); 
+        this.playModelAnimation('wendyNTModel', 'humping');
+         this.createTextPlate('Great! Use NEXT to continue', {
+            backgroundColor: 0x3366cc,
+            width: 0.5,
+            height: 0.2,
+            yOffset: 0.29  // Slightly below center
+        });    
         this.showNextButton('scene4');       
     });  
 
@@ -241,19 +245,12 @@ ARExperience.prototype.scene3 = function() {
 ARExperience.prototype.scene4 = function() {
     console.log('🎬 Starting Scene 4 - Finale');
     
-    this.createTextPlate('Thank you for experiencing our AR story!', {
-        backgroundColor: 0x336633,
-        width: 0.6,
-        height: 0.2,
-        yOffset: 0.2
-    });
-
-    this.createTextPlate('Click QUIT to finish the experience', {
-        backgroundColor: 0x663333,
+    this.createTextPlate('Thanks for looking around - use QUIT below to finish', {
+        backgroundColor: 0x3366cc,
         width: 0.5,
-        height: 0.15,
-        yOffset: -0.29
-    });
+        height: 0.2,
+        yOffset: 0.29  // Slightly below center
+    });   
 
     this.quitButtonModel.position.set(0, 0, -1.5); 
     this.scaleModel(this.quitButtonModel, 0.3);      
@@ -303,20 +300,21 @@ ARExperience.prototype.clearScene = function() {
         });
     }
 
-    if (this.camera?.children) {
-        [...this.camera.children].forEach(child => {
-            hideSafely(child);
+    // ✅ Smart interaction cleanup - don't destroy all interactions
+    if (this.modelInteractions) {
+        const modelsToRemove = [];
+        this.modelInteractions.forEach((data, model) => {
+            // Remove interactions for models that are no longer in the scene or are hidden
+            if (!model.parent || !model.visible) {
+                modelsToRemove.push(model);
+            }
         });
-    }        
-   
-    if (this.uiGroup && this.camera && this.uiGroup.parent === this.camera) {
-        this.camera.remove(this.uiGroup);
-        this.uiGroup.visible = false; // Just hide instead of dispose
-        this.uiGroup = null; 
-        this.textPlate = null; 
+        modelsToRemove.forEach(model => {
+            this.modelInteractions.delete(model);
+        });
+        console.log(`🧹 Cleaned up ${modelsToRemove.length} stale interactions, ${this.modelInteractions.size} remaining`);
     }
-   
-    this.modelInteractions?.clear();
+
     if (this._animationCallbacks) this._animationCallbacks = [];        
    
     this.mixers?.forEach(mixer => {
@@ -324,5 +322,7 @@ ARExperience.prototype.clearScene = function() {
         catch(e) {}
     });
     this.mixers = [];
-    console.log('✅ Scene cleared (models hidden, not disposed)');
+    console.log('✅ Scene cleared (interactions preserved)');
 };
+
+
