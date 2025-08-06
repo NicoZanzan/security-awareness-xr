@@ -173,17 +173,17 @@ ARExperience.prototype.scene3 = function() {
     );   
     
      
-    this.laptopModelModel.position.set(0, 0, -7); 
+    this.laptopModel.position.set(6.06, 0, -3.5); 
     this.laptopModel.rotation.y = -Math.PI / 2; // 90 degrees clockwise
     this.scene.add(this.laptopModel);     
     this.laptopModel.name = "laptopModel";
 
 
     this.laptopModel.visible = true; 
-    this.moveModel("laptopModel", 
-        {x: 6.06, y: 0, z: -3.5},  
-        5                   
-    ); 
+    // this.moveModel("laptopModel", 
+    //     {x: 6.06, y: 0, z: -3.5},  
+    //     5                   
+    // ); 
     
     this.tabletModel.visible = true; 
     this.moveModel("tabletModel", 
