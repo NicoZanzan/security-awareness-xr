@@ -146,18 +146,16 @@ ARExperience.prototype.scene2 = function() {
 
 
 ARExperience.prototype.scene3 = function() {
-    console.log('🎨 Starting Scene 3 - Interaction Demo');
           
     this.createTextPlate('Chapter 2: The Quiz', {
         backgroundColor: 0x3366cc,
         width: 0.5,
         height: 0.2,
-        yOffset: 0.29
+        yOffset: 0.29  // Slightly below center
     }); 
 
     this.playAudio('audioQuizIntro');
     
-    // Position models off-screen initially
     this.addModelsToScene([
         { name: 'wendyNTModel', x: -10, y: -10, z: -7, rotation: -Math.PI / 2 }, 
         { name: 'tabletModel', x: 10, y: 10, z: -7 },
@@ -168,107 +166,79 @@ ARExperience.prototype.scene3 = function() {
     ]);     
     
     this.wendyNTModel.visible = true; 
-    this.moveModel("wendyNTModel", {x: 0, y: 0, z: -7}, 8);
+    this.moveModel("wendyNTModel", 
+        {x: 0, y: 0, z: -7},  
+        8                   
+    );
 
     setTimeout(() => {       
-        // Move models to final positions AND register interactions with completion callbacks
+
         this.laptopModel.visible = true; 
-        const laptopMove = this.moveModel("laptopModel", {x: 6.06, y: 0, z: -3.5}, 5);
-        if (laptopMove) {
-            laptopMove.onComplete(() => {
-                console.log('💻 Laptop positioned, registering interaction');
-                this.makeModelClickable(this.laptopModel, () => {
-                    console.log('💻 Laptop clicked!');
-                    this.playAudio('audioCorrectAnswer'); 
-                    this.playModelAnimation('wendyNTModel', 'humping');
-                    this.createTextPlate('Great! Use NEXT to continue', {
-                        backgroundColor: 0x3366cc,
-                        width: 0.5,
-                        height: 0.2,
-                        yOffset: 0.29
-                    });    
-                    this.showNextButton('scene4');       
-                });
-            });
-        }
+        // this.moveModel("laptopModel", 
+        //     {x: 6.06, y: 0, z: -3.5},  
+        //     5                   
+        // ); 
         
         this.tabletModel.visible = true; 
-        const tabletMove = this.moveModel("tabletModel", {x: 6.06, y: 0, z: 3.5}, 5);
-        if (tabletMove) {
-            tabletMove.onComplete(() => {
-                console.log('📱 Tablet positioned, registering interaction');
-                this.makeModelClickable(this.tabletModel, () => {
-                    console.log('📱 Tablet clicked!');
-                    this.playAudio('audioWrongAnswer');       
-                });
-            });
-        }
+        this.moveModel("tabletModel", 
+            {x: 6.06, y: 0, z: 3.5},  
+            5                   
+        );  
 
         this.tableModel.visible = true; 
-        const tableMove = this.moveModel("tableModel", {x: 0, y: 0, z: 7}, 5);
-        if (tableMove) {
-            tableMove.onComplete(() => {
-                console.log('🪑 Table positioned, registering interaction');
-                this.makeModelClickable(this.tableModel, () => {
-                    console.log('🪑 Table clicked!');
-                    this.playAudio('audioWrongAnswer');       
-                });
-            });
-        }
+        this.moveModel("tableModel", 
+            {x: 0, y: 0, z: 7},  
+            5                   
+        );  
 
         this.flatTableModel.visible = true; 
-        const flatTableMove = this.moveModel("flatTableModel", {x: -6.06, y: 0, z: 3.57}, 5);
-        if (flatTableMove) {
-            flatTableMove.onComplete(() => {
-                console.log('📋 Flat Table positioned, registering interaction');
-                this.makeModelClickable(this.flatTableModel, () => {
-                    console.log('📋 Flat Table clicked!');
-                    this.playAudio('audioWrongAnswer');       
-                });
-            });
-        }
+        this.moveModel("flatTableModel", 
+            {x: -6.06, y: 0, z: 3.57},  
+            5                   
+        );  
 
         this.notebookModel.visible = true; 
-        const notebookMove = this.moveModel("notebookModel", {x: -6.06, y: 0, z: -3.5}, 5);
-        if (notebookMove) {
-            notebookMove.onComplete(() => {
-                console.log('📓 Notebook positioned, registering interaction');
-                this.makeModelClickable(this.notebookModel, () => {
-                    console.log('📓 Notebook clicked!');
-                    this.playAudio('audioWrongAnswer');       
-                });
-            });
-        }
+        this.moveModel("notebookModel", 
+            {x: -6.06, y: 0, z: -3.5},  
+            5                   
+        );  
     
-    }, 2000); 
+    }, 2000);  
 
-
-    setTimeout(() => {       
-    this.laptopModel.visible = true; 
-    const laptopMove = this.moveModel("laptopModel", {x: 6.06, y: 0, z: -3.5}, 5);
-    if (laptopMove) {
-        laptopMove.onComplete(() => {
-            // ✅ Force matrix world update
-            this.laptopModel.updateMatrixWorld(true);
-            
-            console.log('💻 Laptop positioned, registering interaction');
-            this.makeModelClickable(this.laptopModel, () => {
-                console.log('💻 Laptop clicked!');
-                this.playAudio('audioCorrectAnswer'); 
-                this.playModelAnimation('wendyNTModel', 'humping');
-                this.createTextPlate('Great! Use NEXT to continue', {
-                    backgroundColor: 0x3366cc,
-                    width: 0.5,
-                    height: 0.2,
-                    yOffset: 0.29
-                });    
-                this.showNextButton('scene4');       
-            });
-        });
-    }
     
-    // Do the same for ALL other models...
-}, 2000);
+    this.makeModelClickable(this.laptopModel, () => {
+        console.log('💻 Laptop clicked!');
+        this.playAudio('audioCorrectAnswer'); 
+        this.playModelAnimation('wendyNTModel', 'humping');
+         this.createTextPlate('Great! Use NEXT to continue', {
+            backgroundColor: 0x3366cc,
+            width: 0.5,
+            height: 0.2,
+            yOffset: 0.29  // Slightly below center
+        });    
+        this.showNextButton('scene4');       
+    });  
+
+    this.makeModelClickable(this.notebookModel, () => {
+        console.log('Notebook clicked!');
+        this.playAudio('audioWrongAnswer');       
+    });  
+
+    this.makeModelClickable(this.tableModel, () => {
+        console.log('Table clicked!');
+        this.playAudio('audioWrongAnswer');       
+    });  
+
+    this.makeModelClickable(this.flatTableModel, () => {
+        console.log('Flat Table clicked!');
+        this.playAudio('audioWrongAnswer');       
+    }); 
+    
+    this.makeModelClickable(this.tabletModel, () => {
+        console.log('Tablet clicked!');
+        this.playAudio('audioWrongAnswer');       
+    });   
+  
 };
 
 
