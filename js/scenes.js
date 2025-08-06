@@ -159,7 +159,7 @@ ARExperience.prototype.scene3 = function() {
     this.addModelsToScene([
         { name: 'wendyNTModel', x: -10, y: -10, z: -7, rotation: -Math.PI / 2 }, 
         { name: 'tabletModel', x: 10, y: 10, z: -7 },
-        { name: 'laptopModel', x: 10, y: 10, z: 7},
+        { name: 'laptopModel', x: 6.06, y: 0, z: -3.5},
         { name: 'tableModel', x: 10, y: 10, z: -7 },
         { name: 'flatTableModel', x: 10, y: 10, z: -7 },
         { name: 'notebookModel', x: 10, y: 10, z: -7 },        
