@@ -43,21 +43,21 @@ ARExperience.prototype.showNextButton = function(targetScene) {
     }
 
     // Reset and position next button
-    this.nextButtonModel.position.set(0, -0.8, -1.5);
+    this.nextButtonModel.position.set(0, 0, -1.5);
     this.nextButtonModel.rotation.set(0, 0, 0);
-    this.nextButtonModel.scale.set(1, 1, 1);
+    this.nextButtonModel.scale.set(0.5, 0.5, 0.5); // Scale to 0.5m 
     this.nextButtonModel.visible = true;
     this.nextButtonModel.updateMatrixWorld(true);
     
     this.scene.add(this.nextButtonModel);
     this.nextButtonModel.name = 'nextButtonModel';
     
-    this.createTextPlate('Click NEXT to proceed to the next scene', {
-        backgroundColor: 0x3366cc,
-        width: 0.5,
-        height: 0.2,
-        yOffset: -0.29
-    });
+    // this.createTextPlate('Click NEXT to proceed to the next scene', {
+    //     backgroundColor: 0x3366cc,
+    //     width: 0.5,
+    //     height: 0.2,
+    //     yOffset: -0.29
+    // });
     
     this.makeModelClickable(this.nextButtonModel, () => {
         this.goToScene(targetScene);
@@ -74,13 +74,17 @@ ARExperience.prototype.scene1 = function() {
         backgroundColor: 0x3366cc,
         width: 0.5,
         height: 0.2,
-        yOffset: -0.29  // Slightly below center
+        yOffset: 0.29  // Slightly below center
     });    
     
     this.playAudio('audioIntroMsg');
 
-    // Start button creation and placement
-    this.startButtonModel.position.set(0, -0.8, -1.5); 
+  
+    this.startButtonModel.position.set(0, 0, 0);  // Reset first
+    this.startButtonModel.rotation.set(0, 0, 0);
+    this.startButtonModel.scale.set(1, 1, 1);
+    this.startButtonModel.position.set(0, 0, -1.5);  // Then position
+
     this.scaleModel(this.startButtonModel, 1);// 1m in front
     this.scene.add(this.startButtonModel);  
     
@@ -109,6 +113,13 @@ ARExperience.prototype.scene1 = function() {
 ARExperience.prototype.scene2 = function() {
     console.log('🎪 Starting Scene 2 - Interactive Demo');
 
+    this.createTextPlate('This is a video.', {
+        backgroundColor: 0x3366cc,
+        width: 0.5,
+        height: 0.2,
+        yOffset: 0.29  // Slightly below center
+    });    
+
     // NC: Use helper function to add multiple models
     this.addModelsToScene([
         { name: 'cafeModelS3' },
@@ -121,14 +132,8 @@ ARExperience.prototype.scene2 = function() {
         { name: 'word3Model' },
         { name: 'sunglassesModel' },
         { name: 'wendyGlassesModelS3' }
-    ]);
+    ]);   
     
-    this.createTextPlate('Welcome to Scene 2!', {
-        backgroundColor: 0x3366cc,
-        width: 0.5,
-        height: 0.2,
-        yOffset: -0.29  // Slightly below center
-    });    
     
     // Start animations and audio
     //this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
@@ -144,11 +149,7 @@ ARExperience.prototype.scene2 = function() {
 
 ARExperience.prototype.scene3 = function() {
     console.log('🎨 Starting Scene 3 - Interaction Demo');   
-    
-    // 1. Wendy appears (clickable), 2. when clicked, Docs appear, wendy disappears, 
-    // 3. only when the right doc is clicked, congrat msg appears along with NEXT button, otherwise, error msg appears       
-    
-    
+      
     this.createTextPlate('Welcome to the Quiz!', {
         backgroundColor: 0x3366cc,
         width: 0.5,
@@ -164,8 +165,7 @@ ARExperience.prototype.scene3 = function() {
         { name: 'laptopModel', x: 10, y: 10, z: 7},
         { name: 'tableModel', x: 10, y: 10, z: -7 },
         { name: 'flatTableModel', x: 10, y: 10, z: -7 },
-        { name: 'notebookModel', x: 10, y: 10, z: -7 },
-        
+        { name: 'notebookModel', x: 10, y: 10, z: -7 },        
     ]);     
     
     this.wendyNTModel.visible = true; 
