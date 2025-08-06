@@ -145,109 +145,162 @@ ARExperience.prototype.scene2 = function() {
 };
 
 
-ARExperience.prototype.scene3 = function() {
-    console.log('🎨 Starting Scene 3 - Interaction Demo');   
+// ARExperience.prototype.scene3 = function() {
+//     console.log('🎨 Starting Scene 3 - Interaction Demo');   
       
-    this.createTextPlate('Welcome to the Quiz!', {
-        backgroundColor: 0x3366cc,
-        width: 0.5,
-        height: 0.2,
-        yOffset: -0.29  // Slightly below center
-    }); 
+//     this.createTextPlate('Welcome to the Quiz!', {
+//         backgroundColor: 0x3366cc,
+//         width: 0.5,
+//         height: 0.2,
+//         yOffset: -0.29  // Slightly below center
+//     }); 
 
-    this.playAudio('audioQuizIntro');
+//     this.playAudio('audioQuizIntro');
     
-    this.addModelsToScene([
-        { name: 'wendyNTModel', x: -10, y: -10, z: -7, rotation: -Math.PI / 2 }, 
-        { name: 'tabletModel', x: 10, y: 10, z: -7 },
-       // { name: 'laptopModel', x: 10, y: 10, z: 7},
-        { name: 'tableModel', x: 10, y: 10, z: -7 },
-        { name: 'flatTableModel', x: 10, y: 10, z: -7 },
-        { name: 'notebookModel', x: 10, y: 10, z: -7 },        
-    ]);     
+//     this.addModelsToScene([
+//         { name: 'wendyNTModel', x: -10, y: -10, z: -7, rotation: -Math.PI / 2 }, 
+//         { name: 'tabletModel', x: 10, y: 10, z: -7 },
+//         { name: 'laptopModel', x: 10, y: 10, z: 7},
+//         { name: 'tableModel', x: 10, y: 10, z: -7 },
+//         { name: 'flatTableModel', x: 10, y: 10, z: -7 },
+//         { name: 'notebookModel', x: 10, y: 10, z: -7 },        
+//     ]);     
     
-    this.wendyNTModel.visible = true; 
-    this.moveModel("wendyNTModel", 
-        {x: 0, y: 0, z: -7},  
-        8                   
-    );   
+//     this.wendyNTModel.visible = true; 
+//     this.moveModel("wendyNTModel", 
+//         {x: 0, y: 0, z: -7},  
+//         8                   
+//     );  
+
+
+//     this.laptopModel.visible = true; 
+//     this.moveModel("laptopModel", 
+//         {x: 6.06, y: 0, z: -3.5},  
+//         5                   
+//     ); 
     
-     
-    this.laptopModel.position.set(6.06, 0, -3.5); 
-    this.laptopModel.rotation.y = -Math.PI / 2; // 90 degrees clockwise
-    this.scene.add(this.laptopModel);     
-    this.laptopModel.name = "laptopModel";
+//     this.tabletModel.visible = true; 
+//     this.moveModel("tabletModel", 
+//         {x: 6.06, y: 0, z: 3.5},  
+//         5                   
+//     );  
 
+//     this.tableModel.visible = true; 
+//     this.moveModel("tableModel", 
+//         {x: 0, y: 0, z: 7},  
+//         5                   
+//     );  
 
-    this.laptopModel.visible = true; 
-    // this.moveModel("laptopModel", 
-    //     {x: 6.06, y: 0, z: -3.5},  
-    //     5                   
-    // ); 
-    
-    this.tabletModel.visible = true; 
-    this.moveModel("tabletModel", 
-        {x: 6.06, y: 0, z: 3.5},  
-        5                   
-    );  
+//     this.flatTableModel.visible = true; 
+//     this.moveModel("flatTableModel", 
+//         {x: -6.06, y: 0, z: 3.57},  
+//         5                   
+//     );  
 
-    this.tableModel.visible = true; 
-    this.moveModel("tableModel", 
-        {x: 0, y: 0, z: 7},  
-        5                   
-    );  
-
-    this.flatTableModel.visible = true; 
-    this.moveModel("flatTableModel", 
-        {x: -6.06, y: 0, z: 3.57},  
-        5                   
-    );  
-
-    this.notebookModel.visible = true; 
-    this.moveModel("notebookModel", 
-        {x: -6.06, y: 0, z: -3.5},  
-        5                   
-    );        
+//     this.notebookModel.visible = true; 
+//     this.moveModel("notebookModel", 
+//         {x: -6.06, y: 0, z: -3.5},  
+//         5                   
+//     );        
         
-    // this.makeModelClickable(this.laptopModel, () => {
-    //     console.log('💻 Laptop clicked!');
-    //     this.playAudio('audioCorrectAnswer'); 
-    //     this.showNextButton('scene4');       
-    // });  
+//     this.makeModelClickable(this.laptopModel, () => {
+//         console.log('💻 Laptop clicked!');
+//         this.playAudio('audioCorrectAnswer'); 
+//         this.showNextButton('scene4');       
+//     });   
 
-    if (this.laptopModel.children && this.laptopModel.children.length > 0) {
-    this.laptopModel.children.forEach(child => {
-        if (child.type === 'Mesh') {
-            console.log('🔧 Making mesh child clickable:', child.name);
-            this.makeModelClickable(child, () => {
-                console.log('💻 Laptop clicked!');
-                this.playAudio('audioCorrectAnswer'); 
-                this.showNextButton('scene4');       
-            });
-        }
-    });
-}
+//     this.makeModelClickable(this.notebookModel, () => {
+//         console.log('📓 Notebook clicked!');
+//         this.playAudio('audioWrongAnswer');       
+//     });  
 
-    this.makeModelClickable(this.notebookModel, () => {
-        console.log('📓 Notebook clicked!');
-        this.playAudio('audioWrongAnswer');       
-    });  
+//     this.makeModelClickable(this.tableModel, () => {
+//         console.log('🪑 Table clicked!');
+//         this.playAudio('audioWrongAnswer');       
+//     });  
 
-    this.makeModelClickable(this.tableModel, () => {
-        console.log('🪑 Table clicked!');
-        this.playAudio('audioWrongAnswer');       
-    });  
-
-    this.makeModelClickable(this.flatTableModel, () => {
-        console.log('📋 Flat Table clicked!');
-        this.playAudio('audioWrongAnswer');       
-    }); 
+//     this.makeModelClickable(this.flatTableModel, () => {
+//         console.log('📋 Flat Table clicked!');
+//         this.playAudio('audioWrongAnswer');       
+//     }); 
     
-    this.makeModelClickable(this.tabletModel, () => {
-        console.log('📱 Tablet clicked!');
-        this.playAudio('audioWrongAnswer');       
-    });    
+//     this.makeModelClickable(this.tabletModel, () => {
+//         console.log('📱 Tablet clicked!');
+//         this.playAudio('audioWrongAnswer');       
+//     });    
    
+// };
+
+ARExperience.prototype.scene3 = function() {
+    // Your existing code...
+    
+    this.laptopModel.position.set(6.06, 0, -3.5); 
+    this.laptopModel.visible = true;
+    this.scene.add(this.laptopModel);
+    
+    // ✅ DIRECT COMPARISON DEBUG
+    setTimeout(() => {
+        console.log('🔍 WORKING vs NON-WORKING MODEL COMPARISON:');
+        
+        // Compare model properties
+        const compareModel = (model, name) => {
+            console.log(`\n📋 ${name}:`);
+            console.log('  - type:', model?.type);
+            console.log('  - visible:', model?.visible);
+            console.log('  - in scene:', this.scene.children.includes(model));
+            console.log('  - children count:', model?.children?.length || 0);
+            console.log('  - position:', model?.position);
+            console.log('  - scale:', model?.scale);
+            console.log('  - matrix auto update:', model?.matrixAutoUpdate);
+            console.log('  - world matrix needs update:', model?.matrixWorldNeedsUpdate);
+            
+            // Check if any children have geometry/material
+            if (model?.children?.length > 0) {
+                model.children.forEach((child, i) => {
+                    if (child.type === 'Mesh') {
+                        console.log(`  - child[${i}] (Mesh):`, {
+                            visible: child.visible,
+                            hasGeometry: !!child.geometry,
+                            hasMaterial: !!child.material,
+                            geometryType: child.geometry?.type,
+                            materialType: child.material?.type
+                        });
+                    }
+                });
+            }
+            
+            // Direct raycast test from camera
+            const testRaycaster = new THREE.Raycaster();
+            testRaycaster.setFromCamera(new THREE.Vector2(0, 0), this.camera);
+            const intersects = testRaycaster.intersectObject(model, true);
+            console.log('  - raycastable from camera:', intersects.length > 0);
+        };
+        
+        // Compare working button with non-working laptop
+        compareModel(this.startButtonModel, '✅ WORKING startButton');
+        compareModel(this.laptopModel, '❌ NON-WORKING laptop');
+        
+        // Also test if we can manually trigger the laptop callback
+        console.log('\n🧪 MANUAL CALLBACK TEST:');
+        if (this.modelInteractions.has(this.laptopModel)) {
+            const laptopData = this.modelInteractions.get(this.laptopModel);
+            console.log('Laptop registered in modelInteractions:', laptopData.active);
+            
+            // Try calling the callback manually
+            console.log('🔧 Calling laptop callback manually...');
+            laptopData.callback();
+        } else {
+            console.log('❌ Laptop NOT found in modelInteractions!');
+        }
+        
+    }, 2000);
+    
+    // Make laptop clickable
+    this.makeModelClickable(this.laptopModel, () => {
+        console.log('💻 Laptop clicked!');
+        this.playAudio('audioCorrectAnswer'); 
+        this.showNextButton('scene4');       
+    });
 };
 
 
