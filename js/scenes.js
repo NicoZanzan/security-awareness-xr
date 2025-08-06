@@ -146,16 +146,18 @@ ARExperience.prototype.scene2 = function() {
 
 
 ARExperience.prototype.scene3 = function() {
+    console.log('🎨 Starting Scene 3 - Interaction Demo');
           
     this.createTextPlate('Chapter 2: The Quiz', {
         backgroundColor: 0x3366cc,
         width: 0.5,
         height: 0.2,
-        yOffset: 0.29  // Slightly below center
+        yOffset: 0.29
     }); 
 
     this.playAudio('audioQuizIntro');
     
+    // Position models off-screen initially
     this.addModelsToScene([
         { name: 'wendyNTModel', x: -10, y: -10, z: -7, rotation: -Math.PI / 2 }, 
         { name: 'tabletModel', x: 10, y: 10, z: -7 },
@@ -166,80 +168,69 @@ ARExperience.prototype.scene3 = function() {
     ]);     
     
     this.wendyNTModel.visible = true; 
-    this.moveModel("wendyNTModel", 
-        {x: 0, y: 0, z: -7},  
-        8                   
-    );
+    this.moveModel("wendyNTModel", {x: 0, y: 0, z: -7}, 8);
 
     setTimeout(() => {       
-
+        // Move models to final positions
         this.laptopModel.visible = true; 
-        this.moveModel("laptopModel", 
-            {x: 6.06, y: 0, z: -3.5},  
-            5                   
-        ); 
+        this.moveModel("laptopModel", {x: 6.06, y: 0, z: -3.5}, 5); 
         
         this.tabletModel.visible = true; 
-        this.moveModel("tabletModel", 
-            {x: 6.06, y: 0, z: 3.5},  
-            5                   
-        );  
+        this.moveModel("tabletModel", {x: 6.06, y: 0, z: 3.5}, 5);  
 
         this.tableModel.visible = true; 
-        this.moveModel("tableModel", 
-            {x: 0, y: 0, z: 7},  
-            5                   
-        );  
+        this.moveModel("tableModel", {x: 0, y: 0, z: 7}, 5);  
 
         this.flatTableModel.visible = true; 
-        this.moveModel("flatTableModel", 
-            {x: -6.06, y: 0, z: 3.57},  
-            5                   
-        );  
+        this.moveModel("flatTableModel", {x: -6.06, y: 0, z: 3.57}, 5);  
 
         this.notebookModel.visible = true; 
-        this.moveModel("notebookModel", 
-            {x: -6.06, y: 0, z: -3.5},  
-            5                   
-        );  
+        this.moveModel("notebookModel", {x: -6.06, y: 0, z: -3.5}, 5);  
+
+        // ✅ WAIT for models to finish moving, THEN register interactions
+        setTimeout(() => {
+            console.log('🔧 Registering quiz interactions after positioning...');
+            
+            this.makeModelClickable(this.laptopModel, () => {
+                console.log('💻 Laptop clicked!');
+                this.playAudio('audioCorrectAnswer'); 
+                this.playModelAnimation('wendyNTModel', 'humping');
+                this.createTextPlate('Great! Use NEXT to continue', {
+                    backgroundColor: 0x3366cc,
+                    width: 0.5,
+                    height: 0.2,
+                    yOffset: 0.29
+                });    
+                this.showNextButton('scene4');       
+            });  
+
+            this.makeModelClickable(this.notebookModel, () => {
+                console.log('📓 Notebook clicked!');
+                this.playAudio('audioWrongAnswer');       
+            });  
+
+            this.makeModelClickable(this.tableModel, () => {
+                console.log('🪑 Table clicked!');
+                this.playAudio('audioWrongAnswer');       
+            });  
+
+            this.makeModelClickable(this.flatTableModel, () => {
+                console.log('📋 Flat Table clicked!');
+                this.playAudio('audioWrongAnswer');       
+            }); 
+            
+            this.makeModelClickable(this.tabletModel, () => {
+                console.log('📱 Tablet clicked!');
+                this.playAudio('audioWrongAnswer');       
+            });
+
+            console.log('✅ All quiz interactions registered at correct positions');
+            
+        }, 6000); // Wait for 5s movement + 1s buffer
     
     }, 2000);  
-
-    
-    this.makeModelClickable(this.laptopModel, () => {
-        console.log('💻 Laptop clicked!');
-        this.playAudio('audioCorrectAnswer'); 
-        this.playModelAnimation('wendyNTModel', 'humping');
-         this.createTextPlate('Great! Use NEXT to continue', {
-            backgroundColor: 0x3366cc,
-            width: 0.5,
-            height: 0.2,
-            yOffset: 0.29  // Slightly below center
-        });    
-        this.showNextButton('scene4');       
-    });  
-
-    this.makeModelClickable(this.notebookModel, () => {
-        console.log('Notebook clicked!');
-        this.playAudio('audioWrongAnswer');       
-    });  
-
-    this.makeModelClickable(this.tableModel, () => {
-        console.log('Table clicked!');
-        this.playAudio('audioWrongAnswer');       
-    });  
-
-    this.makeModelClickable(this.flatTableModel, () => {
-        console.log('Flat Table clicked!');
-        this.playAudio('audioWrongAnswer');       
-    }); 
-    
-    this.makeModelClickable(this.tabletModel, () => {
-        console.log('Tablet clicked!');
-        this.playAudio('audioWrongAnswer');       
-    });   
-  
 };
+
 
 
 ARExperience.prototype.scene4 = function() {
