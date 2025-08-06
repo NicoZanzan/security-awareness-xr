@@ -244,7 +244,6 @@ ARExperience.prototype.scene3 = function() {
 };
 
 
-
 ARExperience.prototype.scene4 = function() {
     console.log('🎬 Starting Scene 4 - Finale');
     
