@@ -218,8 +218,7 @@ ARExperience.prototype.playAudio = function(audioName) {
                 console.log('💡 Try playing after user interaction (click/touch)');
             }
         });
-    }
-    
+    }    
     return audio;
 };
 
