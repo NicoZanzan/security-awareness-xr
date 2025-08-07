@@ -134,14 +134,14 @@ ARExperience.prototype.scene2 = function() {
     ]);      
     
     // Start animations and audio
-    //this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
+    this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
 
     // NC: Use estimated duration instead of problematic audioLength
     const estimatedDuration = 35000; // 35 seconds
     setTimeout(() => {
         this.showNextButton('scene3'); // NC: Show next button instead of direct transition
-    //}, estimatedDuration);
-    }, 1000);  
+    }, estimatedDuration);
+    //}, 1000);  
 };
 
 
@@ -152,7 +152,7 @@ ARExperience.prototype.scene3 = function() {
         backgroundColor: 0x3366cc,
         width: 0.5,
         height: 0.2,
-        yOffset: -0.29  // Slightly below center
+        yOffset: 0.29  // Slightly below center
     }); 
 
     this.playAudio('audioQuizIntro');
@@ -206,7 +206,7 @@ ARExperience.prototype.scene3 = function() {
     this.makeModelClickable(this.laptopModel, () => {
         console.log('💻 Laptop clicked!');
         this.playAudio('audioCorrectAnswer'); 
-        this.showNextButton('scene4');       
+        this.playModelAnimation('wendyNTModel', 'humping');
     });   
 
     this.makeModelClickable(this.notebookModel, () => {
