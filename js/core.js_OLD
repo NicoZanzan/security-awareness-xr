@@ -1,4 +1,4 @@
-// core.js - Main class initialization and WebXR setup with batched loading
+// core.js - Main class initialization and WebXR setup
 
 class ARExperience {
     constructor() {
@@ -25,15 +25,7 @@ class ARExperience {
         this.experienceStarted = false;
         this.isXRActive = false;
         this.isPaused = false;
-        this.currentScene = null;
-        
-        // Loading state
-        this.loadingStates = {
-            scene1: false,
-            scene2: false,
-            scene3: false,
-            scene4: false
-        };
+        this.currentScene = null; // NEW: Track current scene
         
         // For managing interactive objects
         this.modelInteractions = new Map();
@@ -43,6 +35,7 @@ class ARExperience {
         this.rayLength = 5; // Length of visible ray in meters  
 
         this.mixers = [];
+
         this.clock = new THREE.Clock();
 
         this.init();
@@ -59,242 +52,181 @@ class ARExperience {
                 document.getElementById('landingPage').style.display = 'none';
                 document.getElementById('arView').style.display = 'block';
                 
-                // Show loading progress
-                this.showLoadingProgress();
-                
                 // -------- THREE.JS INITIALIZATION --------
-                this.updateLoadingProgress('Initializing 3D environment...');
-                this.initializeThreeJS();
+                // Scene
+                this.scene = new THREE.Scene();
                 
-                // -------- LOAD SCENE 1 RESOURCES (ESSENTIAL) --------
-                this.updateLoadingProgress('Loading Scene 1 resources...');
-                await this.loadScene1Resources();
+                // Camera - responsive setup
+                this.camera = new THREE.PerspectiveCamera(
+                    70, // FOV - good for mobile
+                    window.innerWidth / window.innerHeight,
+                    0.01, // Near plane - close objects
+                    100   // Far plane
+                );
+                
+                // Renderer - mobile optimized
+                const canvas = document.getElementById('arCanvas');
+                this.renderer = new THREE.WebGLRenderer({ 
+                    canvas: canvas, 
+                    antialias: true,
+                    alpha: true,
+                    precision: 'mediump' // Better mobile performance
+                });
+                
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                this.renderer.outputEncoding = THREE.sRGBEncoding;
+                this.renderer.shadowMap.enabled = false; // Disable shadows for performance
+                
+                // Comprehensive lighting for all devices
+                const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+                this.scene.add(ambientLight);
+                
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+                directionalLight.position.set(1, 1, 1);
+                this.scene.add(directionalLight);
+                
+                const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
+                directionalLight2.position.set(-1, -1, -1);
+                this.scene.add(directionalLight2);
+                
+                // -------- RESOURCE LOADING --------
+                // Load models and audio (unchanged)
+                await this.loadResources();
                 
                 // -------- WEBXR INITIALIZATION --------
-                this.updateLoadingProgress('Setting up controls...');
                 this.renderer.xr.enabled = true;
-                await this.setupControls();
                 
-                // -------- START THE APP --------
-                this.updateLoadingProgress('Starting experience...');
+                // Set up either WebXR or fallback controls
+                await this.setupControls();
                 
                 // Start render loop
                 this.renderer.setAnimationLoop((timestamp, frame) => {
                     this.render(timestamp, frame);
                 });
                 
-                // Hide loading and start
-                this.hideLoadingProgress();
+                // NEW: Start the experience with the scene manager
                 this.startExperience();
                 
-                // Load remaining scenes in background
-                this.loadRemainingResources();
-                
             } catch (error) {
-                this.hideLoadingProgress();
                 console.error('Failed to start:', error);
                 alert('Failed to start project: ' + error.message);
             }
         });    
-        
         // Handle window resize
         window.addEventListener('resize', () => this.onWindowResize());
     }
-
-    initializeThreeJS() {
-        // Scene
-        this.scene = new THREE.Scene();
-        
-        // Camera - responsive setup
-        this.camera = new THREE.PerspectiveCamera(
-            70, // FOV - good for mobile
-            window.innerWidth / window.innerHeight,
-            0.01, // Near plane - close objects
-            100   // Far plane
-        );
-        
-        // Renderer - mobile optimized
-        const canvas = document.getElementById('arCanvas');
-        this.renderer = new THREE.WebGLRenderer({ 
-            canvas: canvas, 
-            antialias: true,
-            alpha: true,
-            precision: 'mediump' // Better mobile performance
-        });
-        
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        this.renderer.outputEncoding = THREE.sRGBEncoding;
-        this.renderer.shadowMap.enabled = false; // Disable shadows for performance
-        
-        // Comprehensive lighting for all devices
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
-        this.scene.add(ambientLight);
-        
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
-        directionalLight.position.set(1, 1, 1);
-        this.scene.add(directionalLight);
-        
-        const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
-        directionalLight2.position.set(-1, -1, -1);
-        this.scene.add(directionalLight2);
-    }
-
-    // Loading Progress UI
-    showLoadingProgress() {
-        const loadingDiv = document.createElement('div');
-        loadingDiv.id = 'loadingProgress';
-        loadingDiv.innerHTML = `
-            <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 30px; border-radius: 15px; text-align: center; z-index: 1000; min-width: 300px;">
-                <h3 style="margin-bottom: 20px; color: #fff;">Loading...</h3>
-                <div id="loadingText" style="margin-bottom: 15px;">Preparing experience...</div>
-                <div style="background: #333; height: 4px; border-radius: 2px; overflow: hidden;">
-                    <div id="loadingBar" style="background: #4CAF50; height: 100%; width: 0%; transition: width 0.3s ease;"></div>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(loadingDiv);
-    }
-
-    updateLoadingProgress(text, progress = null) {
-        const loadingText = document.getElementById('loadingText');
-        if (loadingText) {
-            loadingText.textContent = text;
-        }
-        
-        if (progress !== null) {
-            const loadingBar = document.getElementById('loadingBar');
-            if (loadingBar) {
-                loadingBar.style.width = progress + '%';
-            }
-        }
-    }
-
-    hideLoadingProgress() {
-        const loadingDiv = document.getElementById('loadingProgress');
-        if (loadingDiv) {
-            document.body.removeChild(loadingDiv);
-        }
-    }
-
-    // SCENE 1 RESOURCES (Essential - loaded first)
-    async loadScene1Resources() {
+    
+    async loadResources() {
         const loader = new THREE.GLTFLoader();
-        
-        const loadGLB = (path, name) => {
+                
+        // Internal helper function to load GLB models
+        const loadGLB = (path) => {
             return new Promise((resolve, reject) => {
                 loader.load(
                     path,
                     (gltf) => {
-                        console.log(`✅ Loaded: ${name}`);
+                        //console.log(`Loaded: ${path}`);
                         resolve(gltf);
                     },
                     (progress) => {
-                        const percent = Math.round((progress.loaded / progress.total) * 100);
-                        this.updateLoadingProgress(`Loading ${name}: ${percent}%`, percent);
+                        //console.log(`Loading ${path}: ${(progress.loaded / progress.total * 100)}%`);
                     },
                     (error) => {
-                        console.error(`❌ Failed to load ${path}:`, error);
+                        console.error(`Failed to load ${path}:`, error);
                         reject(error);
                     }
                 );
             });
         };
-
-        try {
-            console.log('📦 Loading Scene 1 (Essential) Resources...');
-            
-            // Scene 1 Models (blocking - needed immediately)
-            this.startButtonModelGLB = await loadGLB('./assets/models/startButtonModel.glb', 'Start Button');
-            this.startButtonModel = this.startButtonModelGLB.scene;
-            
-            this.wendyNTModelGLB = await loadGLB('./assets/models/wendyNTModel.glb', 'Wendy NT');
-            this.wendyNTModel = this.wendyNTModelGLB.scene;
-
-            // Scene 1 Audio (essential)
-            this.audioIntroMsg = new Audio('./assets/audio/audioIntroMsg.mp3');
-            // Don't preload - let it load when played
-            
-            this.loadingStates.scene1 = true;
-            console.log('✅ Scene 1 resources loaded - app ready to start');
-            
-        } catch (error) {
-            console.error('❌ Scene 1 loading failed:', error);
-            throw error;
-        }
-    }
-
-    // Load remaining scenes in background (non-blocking)
-    async loadRemainingResources() {
-        console.log('🔄 Loading remaining scenes in background...');
         
-        // Load scenes in parallel for faster loading
-        Promise.all([
-            this.loadScene2Resources(),
-            this.loadScene3Resources(), 
-            this.loadScene4Resources()
-        ]).then(() => {
-            console.log('✅ All scenes loaded successfully');
+        try {            
+            
+            //Auto playback models
+            this.cafeModelS3GLB = await loadGLB('./assets/models/cafeModelS3.glb');
+            this.cafeModelS3 = this.cafeModelS3GLB.scene;           
+            
+            this.wendyModelGLB = await loadGLB('./assets/models/wendyModel.glb');
+            this.wendyModel = this.wendyModelGLB.scene;            
+
+            this.notebookModelGLB = await loadGLB('./assets/models/notebookModel.gltf');
+            this.notebookModel = this.notebookModelGLB.scene; 
+
+            this.laptopModelGLB = await loadGLB('./assets/models/laptopModel.gltf');
+            this.laptopModel = this.laptopModelGLB.scene; 
+
+            this.wendyNTModelGLB = await loadGLB('./assets/models/wendyNTModel.glb');
+            this.wendyNTModel = this.wendyNTModelGLB.scene;  
+
+            this.mendyModelGLB = await loadGLB('./assets/models/mendyModel.glb');
+            this.mendyModel = this.mendyModelGLB.scene;   
+
+            this.word1ModelGLB = await loadGLB('./assets/models/word1Model.glb');
+            this.word1Model = this.word1ModelGLB.scene;   
+            
+            this.word2ModelGLB = await loadGLB('./assets/models/word2Model.glb');
+            this.word2Model = this.word2ModelGLB.scene;  
+            
+            this.word3ModelGLB = await loadGLB('./assets/models/word3Model.glb');
+            this.word3Model = this.word3ModelGLB.scene; 
+
+            this.sunglassesModelGLB = await loadGLB('./assets/models/sunglassesModel.glb');
+            this.sunglassesModel = this.sunglassesModelGLB.scene;  
+
+            this.wendyGlassesModelS3GLB = await loadGLB('./assets/models/wendyGlassesModelS3.glb');
+            this.wendyGlassesModelS3 = this.wendyGlassesModelS3GLB.scene; 
+
+            //Other models            
+            this.tabletModelGLB = await loadGLB('./assets/models/tabletModel.gltf');
+            this.tabletModel = this.tabletModelGLB.scene;  
+
+            this.tableModelGLB = await loadGLB('./assets/models/tableModel.glb');
+            this.tableModel = this.tableModelGLB.scene;  
+                        
+            this.doc1ModelGLB = await loadGLB('./assets/models/doc1Model.glb');
+            this.doc1Model = this.doc1ModelGLB.scene;    
+            
+            this.doc2ModelGLB = await loadGLB('./assets/models/doc2Model.glb');
+            this.doc2Model = this.doc2ModelGLB.scene;   
+
+            this.pauseButtonModelGLB = await loadGLB('./assets/models/pauseButtonModel.glb');
+            this.pauseButtonModel = this.pauseButtonModelGLB.scene;        
+
+            this.quitButtonModelGLB = await loadGLB('./assets/models/quitButtonModel.glb');
+            this.quitButtonModel = this.quitButtonModelGLB.scene;       
+                
+            this.nextButtonModelGLB = await loadGLB('./assets/models/nextButtonModel.glb');
+            this.nextButtonModel = this.nextButtonModelGLB.scene;   
+
+            this.startButtonModelGLB = await loadGLB('./assets/models/startButtonModel.glb');
+            this.startButtonModel = this.startButtonModelGLB.scene;   
+
+            this.flatTableModelGLB = await loadGLB('./assets/models/flatTableModel.glb');
+            this.flatTableModel = this.flatTableModelGLB.scene;            
+                 
             this.showModelsAnimations();
-        }).catch((error) => {
-            console.warn('⚠️ Some background loading failed:', error);
-        });
-    }
+            
+            } catch (error) {
+                console.error('Model loading failed:', error);
+                throw error;
+            }
 
-    // SCENE 2 RESOURCES (3D Video scene)
-    async loadScene2Resources() {
-        const loader = new THREE.GLTFLoader();
+            this.audioIntroMsg = new Audio('./assets/audio/audioIntroMsg.mp3');
+            this.audioIntroMsg.preload = 'auto';
+
+            this.audioQuizIntro = new Audio('./assets/audio/audioQuizIntro.mp3');
+            this.audioQuizIntro.preload = 'auto';
+
+            this.audioCorrectAnswer = new Audio('./assets/audio/audioCorrectAnswer.mp3');
+            this.audioCorrectAnswer.preload = 'auto';
+
+            this.audioWrongAnswer = new Audio('./assets/audio/audioWrongAnswer.mp3');
+            this.audioWrongAnswer.preload = 'auto';
         
-        const loadGLB = (path, name) => {
-            return new Promise((resolve, reject) => {
-                loader.load(path, resolve, undefined, (error) => {
-                    console.warn(`⚠️ Failed to load ${name}:`, error);
-                    reject(error);
-                });
-            });
-        };
-
-        try {
-            console.log('📦 Loading Scene 2 Resources...');
-            
-            // Load Scene 2 models in parallel
-            const scene2Loads = [
-                loadGLB('./assets/models/cafeModelS3.glb', 'Cafe'),
-                loadGLB('./assets/models/wendyModel.glb', 'Wendy'),
-                loadGLB('./assets/models/mendyModel.glb', 'Mendy'),
-                loadGLB('./assets/models/doc1Model.glb', 'Document 1'),
-                loadGLB('./assets/models/doc2Model.glb', 'Document 2'),
-                loadGLB('./assets/models/word1Model.glb', 'Word 1'),
-                loadGLB('./assets/models/word2Model.glb', 'Word 2'),
-                loadGLB('./assets/models/word3Model.glb', 'Word 3'),
-                loadGLB('./assets/models/sunglassesModel.glb', 'Sunglasses'),
-                loadGLB('./assets/models/wendyGlassesModelS3.glb', 'Wendy Glasses')
-            ];
-
-            const results = await Promise.all(scene2Loads);
-            
-            // Assign results
-            [this.cafeModelS3GLB, this.wendyModelGLB, this.mendyModelGLB, 
-             this.doc1ModelGLB, this.doc2ModelGLB, this.word1ModelGLB, 
-             this.word2ModelGLB, this.word3ModelGLB, this.sunglassesModelGLB, 
-             this.wendyGlassesModelS3GLB] = results;
-            
-            // Extract scenes
-            this.cafeModelS3 = this.cafeModelS3GLB.scene;
-            this.wendyModel = this.wendyModelGLB.scene;
-            this.mendyModel = this.mendyModelGLB.scene;
-            this.doc1Model = this.doc1ModelGLB.scene;
-            this.doc2Model = this.doc2ModelGLB.scene;
-            this.word1Model = this.word1ModelGLB.scene;
-            this.word2Model = this.word2ModelGLB.scene;
-            this.word3Model = this.word3ModelGLB.scene;
-            this.sunglassesModel = this.sunglassesModelGLB.scene;
-            this.wendyGlassesModelS3 = this.wendyGlassesModelS3GLB.scene;
-
-            // Scene 2 Audio
+            // SCENE 2 playback3D assets
             this.audioS2 = new Audio('./assets/audio/audioS2.mp3');
+            this.audioS2.preload = 'auto';
             
-            // Scene 2 Animation configuration
             this.scene2ModelAnimations = [
                 { modelName: 'cafeModelS3', animationName: 'CafeAction' },
                 { modelName: 'doc1Model', animationName: 'document_1Action' },
@@ -308,107 +240,8 @@ class ARExperience {
                 { modelName: 'wendyGlassesModelS3', animationName: 'Romy-Wendy+glassesAction' },              
             ];
 
-            this.scene2AudioTracks = ['audioS2'];
-            
-            this.loadingStates.scene2 = true;
-            console.log('✅ Scene 2 resources loaded');
-            
-        } catch (error) {
-            console.warn('⚠️ Scene 2 loading failed:', error);
-        }
-    }
+            this.scene2AudioTracks = ['audioS2'];            
 
-    // SCENE 3 RESOURCES (Quiz scene)
-    async loadScene3Resources() {
-        const loader = new THREE.GLTFLoader();
-        
-        const loadGLB = (path, name) => {
-            return new Promise((resolve, reject) => {
-                loader.load(path, resolve, undefined, (error) => {
-                    console.warn(`⚠️ Failed to load ${name}:`, error);
-                    reject(error);
-                });
-            });
-        };
-
-        try {
-            console.log('📦 Loading Scene 3 Resources...');
-            
-            // Load Scene 3 models in parallel
-            const scene3Loads = [
-                loadGLB('./assets/models/laptopModel.gltf', 'Laptop'),
-                loadGLB('./assets/models/tabletModel.gltf', 'Tablet'),
-                loadGLB('./assets/models/tableModel.glb', 'Table'),
-                loadGLB('./assets/models/flatTableModel.glb', 'Flat Table'),
-                loadGLB('./assets/models/notebookModel.gltf', 'Notebook')
-            ];
-
-            const results = await Promise.all(scene3Loads);
-            
-            // Assign results  
-            [this.laptopModelGLB, this.tabletModelGLB, this.tableModelGLB,
-             this.flatTableModelGLB, this.notebookModelGLB] = results;
-            
-            // Extract scenes
-            this.laptopModel = this.laptopModelGLB.scene;
-            this.tabletModel = this.tabletModelGLB.scene;
-            this.tableModel = this.tableModelGLB.scene;
-            this.flatTableModel = this.flatTableModelGLB.scene;
-            this.notebookModel = this.notebookModelGLB.scene;
-
-            // Scene 3 Audio
-            this.audioQuizIntro = new Audio('./assets/audio/audioQuizIntro.mp3');
-            this.audioCorrectAnswer = new Audio('./assets/audio/audioCorrectAnswer.mp3');
-            this.audioWrongAnswer = new Audio('./assets/audio/audioWrongAnswer.mp3');
-            
-            this.loadingStates.scene3 = true;
-            console.log('✅ Scene 3 resources loaded');
-            
-        } catch (error) {
-            console.warn('⚠️ Scene 3 loading failed:', error);
-        }
-    }
-
-    // SCENE 4 RESOURCES (Finale scene)  
-    async loadScene4Resources() {
-        const loader = new THREE.GLTFLoader();
-        
-        const loadGLB = (path, name) => {
-            return new Promise((resolve, reject) => {
-                loader.load(path, resolve, undefined, (error) => {
-                    console.warn(`⚠️ Failed to load ${name}:`, error);
-                    reject(error);
-                });
-            });
-        };
-
-        try {
-            console.log('📦 Loading Scene 4 Resources...');
-            
-            // Load Scene 4 models
-            const scene4Loads = [
-                loadGLB('./assets/models/quitButtonModel.glb', 'Quit Button'),
-                loadGLB('./assets/models/pauseButtonModel.glb', 'Pause Button'),
-                loadGLB('./assets/models/nextButtonModel.glb', 'Next Button')
-            ];
-
-            const results = await Promise.all(scene4Loads);
-            
-            // Assign results
-            [this.quitButtonModelGLB, this.pauseButtonModelGLB, 
-             this.nextButtonModelGLB] = results;
-            
-            // Extract scenes
-            this.quitButtonModel = this.quitButtonModelGLB.scene;
-            this.pauseButtonModel = this.pauseButtonModelGLB.scene;
-            this.nextButtonModel = this.nextButtonModelGLB.scene;
-            
-            this.loadingStates.scene4 = true;
-            console.log('✅ Scene 4 resources loaded');
-            
-        } catch (error) {
-            console.warn('⚠️ Scene 4 loading failed:', error);
-        }
     }
 
     async setupControls() {
@@ -553,7 +386,7 @@ class ARExperience {
         console.log('Setting up camera controls for non-AR mode');
         // Adjusted camera height to better frame objects at Y=0, which are 1.5m in front of the origin.
         // A height of 0.7m allows for a natural slight downward gaze to see objects on the floor.
-        this.camera.position.set(0, 0.7, 0); // Changed from 1.6 to 0.7
+        this.camera.position.set(0, 1.7, 0); // Changed from 1.6 to 0.7
 
         this.camera.rotation.set(0, 0, 0); 
         
@@ -630,6 +463,3 @@ class ARExperience {
         this.renderer.render(this.scene, this.camera);
     }
 }
-
-
-
