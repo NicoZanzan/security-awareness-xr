@@ -163,8 +163,7 @@ ARExperience.prototype.scene3 = function() {
         { name: 'laptopModel', x: 10, y: 10, z: 7},
         { name: 'tableModel', x: 10, y: 10, z: -7 },
         { name: 'flatTableModel', x: 10, y: 10, z: -7 },
-        { name: 'startButtonModel', x: 10, y: 10, z: -7 },
-        //{ name: 'notebookModel', x: 10, y: 10, z: -7 },        
+        { name: 'notebookModel', x: 10, y: 10, z: -7 },        
     ]);     
     
     this.wendyNTModel.visible = true; 
@@ -192,9 +191,15 @@ ARExperience.prototype.scene3 = function() {
         5                   
     );  
 
+    // this.laptopModel.visible = true; 
+    // this.moveModel("laptopModel", 
+    //     {x: 0, y: 0, z: 7},  
+    //     5                   
+    // );  
+
     this.flatTableModel.visible = true; 
     this.moveModel("flatTableModel", 
-        {x: -6.06, y: 0, z: 3.57},  
+        {x: 6.06, y: 0, z: 3.57},  
         5                   
     );  
 
@@ -204,7 +209,7 @@ ARExperience.prototype.scene3 = function() {
         5                   
     );        
         
-    this.makeModelClickable(this.startButtonModel, () => {
+    this.makeModelClickable(this.laptopModel, () => {
         console.log('💻 Laptop clicked!');
         this.playAudio('audioCorrectAnswer'); 
         this.playModelAnimation('wendyNTModel', 'humping');
