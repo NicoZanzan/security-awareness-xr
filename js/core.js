@@ -41,311 +41,81 @@ class ARExperience {
         this.init();
     }
     
-    // async init() {        
-    //     // hide end page initially
-    //     document.getElementById('endPage').style.display = 'none';
-    
-    //     // Add start button event listener
-    //     document.getElementById('startButton').addEventListener('click', async () => {
-    //         try {                  
-    //             // Hide landing page, show AR view
-    //             document.getElementById('landingPage').style.display = 'none';
-    //             document.getElementById('arView').style.display = 'block';
-                
-    //             // -------- THREE.JS INITIALIZATION --------
-    //             // Scene
-    //             this.scene = new THREE.Scene();
-                
-    //             // Camera - responsive setup
-    //             this.camera = new THREE.PerspectiveCamera(
-    //                 70, // FOV - good for mobile
-    //                 window.innerWidth / window.innerHeight,
-    //                 0.01, // Near plane - close objects
-    //                 100   // Far plane
-    //             );
-                
-    //             // Renderer - mobile optimized
-    //             const canvas = document.getElementById('arCanvas');
-    //             this.renderer = new THREE.WebGLRenderer({ 
-    //                 canvas: canvas, 
-    //                 antialias: true,
-    //                 alpha: true,
-    //                 precision: 'mediump' // Better mobile performance
-    //             });
-                
-    //             this.renderer.setSize(window.innerWidth, window.innerHeight);
-    //             this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    //             this.renderer.outputEncoding = THREE.sRGBEncoding;
-    //             this.renderer.shadowMap.enabled = false; // Disable shadows for performance
-                
-    //             // Comprehensive lighting for all devices
-    //             const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
-    //             this.scene.add(ambientLight);
-                
-    //             const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
-    //             directionalLight.position.set(1, 1, 1);
-    //             this.scene.add(directionalLight);
-                
-    //             const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
-    //             directionalLight2.position.set(-1, -1, -1);
-    //             this.scene.add(directionalLight2);
-                
-    //             // -------- RESOURCE LOADING --------
-    //             // Load models and audio (unchanged)
-    //             await this.loadResources();
-                
-    //             // -------- WEBXR INITIALIZATION --------
-    //             this.renderer.xr.enabled = true;
-                
-    //             // Set up either WebXR or fallback controls
-    //             await this.setupControls();
-                
-    //             // Start render loop
-    //             this.renderer.setAnimationLoop((timestamp, frame) => {
-    //                 this.render(timestamp, frame);
-    //             });
-                
-    //             // NEW: Start the experience with the scene manager
-    //             this.startExperience();
-                
-    //         } catch (error) {
-    //             console.error('Failed to start:', error);
-    //             alert('Failed to start project: ' + error.message);
-    //         }
-    //     });    
-    //     // Handle window resize
-    //     window.addEventListener('resize', () => this.onWindowResize());
-    // }
-
-    // New helper method to load resources
-    
-    
     async init() {        
-    // hide end page initially
-    document.getElementById('endPage').style.display = 'none';
-
-    // Add start button event listener
-    document.getElementById('startButton').addEventListener('click', async () => {
-        this.showModeSelection();
-    });
+        // hide end page initially
+        document.getElementById('endPage').style.display = 'none';
     
-    // Handle window resize
-    window.addEventListener('resize', () => this.onWindowResize());
-}
-
-showModeSelection() {
-    // Hide landing page, show mode selection
-    document.getElementById('landingPage').style.display = 'none';
-    
-    // Create mode selection UI
-    const modeSelection = document.createElement('div');
-    modeSelection.id = 'modeSelection';
-    modeSelection.innerHTML = `
-        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 30px; border-radius: 15px; text-align: center; z-index: 1000;">
-            <h2 style="margin-bottom: 20px;">Select Mode</h2>
-            <button id="arModeButton" style="margin: 10px; padding: 15px 30px; font-size: 18px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">AR Mode</button>
-            <br>
-            <button id="regularModeButton" style="margin: 10px; padding: 15px 30px; font-size: 18px; background: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer;">Regular Mode</button>
-        </div>
-    `;
-    document.body.appendChild(modeSelection);
-    
-    document.getElementById('arModeButton').addEventListener('click', () => {
-        document.body.removeChild(modeSelection);
-        this.startApp(true); // Force AR mode
-    });
-    
-    document.getElementById('regularModeButton').addEventListener('click', () => {
-        document.body.removeChild(modeSelection);
-        this.startApp(false); // Force regular mode
-    });
-}
-
-async startApp(forceAR = false) {
-    try {
-        // Show AR view
-        document.getElementById('arView').style.display = 'block';
-        
-        console.log(`Starting app in ${forceAR ? 'AR' : 'Regular'} mode...`);
-        
-        // -------- THREE.JS INITIALIZATION --------
-        // Scene
-        this.scene = new THREE.Scene();
-        
-        // Camera - responsive setup
-        this.camera = new THREE.PerspectiveCamera(
-            70, // FOV - good for mobile
-            window.innerWidth / window.innerHeight,
-            0.01, // Near plane - close objects
-            100   // Far plane
-        );
-        
-        // Renderer - mobile optimized
-        const canvas = document.getElementById('arCanvas');
-        this.renderer = new THREE.WebGLRenderer({ 
-            canvas: canvas, 
-            antialias: true,
-            alpha: true,
-            precision: 'mediump' // Better mobile performance
-        });
-        
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        this.renderer.outputEncoding = THREE.sRGBEncoding;
-        this.renderer.shadowMap.enabled = false; // Disable shadows for performance
-        
-        // Comprehensive lighting for all devices
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
-        this.scene.add(ambientLight);
-        
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
-        directionalLight.position.set(1, 1, 1);
-        this.scene.add(directionalLight);
-        
-        const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
-        directionalLight2.position.set(-1, -1, -1);
-        this.scene.add(directionalLight2);
-        
-        // -------- RESOURCE LOADING --------
-        console.log('Loading resources...');
-        await this.loadResources();
-        
-        // -------- SETUP CONTROLS BASED ON CHOICE --------
-        if (forceAR) {
-            await this.setupXRControls();
-        } else {
-            this.isXRActive = false;
-            this.setupFallbackCameraControls();
-            this.setupTouchInteractions();
-        }
-        
-        // Start render loop
-        this.renderer.setAnimationLoop((timestamp, frame) => {
-            this.render(timestamp, frame);
-        });
-        
-        // Start the experience
-        this.startExperience();
-        
-    } catch (error) {
-        console.error('Failed to start:', error);
-        alert('Failed to start project: ' + error.message);
-    }
-}
-
-async setupXRControls() {
-    // Only try XR if explicitly requested
-    if (navigator.xr) {
-        try {
-            console.log('Checking XR support...');
-            const isARSupported = await navigator.xr.isSessionSupported('immersive-ar');
-            const isVRSupported = await navigator.xr.isSessionSupported('immersive-vr');
-            
-            if (isARSupported || isVRSupported) {
-                console.log(`Starting immersive ${isARSupported ? 'AR' : 'VR'} session`);
-                const sessionType = isARSupported ? 'immersive-ar' : 'immersive-vr';
+        // Add start button event listener
+        document.getElementById('startButton').addEventListener('click', async () => {
+            try {                  
+                // Hide landing page, show AR view
+                document.getElementById('landingPage').style.display = 'none';
+                document.getElementById('arView').style.display = 'block';
                 
+                // -------- THREE.JS INITIALIZATION --------
+                // Scene
+                this.scene = new THREE.Scene();
+                
+                // Camera - responsive setup
+                this.camera = new THREE.PerspectiveCamera(
+                    70, // FOV - good for mobile
+                    window.innerWidth / window.innerHeight,
+                    0.01, // Near plane - close objects
+                    100   // Far plane
+                );
+                
+                // Renderer - mobile optimized
+                const canvas = document.getElementById('arCanvas');
+                this.renderer = new THREE.WebGLRenderer({ 
+                    canvas: canvas, 
+                    antialias: true,
+                    alpha: true,
+                    precision: 'mediump' // Better mobile performance
+                });
+                
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                this.renderer.outputEncoding = THREE.sRGBEncoding;
+                this.renderer.shadowMap.enabled = false; // Disable shadows for performance
+                
+                // Comprehensive lighting for all devices
+                const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+                this.scene.add(ambientLight);
+                
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+                directionalLight.position.set(1, 1, 1);
+                this.scene.add(directionalLight);
+                
+                const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.5);
+                directionalLight2.position.set(-1, -1, -1);
+                this.scene.add(directionalLight2);
+                
+                // -------- RESOURCE LOADING --------
+                // Load models and audio (unchanged)
+                await this.loadResources();
+                
+                // -------- WEBXR INITIALIZATION --------
                 this.renderer.xr.enabled = true;
                 
-                // Request XR session
-                this.session = await navigator.xr.requestSession(sessionType, {
-                    requiredFeatures: ['local'],
-                    optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'hit-test']
+                // Set up either WebXR or fallback controls
+                await this.setupControls();
+                
+                // Start render loop
+                this.renderer.setAnimationLoop((timestamp, frame) => {
+                    this.render(timestamp, frame);
                 });
                 
-                await this.renderer.xr.setSession(this.session);
-                this.isXRActive = true;
+                // NEW: Start the experience with the scene manager
+                this.startExperience();
                 
-                // Set up XR controller
-                this.controller = this.renderer.xr.getController(0);
-                this.scene.add(this.controller);
-                
-                // Create visible ray
-                this.createRaycasterRay();
-                
-                // Set up controller select event
-                this.controller.addEventListener('select', (event) => {
-                    console.log('XR Controller select event fired');
-                    const tempMatrix = new THREE.Matrix4();
-                    tempMatrix.identity().extractRotation(this.controller.matrixWorld);
-                    
-                    const controllerRaycaster = new THREE.Raycaster();
-                    controllerRaycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
-                    controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
-                    
-                    this.checkInteractions(controllerRaycaster);
-                });
-                
-            } else {
-                throw new Error('XR not supported on this device');
+            } catch (error) {
+                console.error('Failed to start:', error);
+                alert('Failed to start project: ' + error.message);
             }
-        } catch (error) {
-            console.log('XR setup failed, using fallback:', error.message);
-            this.isXRActive = false;
-            this.setupFallbackCameraControls();
-            this.setupTouchInteractions();
-        }
-    } else {
-        console.log('WebXR not available, using fallback mode');
-        this.isXRActive = false;
-        this.setupFallbackCameraControls();
-        this.setupTouchInteractions();
+        });    
+        // Handle window resize
+        window.addEventListener('resize', () => this.onWindowResize());
     }
-}
-
-setupTouchInteractions() {
-    if (!this.modelInteractionHandlerActive) {
-        this.modelInteractionHandlerActive = true;
-        
-        // Set up shared raycaster for interactions
-        this.interactionRaycaster = new THREE.Raycaster();
-        this.interactionPointer = new THREE.Vector2();
-        
-        // Track pointer for click vs. drag detection
-        let pointerStartX = 0;
-        let pointerStartY = 0;
-        let isDragging = false;
-        
-        // Set up pointer event handlers
-        const handlePointerDown = (event) => {
-            pointerStartX = event.clientX;
-            pointerStartY = event.clientY;
-            isDragging = false;
-        };
-        
-        const handlePointerMove = (event) => {
-            if (!isDragging) {
-                const deltaX = Math.abs(event.clientX - pointerStartX);
-                const deltaY = Math.abs(event.clientY - pointerStartY);
-                if (deltaX > 5 || deltaY > 5) {
-                    isDragging = true;
-                }
-            }
-        };
-        
-        const handlePointerUp = (event) => {
-            if (!isDragging) {
-                this.interactionPointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-                this.interactionPointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
-                this.interactionRaycaster.setFromCamera(this.interactionPointer, this.camera);
-                this.checkInteractions(this.interactionRaycaster);
-            }
-        };
-        
-        // Add event listeners
-        document.addEventListener('pointerdown', handlePointerDown);
-        document.addEventListener('pointermove', handlePointerMove);
-        document.addEventListener('pointerup', handlePointerUp);
-        
-        // Store handlers for cleanup
-        this.interactionHandlers = {
-            pointerDown: handlePointerDown,
-            pointerMove: handlePointerMove,
-            pointerUp: handlePointerUp
-        };
-    }
-}
-
     
     async loadResources() {
         const loader = new THREE.GLTFLoader();
