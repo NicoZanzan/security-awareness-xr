@@ -230,7 +230,7 @@ ARExperience.prototype.scene4 = function() {
         yOffset: 0.29  // Slightly below center
     });   
 
-    this.quitButtonModel.position.set(0, 1.3, -1.5); 
+    this.quitButtonModel.position.set(0, 1, -1.5); 
     this.scaleModel(this.quitButtonModel, 0.3);      
     this.scene.add(this.quitButtonModel);  
 
