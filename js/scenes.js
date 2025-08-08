@@ -334,20 +334,13 @@ ARExperience.prototype.createXRStatusCube = function() {
         this.xrStatusCube = null;
     }
     
-    // Check XR controller and raycasting status
-    const controllerExists = !!this.controller;
-    const controllerInScene = controllerExists && this.scene.children.includes(this.controller);
-    const rayExists = !!this.raycasterLine;
-    const rayInController = rayExists && controllerExists && this.controller.children.includes(this.raycasterLine);
-    const interactionsReady = !!this.modelInteractions && this.modelInteractions.size > 0;
-    
-    // Overall XR readiness
-    const xrReady = controllerExists && controllerInScene && rayExists && rayInController && interactionsReady;
+    // Simple check: Green if XR is active, Red if not
+    const xrReady = this.isXRActive;
     
     // Create cube geometry and material
     const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1); // 10cm cube
     const material = new THREE.MeshBasicMaterial({ 
-        color: xrReady ? 0x00ff00 : 0xff0000, // Green if ready, red if not
+        color: xrReady ? 0x00ff00 : 0xff0000, // Green if XR active, red if not
         transparent: true,
         opacity: 0.8
     });
@@ -371,13 +364,8 @@ ARExperience.prototype.createXRStatusCube = function() {
     this.xrStatusCube.name = 'xrStatusCube';
     
     // Log status
-    console.log(`📦 XR Status Cube Created: ${xrReady ? '🟢 GREEN (Ready)' : '🔴 RED (Not Ready)'}`);
-    console.log('📦 Status Details:');
-    console.log(`   - Controller Exists: ${controllerExists ? '✅' : '❌'}`);
-    console.log(`   - Controller In Scene: ${controllerInScene ? '✅' : '❌'}`);
-    console.log(`   - Ray Exists: ${rayExists ? '✅' : '❌'}`);
-    console.log(`   - Ray In Controller: ${rayInController ? '✅' : '❌'}`);
-    console.log(`   - Interactions Ready: ${interactionsReady ? '✅' : '❌'}`);
+    console.log(`📦 XR Status Cube Created: ${xrReady ? '🟢 GREEN (XR Active)' : '🔴 RED (XR Not Active)'}`);
+    console.log(`📦 this.isXRActive = ${this.isXRActive}`);
     
     return this.xrStatusCube;
 };
@@ -389,19 +377,14 @@ ARExperience.prototype.updateXRStatusCube = function() {
         return;
     }
     
-    // Check current status
-    const controllerExists = !!this.controller;
-    const controllerInScene = controllerExists && this.scene.children.includes(this.controller);
-    const rayExists = !!this.raycasterLine;
-    const rayInController = rayExists && controllerExists && this.controller.children.includes(this.raycasterLine);
-    const interactionsReady = !!this.modelInteractions && this.modelInteractions.size > 0;
-    
-    const xrReady = controllerExists && controllerInScene && rayExists && rayInController && interactionsReady;
+    // Simple check: Green if XR is active, Red if not
+    const xrReady = this.isXRActive;
     
     // Update color
     this.xrStatusCube.material.color.set(xrReady ? 0x00ff00 : 0xff0000);
     
-    console.log(`📦 XR Status Cube Updated: ${xrReady ? '🟢 GREEN (Ready)' : '🔴 RED (Not Ready)'}`);
+    console.log(`📦 XR Status Cube Updated: ${xrReady ? '🟢 GREEN (XR Active)' : '🔴 RED (XR Not Active)'}`);
+    console.log(`📦 this.isXRActive = ${this.isXRActive}`);
 };
 
 // Function to remove the status cube
@@ -414,5 +397,4 @@ ARExperience.prototype.removeXRStatusCube = function() {
         console.log('📦 XR Status Cube Removed');
     }
 };
-
 
