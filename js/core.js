@@ -291,22 +291,7 @@ class ARExperience {
                             
                             this.checkInteractions(controllerRaycaster);
                         });
-                    }
-                    
-                    // Set up the controller's select event for interaction
-                    this.controller.addEventListener('select', (event) => {
-                                            
-                        // Set up raycaster from controller
-                        const tempMatrix = new THREE.Matrix4();
-                        tempMatrix.identity().extractRotation(this.controller.matrixWorld);
-                        
-                        const controllerRaycaster = new THREE.Raycaster();
-                        controllerRaycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
-                        controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
-                        
-                        // Check for interactive object intersections
-                        this.checkInteractions(controllerRaycaster);
-                    });
+                    };                
                     
                     // Adjust for VR if needed (particularly for Meta Quest)
                     if (isVRSupported && !isARSupported) {
