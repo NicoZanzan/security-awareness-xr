@@ -139,7 +139,8 @@ ARExperience.prototype.scene2 = function() {
     // NC: Use estimated duration instead of problematic audioLength
     const estimatedDuration = 35000; // 35 seconds
     setTimeout(() => {
-        this.showNextButton('scene3'); // NC: Show next button instead of direct transition
+         this.goToScene('scene3');
+        //this.showNextButton('scene3'); // NC: Show next button instead of direct transition
     //}, estimatedDuration);
     }, 1000);  
 };
@@ -191,11 +192,11 @@ ARExperience.prototype.scene3 = function() {
         5                   
     );  
 
-    // this.laptopModel.visible = true; 
-    // this.moveModel("laptopModel", 
-    //     {x: 0, y: 0, z: 7},  
-    //     5                   
-    // );  
+    this.laptopModel.visible = true; 
+     this.moveModel("laptopModel", 
+         {x: 0, y: 0, z: 7},  
+         5                   
+    );  
 
     this.flatTableModel.visible = true; 
     this.moveModel("flatTableModel", 
