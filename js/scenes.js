@@ -72,7 +72,7 @@ ARExperience.prototype.scene1 = function() {
     this.playAudio('audioIntroMsg');
 
   
-    this.startButtonModel.position.set(0, 0, 0);  // Reset first
+    //this.startButtonModel.position.set(0, 0, 0);  // Reset first
     this.startButtonModel.rotation.set(0, 0, 0);
     this.startButtonModel.scale.set(1, 1, 1);
     this.startButtonModel.position.set(0, 1, -1.5);  // Then position
@@ -81,7 +81,7 @@ ARExperience.prototype.scene1 = function() {
     this.scene.add(this.startButtonModel);  
     
     // Wendy NT model creation and placement
-    this.wendyNTModel.position.set(0, 1.7, -7); 
+    this.wendyNTModel.position.set(0, 1.5, -7); 
     this.wendyNTModel.rotation.y = -Math.PI / 2; // 90 degrees clockwise
     this.scene.add(this.wendyNTModel);     
     this.wendyNTModel.name = "wendyNTModel";
@@ -113,16 +113,16 @@ ARExperience.prototype.scene2 = function() {
 
     // NC: Use helper function to add multiple models
     this.addModelsToScene([
-        { name: 'cafeModelS3' },
-        { name: 'doc1Model' },
-        { name: 'doc2Model' },
-        { name: 'wendyModel' },
-        { name: 'mendyModel', z: -3 },
-        { name: 'word1Model' },
-        { name: 'word2Model' },
-        { name: 'word3Model' },
-        { name: 'sunglassesModel' },
-        { name: 'wendyGlassesModelS3' }
+        { name: 'cafeModelS3', y:1 },
+        { name: 'doc1Model', y:1 },
+        { name: 'doc2Model', y:1 },
+        { name: 'wendyModel', y:1 },
+        { name: 'mendyModel', y:1, z: -3 },
+        { name: 'word1Model', y:1 },
+        { name: 'word2Model', y:1 },
+        { name: 'word3Model', y:1 },
+        { name: 'sunglassesModel', y:1 },
+        { name: 'wendyGlassesModelS3', y:1},
     ]);       
     
     this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
@@ -231,7 +231,7 @@ ARExperience.prototype.scene4 = function() {
         yOffset: 0.29  // Slightly below center
     });   
 
-    this.quitButtonModel.position.set(0, 1.7, -1.5); 
+    this.quitButtonModel.position.set(0, 1.3, -1.5); 
     this.scaleModel(this.quitButtonModel, 0.3);      
     this.scene.add(this.quitButtonModel);  
 
