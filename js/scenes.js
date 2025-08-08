@@ -50,14 +50,7 @@ ARExperience.prototype.showNextButton = function(targetScene) {
     this.nextButtonModel.updateMatrixWorld(true);
     
     this.scene.add(this.nextButtonModel);
-    this.nextButtonModel.name = 'nextButtonModel';
-    
-    // this.createTextPlate('Click NEXT to proceed to the next scene', {
-    //     backgroundColor: 0x3366cc,
-    //     width: 0.5,
-    //     height: 0.2,
-    //     yOffset: -0.29
-    // });
+    this.nextButtonModel.name = 'nextButtonModel';   
     
     this.makeModelClickable(this.nextButtonModel, () => {
         this.goToScene(targetScene);
@@ -66,9 +59,7 @@ ARExperience.prototype.showNextButton = function(targetScene) {
 
 // ============== INDIVIDUAL SCENES ==============
 
-ARExperience.prototype.scene1 = function() {
-
-     this.createXRStatusCube();
+ARExperience.prototype.scene1 = function() {    
         
     // Initial text plate creation
     this.createTextPlate('Welcome - use START below to begin', {
@@ -111,8 +102,7 @@ ARExperience.prototype.scene1 = function() {
     });         
 };
 
-ARExperience.prototype.scene2 = function() {
-     this.createXRStatusCube();
+ARExperience.prototype.scene2 = function() {     
 
     this.createTextPlate('Chapter 1: 3D Video', {
        backgroundColor: 0x3366cc,
@@ -148,8 +138,7 @@ ARExperience.prototype.scene2 = function() {
 };
 
 
-ARExperience.prototype.scene3 = function() {
-     this.createXRStatusCube(); 
+ARExperience.prototype.scene3 = function() {    
       
     this.createTextPlate('Welcome to the Quiz!', {
         backgroundColor: 0x3366cc,
@@ -174,7 +163,6 @@ ARExperience.prototype.scene3 = function() {
         {x: 0, y: 0, z: -7},  
         8                   
     );  
-
 
     this.startButtonModel.visible = true; 
     this.moveModel("startButtonModel", 
@@ -243,8 +231,7 @@ ARExperience.prototype.scene3 = function() {
 
 
 ARExperience.prototype.scene4 = function() {
-    this.createXRStatusCube();
-    
+   
     this.createTextPlate('Thanks for looking around - use QUIT below to finish', {
         backgroundColor: 0x3366cc,
         width: 0.5,
@@ -272,10 +259,10 @@ ARExperience.prototype.scene4 = function() {
 
 // ============== LEGACY METHODS (IMPROVED) ==============
 
-ARExperience.prototype.nextScene = function(sceneName) {
-    // NC: Simplified - just show the next button
-    this.showNextButton(sceneName);
-};
+// ARExperience.prototype.nextScene = function(sceneName) {
+//     // NC: Simplified - just show the next button
+//     this.showNextButton(sceneName);
+// };
 
 ARExperience.prototype.clearScene = function() {
     console.log('🧹 Clearing scene - hiding all assets');
@@ -334,79 +321,5 @@ ARExperience.prototype.clearScene = function() {
     this.mixers = [];
     
     console.log('✅ Scene cleared (XR components preserved)');
-};
-
-
-ARExperience.prototype.createXRStatusCube = function() {
-    // Remove existing status cube if it exists
-    if (this.xrStatusCube) {
-        this.scene.remove(this.xrStatusCube);
-        if (this.xrStatusCube.material) this.xrStatusCube.material.dispose();
-        if (this.xrStatusCube.geometry) this.xrStatusCube.geometry.dispose();
-        this.xrStatusCube = null;
-    }
-    
-    // Simple check: Green if XR is active, Red if not
-    const xrReady = this.isXRActive;
-    
-    // Create cube geometry and material
-    const geometry = new THREE.BoxGeometry(0.1, 0.1, 0.1); // 10cm cube
-    const material = new THREE.MeshBasicMaterial({ 
-        color: xrReady ? 0x00ff00 : 0xff0000, // Green if XR active, red if not
-        transparent: true,
-        opacity: 0.8
-    });
-    
-    this.xrStatusCube = new THREE.Mesh(geometry, material);
-    
-    // Position cube in front of camera/user
-    if (this.isXRActive && this.camera) {
-        // In AR mode, position relative to camera
-        this.xrStatusCube.position.set(0, 0.2, -0.5); // Slightly above center, 50cm away
-    } else {
-        // In desktop mode, position in front of camera
-        this.xrStatusCube.position.set(0, 0.2, -1.5); // Further away for desktop viewing
-    }
-    
-    // Make cube always face the camera
-    this.xrStatusCube.lookAt(this.camera.position);
-    
-    // Add to scene
-    this.scene.add(this.xrStatusCube);
-    this.xrStatusCube.name = 'xrStatusCube';
-    
-    // Log status
-    console.log(`📦 XR Status Cube Created: ${xrReady ? '🟢 GREEN (XR Active)' : '🔴 RED (XR Not Active)'}`);
-    console.log(`📦 this.isXRActive = ${this.isXRActive}`);
-    
-    return this.xrStatusCube;
-};
-
-// Function to update the cube color without recreating it
-ARExperience.prototype.updateXRStatusCube = function() {
-    if (!this.xrStatusCube) {
-        this.createXRStatusCube();
-        return;
-    }
-    
-    // Simple check: Green if XR is active, Red if not
-    const xrReady = this.isXRActive;
-    
-    // Update color
-    this.xrStatusCube.material.color.set(xrReady ? 0x00ff00 : 0xff0000);
-    
-    console.log(`📦 XR Status Cube Updated: ${xrReady ? '🟢 GREEN (XR Active)' : '🔴 RED (XR Not Active)'}`);
-    console.log(`📦 this.isXRActive = ${this.isXRActive}`);
-};
-
-// Function to remove the status cube
-ARExperience.prototype.removeXRStatusCube = function() {
-    if (this.xrStatusCube) {
-        this.scene.remove(this.xrStatusCube);
-        if (this.xrStatusCube.material) this.xrStatusCube.material.dispose();
-        if (this.xrStatusCube.geometry) this.xrStatusCube.geometry.dispose();
-        this.xrStatusCube = null;
-        console.log('📦 XR Status Cube Removed');
-    }
 };
 
