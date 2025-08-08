@@ -43,7 +43,7 @@ ARExperience.prototype.showNextButton = function(targetScene) {
     }
 
     // Reset and position next button
-    this.nextButtonModel.position.set(0, 1, -1.5);
+    this.nextButtonModel.position.set(0, 0.7, -1.5);
     this.nextButtonModel.rotation.set(0, 0, 0);
     this.nextButtonModel.scale.set(0.5, 0.5, 0.5); // Scale to 0.5m 
     this.nextButtonModel.visible = true;
