@@ -386,7 +386,7 @@ class ARExperience {
         console.log('Setting up camera controls for non-AR mode');
         // Adjusted camera height to better frame objects at Y=0, which are 1.5m in front of the origin.
         // A height of 0.7m allows for a natural slight downward gaze to see objects on the floor.
-        this.camera.position.set(0, 0.7, 0); // Changed from 1.6 to 0.7
+        this.camera.position.set(0, 1.7, 0); // Changed from 1.6 to 0.7
 
         this.camera.rotation.set(0, 0, 0); 
         
