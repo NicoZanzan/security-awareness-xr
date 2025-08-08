@@ -280,32 +280,39 @@ ARExperience.prototype.nextScene = function(sceneName) {
 ARExperience.prototype.clearScene = function() {
     console.log('🧹 Clearing scene - hiding all assets');
 
-    // Helper function for hiding objects instead of disposing
     const hideSafely = (obj) => {
         if (!obj) return;
         
-        // Simply make the object invisible and remove from parent
         obj.visible = false;
         if (obj.parent) { 
             obj.parent.remove(obj); 
         }
-        
         console.log(`Hidden: ${obj.name || obj.type}`);
     };
 
     if (this.scene) {
         [...this.scene.children].forEach(object => {                
-            if (object.type.includes('Light') || object.type === 'PerspectiveCamera') return;              
+            // PRESERVE XR COMPONENTS DURING SCENE TRANSITIONS
+            if (object.type.includes('Light') || 
+                object.type === 'PerspectiveCamera' ||
+                object === this.controller ||           // Don't remove XR controller!
+                object === this.raycasterLine ||        // Don't remove ray!
+                (this.uiGroup && object === this.uiGroup)) {  // Don't remove UI
+                return;
+            }
+            
             hideSafely(object);
         });
     }
 
-    // ✅ Smart interaction cleanup - don't destroy all interactions
+    // Don't clear interaction map completely - preserve XR controller interactions
     if (this.modelInteractions) {
         const modelsToRemove = [];
         this.modelInteractions.forEach((data, model) => {
-            // Remove interactions for models that are no longer in the scene or are hidden
-            if (!model.parent || !model.visible) {
+            // Only remove interactions for models that are actually being cleaned up
+            if (!model.parent || (!model.visible && 
+                model.name !== 'nextButtonModel' && 
+                model.name !== 'startButtonModel')) {
                 modelsToRemove.push(model);
             }
         });
@@ -315,15 +322,20 @@ ARExperience.prototype.clearScene = function() {
         console.log(`🧹 Cleaned up ${modelsToRemove.length} stale interactions, ${this.modelInteractions.size} remaining`);
     }
 
-    if (this._animationCallbacks) this._animationCallbacks = [];        
+    // Don't reset animation callbacks in XR mode (they might be needed for controller updates)
+    if (!this.isXRActive && this._animationCallbacks) {
+        this._animationCallbacks = [];        
+    }
    
     this.mixers?.forEach(mixer => {
         try { mixer.stopAllAction(); mixer.uncacheRoot?.(mixer.getRoot()); } 
         catch(e) {}
     });
     this.mixers = [];
-    console.log('✅ Scene cleared (interactions preserved)');
+    
+    console.log('✅ Scene cleared (XR components preserved)');
 };
+
 
 ARExperience.prototype.createXRStatusCube = function() {
     // Remove existing status cube if it exists
