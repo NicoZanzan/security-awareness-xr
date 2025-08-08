@@ -73,7 +73,6 @@ ARExperience.prototype.scene1 = function() {
 
   
     //this.startButtonModel.position.set(0, 0, 0);  // Reset first
-    this.startButtonModel.rotation.set(0, 0, 0);
     this.startButtonModel.scale.set(1, 1, 1);
     this.startButtonModel.position.set(0, 1, -1.5);  // Then position
 
