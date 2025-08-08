@@ -123,16 +123,13 @@ ARExperience.prototype.scene2 = function() {
         { name: 'word3Model' },
         { name: 'sunglassesModel' },
         { name: 'wendyGlassesModelS3' }
-    ]);      
+    ]);       
     
-    // Start animations and audio
     //this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
-
-    // NC: Use estimated duration instead of problematic audioLength
+    
     const estimatedDuration = 35000; // 35 seconds
-    setTimeout(() => {
-         this.goToScene('scene3');
-        //this.showNextButton('scene3'); // NC: Show next button instead of direct transition
+    setTimeout(() => {       
+         this.showNextButton('scene3');        
     //}, estimatedDuration);
     }, 1000);  
 };
@@ -160,45 +157,40 @@ ARExperience.prototype.scene3 = function() {
     
     this.wendyNTModel.visible = true; 
     this.moveModel("wendyNTModel", 
-        {x: 0, y: 0, z: -7},  
+        {x: 0, y: 0, z: -7},  // 0° - North (front)
         8                   
+    );
+
+    this.laptopModel.visible = true; 
+    this.moveModel("laptopModel", 
+        {x: 6.06, y: 0, z: -3.5},  // 60° - Northeast (right from wendy)
+        5                   
     );  
 
-    this.startButtonModel.visible = true; 
-    this.moveModel("startButtonModel", 
-        {x: 6.06, y: 0, z: -3.5},  
-        5                   
-    ); 
-    
     this.tabletModel.visible = true; 
     this.moveModel("tabletModel", 
-        {x: 6.06, y: 0, z: 3.5},  
+        {x: 6.06, y: 0, z: 3.5},  // 120° - Southeast
         5                   
     );  
 
     this.tableModel.visible = true; 
     this.moveModel("tableModel", 
-        {x: 0, y: 0, z: 7},  
+        {x: 0, y: 0, z: 7},  // 180° - South (back)
         5                   
-    );  
-
-    this.laptopModel.visible = true; 
-     this.moveModel("laptopModel", 
-         {x: 0, y: 0, z: 7},  
-         5                   
     );  
 
     this.flatTableModel.visible = true; 
     this.moveModel("flatTableModel", 
-        {x: 6.06, y: 0, z: 3.57},  
+        {x: -6.06, y: 0, z: 3.5},  // 240° - Southwest
         5                   
     );  
 
     this.notebookModel.visible = true; 
     this.moveModel("notebookModel", 
-        {x: -6.06, y: 0, z: -3.5},  
+        {x: -6.06, y: 0, z: -3.5},  // 300° - Northwest
         5                   
-    );        
+    );
+
         
     this.makeModelClickable(this.laptopModel, () => {
         console.log('💻 Laptop clicked!');
