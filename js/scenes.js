@@ -43,7 +43,7 @@ ARExperience.prototype.showNextButton = function(targetScene) {
     }
 
     // Reset and position next button
-    this.nextButtonModel.position.set(0, 0.7, -1.5);
+    this.nextButtonModel.position.set(0, 1.7, -1.5);
     this.nextButtonModel.rotation.set(0, 0, 0);
     this.nextButtonModel.scale.set(0.5, 0.5, 0.5); // Scale to 0.5m 
     this.nextButtonModel.visible = true;
@@ -81,7 +81,7 @@ ARExperience.prototype.scene1 = function() {
     this.scene.add(this.startButtonModel);  
     
     // Wendy NT model creation and placement
-    this.wendyNTModel.position.set(0, 1, -7); 
+    this.wendyNTModel.position.set(0, 1.7, -7); 
     this.wendyNTModel.rotation.y = -Math.PI / 2; // 90 degrees clockwise
     this.scene.add(this.wendyNTModel);     
     this.wendyNTModel.name = "wendyNTModel";
@@ -157,37 +157,37 @@ ARExperience.prototype.scene3 = function() {
     
     this.wendyNTModel.visible = true; 
     this.moveModel("wendyNTModel", 
-        {x: 0, y: 1, z: -7},  // 0° - North (front)
+        {x: 0, y: 1.7, z: -7},  // 0° - North (front)
         8                   
     );
 
     this.laptopModel.visible = true; 
     this.moveModel("laptopModel", 
-        {x: 6.06, y: 1, z: -3.5},  // 60° - Northeast (right from wendy)
+        {x: 6.06, y: 1.7, z: -3.5},  // 60° - Northeast (right from wendy)
         5                   
     );  
 
     this.tabletModel.visible = true; 
     this.moveModel("tabletModel", 
-        {x: 6.06, y: 1, z: 3.5},  // 120° - Southeast
+        {x: 6.06, y: 1.7, z: 3.5},  // 120° - Southeast
         5                   
     );  
 
     this.tableModel.visible = true; 
     this.moveModel("tableModel", 
-        {x: 0, y: 1, z: 7},  // 180° - South (back)
+        {x: 0, y: 1.7, z: 7},  // 180° - South (back)
         5                   
     );  
 
     this.flatTableModel.visible = true; 
     this.moveModel("flatTableModel", 
-        {x: -6.06, y: 1, z: 3.5},  // 240° - Southwest
+        {x: -6.06, y: 1.7, z: 3.5},  // 240° - Southwest
         5                   
     );  
 
     this.notebookModel.visible = true; 
     this.moveModel("notebookModel", 
-        {x: -6.06, y: 1, z: -3.5},  // 300° - Northwest
+        {x: -6.06, y: 1.7, z: -3.5},  // 300° - Northwest
         5                   
     );
 
@@ -231,7 +231,7 @@ ARExperience.prototype.scene4 = function() {
         yOffset: 0.29  // Slightly below center
     });   
 
-    this.quitButtonModel.position.set(0, 1, -1.5); 
+    this.quitButtonModel.position.set(0, 1.7, -1.5); 
     this.scaleModel(this.quitButtonModel, 0.3);      
     this.scene.add(this.quitButtonModel);  
 
@@ -242,7 +242,7 @@ ARExperience.prototype.scene4 = function() {
 
     // Optional: Add farewell animation
     if (this.wendyModel) {
-        this.wendyModel.position.set(-2, 1, -5);
+        this.wendyModel.position.set(-2, 1.7, -5);
         this.scene.add(this.wendyModel);
         // Uncomment if you have a goodbye animation:
         // this.playModelAnimation('wendyModel', 'WaveGoodbye');
