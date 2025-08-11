@@ -411,141 +411,449 @@ class ARExperience {
         }
     }
 
-    async setupControls() {
-        // 1. Check for WebXR support
-        if (navigator.xr) {
-            try {
-                // Check for immersive AR or VR support
-                const isARSupported = await navigator.xr.isSessionSupported('immersive-ar');
-                const isVRSupported = await navigator.xr.isSessionSupported('immersive-vr');
+    // async setupControls() {
+    //     // 1. Check for WebXR support
+    //     if (navigator.xr) {
+    //         try {
+    //             // Check for immersive AR or VR support
+    //             const isARSupported = await navigator.xr.isSessionSupported('immersive-ar');
+    //             const isVRSupported = await navigator.xr.isSessionSupported('immersive-vr');
                 
-                if (isARSupported || isVRSupported) {
+    //             if (isARSupported || isVRSupported) {
                     
-                    console.log(`Starting immersive ${isARSupported ? 'AR' : 'VR'} session`);
-                    const sessionType = isARSupported ? 'immersive-ar' : 'immersive-vr';
+    //                 console.log(`Starting immersive ${isARSupported ? 'AR' : 'VR'} session`);
+    //                 const sessionType = isARSupported ? 'immersive-ar' : 'immersive-vr';
                     
-                    // Request XR session with needed features
-                    this.session = await navigator.xr.requestSession(sessionType, {
-                        requiredFeatures: ['local'],
-                        optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'hit-test']
-                    });
+    //                 // Request XR session with needed features
+    //                 this.session = await navigator.xr.requestSession(sessionType, {
+    //                     requiredFeatures: ['local'],
+    //                     optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'hit-test']
+    //                 });
                     
-                    await this.renderer.xr.setSession(this.session);
-                    this.isXRActive = true;                
+    //                 await this.renderer.xr.setSession(this.session);
+    //                 this.isXRActive = true;                
                     
-                    // Set up XR controller (moved from setupInteraction)
-                    this.controller = this.renderer.xr.getController(0);
-                    this.scene.add(this.controller);
+    //                 // Set up XR controller (moved from setupInteraction)
+    //                 this.controller = this.renderer.xr.getController(0);
+    //                 this.scene.add(this.controller);
 
-                    // Create raycaster line for controller when in AR/VR mode
-                     if (this.session) {  // If we're in AR/VR mode
-                        // Set up XR controller
-                        this.controller = this.renderer.xr.getController(0);
-                        this.scene.add(this.controller);
+    //                 // Create raycaster line for controller when in AR/VR mode
+    //                  if (this.session) {  // If we're in AR/VR mode
+    //                     // Set up XR controller
+    //                     this.controller = this.renderer.xr.getController(0);
+    //                     this.scene.add(this.controller);
                         
-                        // Create visible ray
-                        this.createRaycasterRay();
+    //                     // Create visible ray
+    //                     this.createRaycasterRay();
                         
-                        // Set up controller select event
-                        this.controller.addEventListener('select', (event) => {
-                            const tempMatrix = new THREE.Matrix4();
-                            tempMatrix.identity().extractRotation(this.controller.matrixWorld);
+    //                     // Set up controller select event
+    //                     this.controller.addEventListener('select', (event) => {
+    //                         const tempMatrix = new THREE.Matrix4();
+    //                         tempMatrix.identity().extractRotation(this.controller.matrixWorld);
                             
-                            const controllerRaycaster = new THREE.Raycaster();
-                            controllerRaycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
-                            controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+    //                         const controllerRaycaster = new THREE.Raycaster();
+    //                         controllerRaycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
+    //                         controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
                             
-                            this.checkInteractions(controllerRaycaster);
-                        });
-                    }
+    //                         this.checkInteractions(controllerRaycaster);
+    //                     });
+    //                 }
                     
-                    // Set up the controller's select event for interaction
-                    this.controller.addEventListener('select', (event) => {
+    //                 // Set up the controller's select event for interaction
+    //                 this.controller.addEventListener('select', (event) => {
                                             
-                        // Set up raycaster from controller
-                        const tempMatrix = new THREE.Matrix4();
-                        tempMatrix.identity().extractRotation(this.controller.matrixWorld);
+    //                     // Set up raycaster from controller
+    //                     const tempMatrix = new THREE.Matrix4();
+    //                     tempMatrix.identity().extractRotation(this.controller.matrixWorld);
                         
-                        const controllerRaycaster = new THREE.Raycaster();
-                        controllerRaycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
-                        controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+    //                     const controllerRaycaster = new THREE.Raycaster();
+    //                     controllerRaycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
+    //                     controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
                         
-                        // Check for interactive object intersections
-                        this.checkInteractions(controllerRaycaster);
+    //                     // Check for interactive object intersections
+    //                     this.checkInteractions(controllerRaycaster);
+    //                 });
+                    
+    //                 // Adjust for VR if needed (particularly for Meta Quest)
+    //                 if (isVRSupported && !isARSupported) {
+    //                     //this.adjustForVR();
+    //                     //this.camera.position.set(0, -1.6, 0);
+    //                 }
+                    
+    //             } else {
+    //                 console.log('XR not supported, using fallback 3D mode');
+    //                 this.setupFallbackCameraControls();                
+    //             }
+                
+    //         } catch (error) {
+    //             console.log('WebXR failed, using fallback:', error.message);
+    //             this.setupFallbackCameraControls();
+    //         }
+    //     } else {
+    //         console.log('WebXR not available, using fallback mode');
+    //         this.setupFallbackCameraControls();
+    //     }
+        
+    //     // Set up non-XR interaction (mouse/touch)
+    //     if (!this.modelInteractionHandlerActive) {
+    //         this.modelInteractionHandlerActive = true;
+            
+    //         // Set up shared raycaster for interactions
+    //         this.interactionRaycaster = new THREE.Raycaster();
+    //         this.interactionPointer = new THREE.Vector2();
+            
+    //         // Track pointer for click vs. drag detection
+    //         let pointerStartX = 0;
+    //         let pointerStartY = 0;
+    //         let isDragging = false;
+            
+    //         // Set up pointer event handlers
+    //         const handlePointerDown = (event) => {
+    //             pointerStartX = event.clientX;
+    //             pointerStartY = event.clientY;
+    //             isDragging = false;
+    //         };
+            
+    //         const handlePointerMove = (event) => {
+    //             if (!isDragging) {
+    //                 const deltaX = Math.abs(event.clientX - pointerStartX);
+    //                 const deltaY = Math.abs(event.clientY - pointerStartY);
+    //                 if (deltaX > 5 || deltaY > 5) {
+    //                     isDragging = true;
+    //                 }
+    //             }
+    //         };
+            
+    //         const handlePointerUp = (event) => {
+    //             if (!isDragging) {
+    //                 this.interactionPointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+    //                 this.interactionPointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    //                 this.interactionRaycaster.setFromCamera(this.interactionPointer, this.camera);
+    //                 this.checkInteractions(this.interactionRaycaster);
+    //             }
+    //         };
+            
+    //         // Add event listeners
+    //         document.addEventListener('pointerdown', handlePointerDown);
+    //         document.addEventListener('pointermove', handlePointerMove);
+    //         document.addEventListener('pointerup', handlePointerUp);
+            
+    //         // Store handlers for cleanup
+    //         this.interactionHandlers = {
+    //             pointerDown: handlePointerDown,
+    //             pointerMove: handlePointerMove,
+    //             pointerUp: handlePointerUp
+    //         };
+    //     }
+    // }
+
+    async setupControls() {
+    // 1. Check for WebXR support
+    if (navigator.xr) {
+        try {
+            // Check for immersive AR or VR support
+            const isARSupported = await navigator.xr.isSessionSupported('immersive-ar');
+            const isVRSupported = await navigator.xr.isSessionSupported('immersive-vr');
+            
+            if (isARSupported || isVRSupported) {
+                console.log(`Starting immersive ${isARSupported ? 'AR' : 'VR'} session`);
+                const sessionType = isARSupported ? 'immersive-ar' : 'immersive-vr';
+                
+                // Request XR session with appropriate features for AR/VR
+                const sessionInit = {
+                    requiredFeatures: ['local'],
+                    optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'hit-test']
+                };
+
+                // For AR, we might want different optional features
+                if (isARSupported) {
+                    sessionInit.optionalFeatures = ['local', 'local-floor', 'hit-test'];
+                }
+
+                this.session = await navigator.xr.requestSession(sessionType, sessionInit);
+                await this.renderer.xr.setSession(this.session);
+                this.isXRActive = true;
+
+                // Set up input source change listener
+                this.session.addEventListener('inputsourceschange', (event) => {
+                    console.log('Input sources changed:', {
+                        added: event.added,
+                        removed: event.removed,
+                        total: this.session.inputSources.length
                     });
                     
-                    // Adjust for VR if needed (particularly for Meta Quest)
-                    if (isVRSupported && !isARSupported) {
-                        //this.adjustForVR();
-                        //this.camera.position.set(0, -1.6, 0);
-                    }
-                    
-                } else {
-                    console.log('XR not supported, using fallback 3D mode');
-                    this.setupFallbackCameraControls();                
+                    // Log details about available input sources
+                    this.session.inputSources.forEach((inputSource, index) => {
+                        console.log(`Input source ${index}:`, {
+                            handedness: inputSource.handedness,
+                            targetRayMode: inputSource.targetRayMode,
+                            profiles: inputSource.profiles
+                        });
+                    });
+                });
+
+                // Set up controllers (support multiple controllers)
+                this.controllers = [];
+                for (let i = 0; i < 2; i++) {
+                    const controller = this.renderer.xr.getController(i);
+                    this.scene.add(controller);
+                    this.controllers.push(controller);
+
+                    // Add select event listener
+                    controller.addEventListener('select', (event) => {
+                        console.log(`Controller ${i} select event`);
+                        this.handleControllerSelect(controller, event);
+                    });
+
+                    // Add other controller events for debugging
+                    controller.addEventListener('selectstart', () => {
+                        console.log(`Controller ${i} select start`);
+                    });
+
+                    controller.addEventListener('selectend', () => {
+                        console.log(`Controller ${i} select end`);
+                    });
+
+                    controller.addEventListener('squeeze', () => {
+                        console.log(`Controller ${i} squeeze`);
+                    });
                 }
-                
-            } catch (error) {
-                console.log('WebXR failed, using fallback:', error.message);
+
+                // Create visible ray for first controller
+                if (this.controllers[0]) {
+                    this.createRaycasterRay();
+                    this.controller = this.controllers[0]; // Keep reference for backward compatibility
+                }
+
+                // Debug controller setup
+                setTimeout(() => {
+                    this.debugControllers();
+                }, 1000);
+
+            } else {
+                console.log('XR not supported, using fallback 3D mode');
                 this.setupFallbackCameraControls();
             }
-        } else {
-            console.log('WebXR not available, using fallback mode');
+            
+        } catch (error) {
+            console.log('WebXR failed, using fallback:', error.message);
             this.setupFallbackCameraControls();
         }
+    } else {
+        console.log('WebXR not available, using fallback mode');
+        this.setupFallbackCameraControls();
+    }
+    
+    // Set up non-XR interaction (mouse/touch)
+    this.setupMouseTouchInteraction();
+}
+
+// Separate method for controller select handling
+handleControllerSelect(controller, event) {
+    console.log('handleControllerSelect called');
+    
+    // Check if controller has valid pose
+    const frame = this.renderer.xr.getFrame();
+    if (!frame) {
+        console.warn('No XR frame available');
+        return;
+    }
+
+    const referenceSpace = this.renderer.xr.getReferenceSpace();
+    if (!referenceSpace) {
+        console.warn('No reference space available');
+        return;
+    }
+
+    // Get controller pose from input source
+    const inputSource = event.inputSource;
+    if (inputSource && inputSource.targetRaySpace) {
+        const targetRayPose = frame.getPose(inputSource.targetRaySpace, referenceSpace);
         
-        // Set up non-XR interaction (mouse/touch)
-        if (!this.modelInteractionHandlerActive) {
-            this.modelInteractionHandlerActive = true;
+        if (targetRayPose) {
+            console.log('Using input source target ray pose');
             
-            // Set up shared raycaster for interactions
-            this.interactionRaycaster = new THREE.Raycaster();
-            this.interactionPointer = new THREE.Vector2();
+            // Create raycaster from controller pose
+            const tempMatrix = new THREE.Matrix4();
+            tempMatrix.fromArray(targetRayPose.transform.matrix);
             
-            // Track pointer for click vs. drag detection
-            let pointerStartX = 0;
-            let pointerStartY = 0;
-            let isDragging = false;
+            const controllerRaycaster = new THREE.Raycaster();
+            controllerRaycaster.ray.origin.setFromMatrixPosition(tempMatrix);
             
-            // Set up pointer event handlers
-            const handlePointerDown = (event) => {
-                pointerStartX = event.clientX;
-                pointerStartY = event.clientY;
-                isDragging = false;
-            };
+            // Extract rotation and apply to direction
+            const rotationMatrix = new THREE.Matrix4();
+            rotationMatrix.extractRotation(tempMatrix);
+            controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(rotationMatrix).normalize();
             
-            const handlePointerMove = (event) => {
-                if (!isDragging) {
-                    const deltaX = Math.abs(event.clientX - pointerStartX);
-                    const deltaY = Math.abs(event.clientY - pointerStartY);
-                    if (deltaX > 5 || deltaY > 5) {
-                        isDragging = true;
-                    }
+            // Check for interactions
+            this.checkInteractions(controllerRaycaster);
+        } else {
+            console.warn('No target ray pose available');
+            this.fallbackControllerInteraction(controller);
+        }
+    } else {
+        console.warn('No input source or target ray space, using fallback');
+        this.fallbackControllerInteraction(controller);
+    }
+}
+
+// Fallback method when pose data isn't available
+fallbackControllerInteraction(controller) {
+    // Fallback: use controller matrix world
+    const tempMatrix = new THREE.Matrix4();
+    tempMatrix.identity().extractRotation(controller.matrixWorld);
+    
+    const controllerRaycaster = new THREE.Raycaster();
+    controllerRaycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
+    controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+    
+    console.log('Using fallback controller interaction');
+    this.checkInteractions(controllerRaycaster);
+}
+
+// Extract mouse/touch interaction setup
+setupMouseTouchInteraction() {
+    if (!this.modelInteractionHandlerActive) {
+        this.modelInteractionHandlerActive = true;
+        
+        // Set up shared raycaster for interactions
+        this.interactionRaycaster = new THREE.Raycaster();
+        this.interactionPointer = new THREE.Vector2();
+        
+        // Track pointer for click vs. drag detection
+        let pointerStartX = 0;
+        let pointerStartY = 0;
+        let isDragging = false;
+        
+        // Set up pointer event handlers
+        const handlePointerDown = (event) => {
+            pointerStartX = event.clientX;
+            pointerStartY = event.clientY;
+            isDragging = false;
+        };
+        
+        const handlePointerMove = (event) => {
+            if (!isDragging) {
+                const deltaX = Math.abs(event.clientX - pointerStartX);
+                const deltaY = Math.abs(event.clientY - pointerStartY);
+                if (deltaX > 5 || deltaY > 5) {
+                    isDragging = true;
                 }
-            };
-            
-            const handlePointerUp = (event) => {
-                if (!isDragging) {
-                    this.interactionPointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-                    this.interactionPointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
-                    this.interactionRaycaster.setFromCamera(this.interactionPointer, this.camera);
-                    this.checkInteractions(this.interactionRaycaster);
-                }
-            };
-            
-            // Add event listeners
-            document.addEventListener('pointerdown', handlePointerDown);
-            document.addEventListener('pointermove', handlePointerMove);
-            document.addEventListener('pointerup', handlePointerUp);
-            
-            // Store handlers for cleanup
-            this.interactionHandlers = {
-                pointerDown: handlePointerDown,
-                pointerMove: handlePointerMove,
-                pointerUp: handlePointerUp
-            };
+            }
+        };
+        
+        const handlePointerUp = (event) => {
+            if (!isDragging) {
+                this.interactionPointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+                this.interactionPointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                this.interactionRaycaster.setFromCamera(this.interactionPointer, this.camera);
+                this.checkInteractions(this.interactionRaycaster);
+            }
+        };
+        
+        // Add event listeners
+        document.addEventListener('pointerdown', handlePointerDown);
+        document.addEventListener('pointermove', handlePointerMove);
+        document.addEventListener('pointerup', handlePointerUp);
+        
+        // Store handlers for cleanup
+        this.interactionHandlers = {
+            pointerDown: handlePointerDown,
+            pointerMove: handlePointerMove,
+            pointerUp: handlePointerUp
+        };
+    }
+}
+
+// Debug method to check controller status
+debugControllers() {
+    if (!this.session) {
+        console.log('No XR session active');
+        return;
+    }
+
+    console.log('=== Controller Debug Info ===');
+    console.log('Input sources count:', this.session.inputSources.length);
+    
+    this.session.inputSources.forEach((inputSource, index) => {
+        console.log(`Input Source ${index}:`, {
+            handedness: inputSource.handedness,
+            targetRayMode: inputSource.targetRayMode,
+            profiles: inputSource.profiles,
+            hasTargetRaySpace: !!inputSource.targetRaySpace,
+            hasGripSpace: !!inputSource.gripSpace
+        });
+    });
+
+    if (this.controllers) {
+        console.log('Controller objects:', this.controllers.length);
+        this.controllers.forEach((controller, index) => {
+            console.log(`Controller ${index}:`, {
+                visible: controller.visible,
+                hasMatrixWorld: !!controller.matrixWorld,
+                position: controller.position
+            });
+        });
+    }
+
+    // Test raycaster setup
+    if (this.raycasterLine) {
+        console.log('Raycaster line exists:', !!this.raycasterLine);
+    }
+}
+
+// Update the ray visualization method (improved)
+updateRaycastRay() {
+    if (!this.raycasterLine || !this.controllers || !this.controllers[0]) return;
+
+    const frame = this.renderer.xr.getFrame();
+    if (!frame) return;
+
+    const referenceSpace = this.renderer.xr.getReferenceSpace();
+    if (!referenceSpace) return;
+
+    // Try to get controller input source
+    const inputSources = this.session.inputSources;
+    let targetRayPose = null;
+
+    for (const inputSource of inputSources) {
+        if (inputSource.targetRaySpace) {
+            targetRayPose = frame.getPose(inputSource.targetRaySpace, referenceSpace);
+            if (targetRayPose) break;
         }
     }
+
+    if (targetRayPose) {
+        // Update ray from input source pose
+        const matrix = new THREE.Matrix4().fromArray(targetRayPose.transform.matrix);
+        const position = new THREE.Vector3().setFromMatrixPosition(matrix);
+        
+        const rotationMatrix = new THREE.Matrix4().extractRotation(matrix);
+        const direction = new THREE.Vector3(0, 0, -1).applyMatrix4(rotationMatrix).normalize();
+
+        const endPoint = position.clone().add(direction.multiplyScalar(this.rayLength));
+        
+        const positions = this.raycasterLine.geometry.attributes.position;
+        positions.setXYZ(0, position.x, position.y, position.z);
+        positions.setXYZ(1, endPoint.x, endPoint.y, endPoint.z);
+        positions.needsUpdate = true;
+    } else {
+        // Fallback to controller matrix world
+        const controller = this.controllers[0];
+        if (controller.visible) {
+            const position = new THREE.Vector3().setFromMatrixPosition(controller.matrixWorld);
+            const tempMatrix = new THREE.Matrix4().extractRotation(controller.matrixWorld);
+            const direction = new THREE.Vector3(0, 0, -1).applyMatrix4(tempMatrix).normalize();
+            const endPoint = position.clone().add(direction.multiplyScalar(this.rayLength));
+            
+            const positions = this.raycasterLine.geometry.attributes.position;
+            positions.setXYZ(0, position.x, position.y, position.z);
+            positions.setXYZ(1, endPoint.x, endPoint.y, endPoint.z);
+            positions.needsUpdate = true;
+        }
+    }
+}
+
 
     // Simplified fallback camera controls for non-AR devices
     setupFallbackCameraControls() {
