@@ -440,8 +440,8 @@ class ARExperience {
                     // Create raycaster line for controller when in AR/VR mode
                      if (this.session) {  // If we're in AR/VR mode
                         // Set up XR controller
-                        // this.controller = this.renderer.xr.getController(0);
-                        // this.scene.add(this.controller);
+                        this.controller = this.renderer.xr.getController(0);
+                        this.scene.add(this.controller);
                         
                         // Create visible ray
                         this.createRaycasterRay();
