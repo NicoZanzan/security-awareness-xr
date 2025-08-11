@@ -433,7 +433,7 @@ class ARExperience {
                     await this.renderer.xr.setSession(this.session);
                     this.isXRActive = true;                
                     
-                    // // Set up XR controller (moved from setupInteraction)
+                    // Set up XR controller (moved from setupInteraction)
                     // this.controller = this.renderer.xr.getController(0);
                     // this.scene.add(this.controller);
 
@@ -459,20 +459,20 @@ class ARExperience {
                         });
                     }
                     
-                    // Set up the controller's select event for interaction
-                    this.controller.addEventListener('select', (event) => {
+                    // // Set up the controller's select event for interaction
+                    // this.controller.addEventListener('select', (event) => {
                                             
-                        // Set up raycaster from controller
-                        const tempMatrix = new THREE.Matrix4();
-                        tempMatrix.identity().extractRotation(this.controller.matrixWorld);
+                    //     // Set up raycaster from controller
+                    //     const tempMatrix = new THREE.Matrix4();
+                    //     tempMatrix.identity().extractRotation(this.controller.matrixWorld);
                         
-                        const controllerRaycaster = new THREE.Raycaster();
-                        controllerRaycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
-                        controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+                    //     const controllerRaycaster = new THREE.Raycaster();
+                    //     controllerRaycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
+                    //     controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
                         
-                        // Check for interactive object intersections
-                        this.checkInteractions(controllerRaycaster);
-                    });
+                    //     // Check for interactive object intersections
+                    //     this.checkInteractions(controllerRaycaster);
+                    // });
                     
                     // Adjust for VR if needed (particularly for Meta Quest)
                     if (isVRSupported && !isARSupported) {
