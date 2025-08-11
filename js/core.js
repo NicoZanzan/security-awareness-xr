@@ -411,242 +411,142 @@ class ARExperience {
         }
     }
 
-    // async setupControls() {
-    //     // 1. Check for WebXR support
-    //     if (navigator.xr) {
-    //         try {
-    //             // Check for immersive AR or VR support
-    //             const isARSupported = await navigator.xr.isSessionSupported('immersive-ar');
-    //             const isVRSupported = await navigator.xr.isSessionSupported('immersive-vr');
-                
-    //             if (isARSupported || isVRSupported) {
-                    
-    //                 console.log(`Starting immersive ${isARSupported ? 'AR' : 'VR'} session`);
-    //                 const sessionType = isARSupported ? 'immersive-ar' : 'immersive-vr';
-                    
-    //                 // Request XR session with needed features
-    //                 this.session = await navigator.xr.requestSession(sessionType, {
-    //                     requiredFeatures: ['local'],
-    //                     optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'hit-test']
-    //                 });
-                    
-    //                 await this.renderer.xr.setSession(this.session);
-    //                 this.isXRActive = true;                
-                    
-    //                 // Set up XR controller (moved from setupInteraction)
-    //                 this.controller = this.renderer.xr.getController(0);
-    //                 this.scene.add(this.controller);
-
-    //                 // Create raycaster line for controller when in AR/VR mode
-    //                  if (this.session) {  // If we're in AR/VR mode
-    //                     // Set up XR controller
-    //                     this.controller = this.renderer.xr.getController(0);
-    //                     this.scene.add(this.controller);
-                        
-    //                     // Create visible ray
-    //                     this.createRaycasterRay();
-                        
-    //                     // Set up controller select event
-    //                     this.controller.addEventListener('select', (event) => {
-    //                         const tempMatrix = new THREE.Matrix4();
-    //                         tempMatrix.identity().extractRotation(this.controller.matrixWorld);
-                            
-    //                         const controllerRaycaster = new THREE.Raycaster();
-    //                         controllerRaycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
-    //                         controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
-                            
-    //                         this.checkInteractions(controllerRaycaster);
-    //                     });
-    //                 }
-                    
-    //                 // Set up the controller's select event for interaction
-    //                 this.controller.addEventListener('select', (event) => {
-                                            
-    //                     // Set up raycaster from controller
-    //                     const tempMatrix = new THREE.Matrix4();
-    //                     tempMatrix.identity().extractRotation(this.controller.matrixWorld);
-                        
-    //                     const controllerRaycaster = new THREE.Raycaster();
-    //                     controllerRaycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
-    //                     controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
-                        
-    //                     // Check for interactive object intersections
-    //                     this.checkInteractions(controllerRaycaster);
-    //                 });
-                    
-    //                 // Adjust for VR if needed (particularly for Meta Quest)
-    //                 if (isVRSupported && !isARSupported) {
-    //                     //this.adjustForVR();
-    //                     //this.camera.position.set(0, -1.6, 0);
-    //                 }
-                    
-    //             } else {
-    //                 console.log('XR not supported, using fallback 3D mode');
-    //                 this.setupFallbackCameraControls();                
-    //             }
-                
-    //         } catch (error) {
-    //             console.log('WebXR failed, using fallback:', error.message);
-    //             this.setupFallbackCameraControls();
-    //         }
-    //     } else {
-    //         console.log('WebXR not available, using fallback mode');
-    //         this.setupFallbackCameraControls();
-    //     }
-        
-    //     // Set up non-XR interaction (mouse/touch)
-    //     if (!this.modelInteractionHandlerActive) {
-    //         this.modelInteractionHandlerActive = true;
-            
-    //         // Set up shared raycaster for interactions
-    //         this.interactionRaycaster = new THREE.Raycaster();
-    //         this.interactionPointer = new THREE.Vector2();
-            
-    //         // Track pointer for click vs. drag detection
-    //         let pointerStartX = 0;
-    //         let pointerStartY = 0;
-    //         let isDragging = false;
-            
-    //         // Set up pointer event handlers
-    //         const handlePointerDown = (event) => {
-    //             pointerStartX = event.clientX;
-    //             pointerStartY = event.clientY;
-    //             isDragging = false;
-    //         };
-            
-    //         const handlePointerMove = (event) => {
-    //             if (!isDragging) {
-    //                 const deltaX = Math.abs(event.clientX - pointerStartX);
-    //                 const deltaY = Math.abs(event.clientY - pointerStartY);
-    //                 if (deltaX > 5 || deltaY > 5) {
-    //                     isDragging = true;
-    //                 }
-    //             }
-    //         };
-            
-    //         const handlePointerUp = (event) => {
-    //             if (!isDragging) {
-    //                 this.interactionPointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-    //                 this.interactionPointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
-    //                 this.interactionRaycaster.setFromCamera(this.interactionPointer, this.camera);
-    //                 this.checkInteractions(this.interactionRaycaster);
-    //             }
-    //         };
-            
-    //         // Add event listeners
-    //         document.addEventListener('pointerdown', handlePointerDown);
-    //         document.addEventListener('pointermove', handlePointerMove);
-    //         document.addEventListener('pointerup', handlePointerUp);
-            
-    //         // Store handlers for cleanup
-    //         this.interactionHandlers = {
-    //             pointerDown: handlePointerDown,
-    //             pointerMove: handlePointerMove,
-    //             pointerUp: handlePointerUp
-    //         };
-    //     }
-    // }
-
     async setupControls() {
-    // 1. Check for WebXR support
-    if (navigator.xr) {
-        try {
-            // Check for immersive AR or VR support
-            const isARSupported = await navigator.xr.isSessionSupported('immersive-ar');
-            const isVRSupported = await navigator.xr.isSessionSupported('immersive-vr');
-            
-            if (isARSupported || isVRSupported) {
-                console.log(`Starting immersive ${isARSupported ? 'AR' : 'VR'} session`);
-                const sessionType = isARSupported ? 'immersive-ar' : 'immersive-vr';
+        // 1. Check for WebXR support
+        if (navigator.xr) {
+            try {
+                // Check for immersive AR or VR support
+                const isARSupported = await navigator.xr.isSessionSupported('immersive-ar');
+                const isVRSupported = await navigator.xr.isSessionSupported('immersive-vr');
                 
-                // Request XR session with appropriate features for AR/VR
-                const sessionInit = {
-                    requiredFeatures: ['local'],
-                    optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'hit-test']
-                };
-
-                // For AR, we might want different optional features
-                if (isARSupported) {
-                    sessionInit.optionalFeatures = ['local', 'local-floor', 'hit-test'];
-                }
-
-                this.session = await navigator.xr.requestSession(sessionType, sessionInit);
-                await this.renderer.xr.setSession(this.session);
-                this.isXRActive = true;
-
-                // Set up input source change listener
-                this.session.addEventListener('inputsourceschange', (event) => {
-                    console.log('Input sources changed:', {
-                        added: event.added,
-                        removed: event.removed,
-                        total: this.session.inputSources.length
+                if (isARSupported || isVRSupported) {
+                    
+                    console.log(`Starting immersive ${isARSupported ? 'AR' : 'VR'} session`);
+                    const sessionType = isARSupported ? 'immersive-ar' : 'immersive-vr';
+                    
+                    // Request XR session with needed features
+                    this.session = await navigator.xr.requestSession(sessionType, {
+                        requiredFeatures: ['local'],
+                        optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'hit-test']
                     });
                     
-                    // Log details about available input sources
-                    this.session.inputSources.forEach((inputSource, index) => {
-                        console.log(`Input source ${index}:`, {
-                            handedness: inputSource.handedness,
-                            targetRayMode: inputSource.targetRayMode,
-                            profiles: inputSource.profiles
+                    await this.renderer.xr.setSession(this.session);
+                    this.isXRActive = true;                
+                    
+                    // Set up XR controller (moved from setupInteraction)
+                    this.controller = this.renderer.xr.getController(0);
+                    this.scene.add(this.controller);
+
+                    // Create raycaster line for controller when in AR/VR mode
+                     if (this.session) {  // If we're in AR/VR mode
+                        // Set up XR controller
+                        // this.controller = this.renderer.xr.getController(0);
+                        // this.scene.add(this.controller);
+                        
+                        // Create visible ray
+                        this.createRaycasterRay();
+                        
+                        // Set up controller select event
+                        this.controller.addEventListener('select', (event) => {
+                            const tempMatrix = new THREE.Matrix4();
+                            tempMatrix.identity().extractRotation(this.controller.matrixWorld);
+                            
+                            const controllerRaycaster = new THREE.Raycaster();
+                            controllerRaycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
+                            controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+                            
+                            this.checkInteractions(controllerRaycaster);
                         });
+                    }
+                    
+                    // Set up the controller's select event for interaction
+                    this.controller.addEventListener('select', (event) => {
+                                            
+                        // Set up raycaster from controller
+                        const tempMatrix = new THREE.Matrix4();
+                        tempMatrix.identity().extractRotation(this.controller.matrixWorld);
+                        
+                        const controllerRaycaster = new THREE.Raycaster();
+                        controllerRaycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
+                        controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+                        
+                        // Check for interactive object intersections
+                        this.checkInteractions(controllerRaycaster);
                     });
-                });
-
-                // Set up controllers (support multiple controllers)
-                this.controllers = [];
-                for (let i = 0; i < 2; i++) {
-                    const controller = this.renderer.xr.getController(i);
-                    this.scene.add(controller);
-                    this.controllers.push(controller);
-
-                    // Add select event listener
-                    controller.addEventListener('select', (event) => {
-                        console.log(`Controller ${i} select event`);
-                        this.handleControllerSelect(controller, event);
-                    });
-
-                    // Add other controller events for debugging
-                    controller.addEventListener('selectstart', () => {
-                        console.log(`Controller ${i} select start`);
-                    });
-
-                    controller.addEventListener('selectend', () => {
-                        console.log(`Controller ${i} select end`);
-                    });
-
-                    controller.addEventListener('squeeze', () => {
-                        console.log(`Controller ${i} squeeze`);
-                    });
+                    
+                    // Adjust for VR if needed (particularly for Meta Quest)
+                    if (isVRSupported && !isARSupported) {
+                        //this.adjustForVR();
+                        //this.camera.position.set(0, -1.6, 0);
+                    }
+                    
+                } else {
+                    console.log('XR not supported, using fallback 3D mode');
+                    this.setupFallbackCameraControls();                
                 }
-
-                // Create visible ray for first controller
-                if (this.controllers[0]) {
-                    this.createRaycasterRay();
-                    this.controller = this.controllers[0]; // Keep reference for backward compatibility
-                }
-
-                // Debug controller setup
-                setTimeout(() => {
-                    this.debugControllers();
-                }, 1000);
-
-            } else {
-                console.log('XR not supported, using fallback 3D mode');
+                
+            } catch (error) {
+                console.log('WebXR failed, using fallback:', error.message);
                 this.setupFallbackCameraControls();
             }
-            
-        } catch (error) {
-            console.log('WebXR failed, using fallback:', error.message);
+        } else {
+            console.log('WebXR not available, using fallback mode');
             this.setupFallbackCameraControls();
         }
-    } else {
-        console.log('WebXR not available, using fallback mode');
-        this.setupFallbackCameraControls();
+        
+        // Set up non-XR interaction (mouse/touch)
+        if (!this.modelInteractionHandlerActive) {
+            this.modelInteractionHandlerActive = true;
+            
+            // Set up shared raycaster for interactions
+            this.interactionRaycaster = new THREE.Raycaster();
+            this.interactionPointer = new THREE.Vector2();
+            
+            // Track pointer for click vs. drag detection
+            let pointerStartX = 0;
+            let pointerStartY = 0;
+            let isDragging = false;
+            
+            // Set up pointer event handlers
+            const handlePointerDown = (event) => {
+                pointerStartX = event.clientX;
+                pointerStartY = event.clientY;
+                isDragging = false;
+            };
+            
+            const handlePointerMove = (event) => {
+                if (!isDragging) {
+                    const deltaX = Math.abs(event.clientX - pointerStartX);
+                    const deltaY = Math.abs(event.clientY - pointerStartY);
+                    if (deltaX > 5 || deltaY > 5) {
+                        isDragging = true;
+                    }
+                }
+            };
+            
+            const handlePointerUp = (event) => {
+                if (!isDragging) {
+                    this.interactionPointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+                    this.interactionPointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                    this.interactionRaycaster.setFromCamera(this.interactionPointer, this.camera);
+                    this.checkInteractions(this.interactionRaycaster);
+                }
+            };
+            
+            // Add event listeners
+            document.addEventListener('pointerdown', handlePointerDown);
+            document.addEventListener('pointermove', handlePointerMove);
+            document.addEventListener('pointerup', handlePointerUp);
+            
+            // Store handlers for cleanup
+            this.interactionHandlers = {
+                pointerDown: handlePointerDown,
+                pointerMove: handlePointerMove,
+                pointerUp: handlePointerUp
+            };
+        }
     }
-    
-    // Set up non-XR interaction (mouse/touch)
-    this.setupMouseTouchInteraction();
-}
+  
 
 // Separate method for controller select handling
 handleControllerSelect(controller, event) {
