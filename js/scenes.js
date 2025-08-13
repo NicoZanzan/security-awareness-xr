@@ -85,7 +85,7 @@ ARExperience.prototype.scene1 = function() {
     this.scene.add(this.wendyNTModel);     
     this.wendyNTModel.name = "wendyNTModel";
 
-    this.playModelAnimation('wendyNTModel', 'humping'); // Play initial animation
+    this.playModelAnimation('wendyNTModel', 'Jumping'); // Play initial animation
         
     this.makeModelClickable(this.startButtonModel, () => {
         this.moveModel("wendyNTModel", 
@@ -194,7 +194,7 @@ ARExperience.prototype.scene3 = function() {
     this.makeModelClickable(this.laptopModel, () => {
         console.log('💻 Laptop clicked!');
         this.playAudio('audioCorrectAnswer'); 
-        this.playModelAnimation('wendyNTModel', 'humping');
+        this.playModelAnimation('wendyNTModel', 'Jumping');
         this.showNextButton('scene4');
     });   
 

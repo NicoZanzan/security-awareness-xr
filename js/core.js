@@ -548,67 +548,67 @@ class ARExperience {
   
 
 // Separate method for controller select handling
-handleControllerSelect(controller, event) {
-    console.log('handleControllerSelect called');
+// handleControllerSelect(controller, event) {
+//     console.log('handleControllerSelect called');
     
-    // Check if controller has valid pose
-    const frame = this.renderer.xr.getFrame();
-    if (!frame) {
-        console.warn('No XR frame available');
-        return;
-    }
+//     // Check if controller has valid pose
+//     const frame = this.renderer.xr.getFrame();
+//     if (!frame) {
+//         console.warn('No XR frame available');
+//         return;
+//     }
 
-    const referenceSpace = this.renderer.xr.getReferenceSpace();
-    if (!referenceSpace) {
-        console.warn('No reference space available');
-        return;
-    }
+//     const referenceSpace = this.renderer.xr.getReferenceSpace();
+//     if (!referenceSpace) {
+//         console.warn('No reference space available');
+//         return;
+//     }
 
-    // Get controller pose from input source
-    const inputSource = event.inputSource;
-    if (inputSource && inputSource.targetRaySpace) {
-        const targetRayPose = frame.getPose(inputSource.targetRaySpace, referenceSpace);
+//     // Get controller pose from input source
+//     const inputSource = event.inputSource;
+//     if (inputSource && inputSource.targetRaySpace) {
+//         const targetRayPose = frame.getPose(inputSource.targetRaySpace, referenceSpace);
         
-        if (targetRayPose) {
-            console.log('Using input source target ray pose');
+//         if (targetRayPose) {
+//             console.log('Using input source target ray pose');
             
-            // Create raycaster from controller pose
-            const tempMatrix = new THREE.Matrix4();
-            tempMatrix.fromArray(targetRayPose.transform.matrix);
+//             // Create raycaster from controller pose
+//             const tempMatrix = new THREE.Matrix4();
+//             tempMatrix.fromArray(targetRayPose.transform.matrix);
             
-            const controllerRaycaster = new THREE.Raycaster();
-            controllerRaycaster.ray.origin.setFromMatrixPosition(tempMatrix);
+//             const controllerRaycaster = new THREE.Raycaster();
+//             controllerRaycaster.ray.origin.setFromMatrixPosition(tempMatrix);
             
-            // Extract rotation and apply to direction
-            const rotationMatrix = new THREE.Matrix4();
-            rotationMatrix.extractRotation(tempMatrix);
-            controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(rotationMatrix).normalize();
+//             // Extract rotation and apply to direction
+//             const rotationMatrix = new THREE.Matrix4();
+//             rotationMatrix.extractRotation(tempMatrix);
+//             controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(rotationMatrix).normalize();
             
-            // Check for interactions
-            this.checkInteractions(controllerRaycaster);
-        } else {
-            console.warn('No target ray pose available');
-            this.fallbackControllerInteraction(controller);
-        }
-    } else {
-        console.warn('No input source or target ray space, using fallback');
-        this.fallbackControllerInteraction(controller);
-    }
-}
+//             // Check for interactions
+//             this.checkInteractions(controllerRaycaster);
+//         } else {
+//             console.warn('No target ray pose available');
+//             this.fallbackControllerInteraction(controller);
+//         }
+//     } else {
+//         console.warn('No input source or target ray space, using fallback');
+//         this.fallbackControllerInteraction(controller);
+//     }
+// }
 
 // Fallback method when pose data isn't available
-fallbackControllerInteraction(controller) {
-    // Fallback: use controller matrix world
-    const tempMatrix = new THREE.Matrix4();
-    tempMatrix.identity().extractRotation(controller.matrixWorld);
+// fallbackControllerInteraction(controller) {
+//     // Fallback: use controller matrix world
+//     const tempMatrix = new THREE.Matrix4();
+//     tempMatrix.identity().extractRotation(controller.matrixWorld);
     
-    const controllerRaycaster = new THREE.Raycaster();
-    controllerRaycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
-    controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+//     const controllerRaycaster = new THREE.Raycaster();
+//     controllerRaycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
+//     controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
     
-    console.log('Using fallback controller interaction');
-    this.checkInteractions(controllerRaycaster);
-}
+//     console.log('Using fallback controller interaction');
+//     this.checkInteractions(controllerRaycaster);
+// }
 
 // Extract mouse/touch interaction setup
 setupMouseTouchInteraction() {
@@ -665,93 +665,93 @@ setupMouseTouchInteraction() {
 }
 
 // Debug method to check controller status
-debugControllers() {
-    if (!this.session) {
-        console.log('No XR session active');
-        return;
-    }
+// debugControllers() {
+//     if (!this.session) {
+//         console.log('No XR session active');
+//         return;
+//     }
 
-    console.log('=== Controller Debug Info ===');
-    console.log('Input sources count:', this.session.inputSources.length);
+//     console.log('=== Controller Debug Info ===');
+//     console.log('Input sources count:', this.session.inputSources.length);
     
-    this.session.inputSources.forEach((inputSource, index) => {
-        console.log(`Input Source ${index}:`, {
-            handedness: inputSource.handedness,
-            targetRayMode: inputSource.targetRayMode,
-            profiles: inputSource.profiles,
-            hasTargetRaySpace: !!inputSource.targetRaySpace,
-            hasGripSpace: !!inputSource.gripSpace
-        });
-    });
+//     this.session.inputSources.forEach((inputSource, index) => {
+//         console.log(`Input Source ${index}:`, {
+//             handedness: inputSource.handedness,
+//             targetRayMode: inputSource.targetRayMode,
+//             profiles: inputSource.profiles,
+//             hasTargetRaySpace: !!inputSource.targetRaySpace,
+//             hasGripSpace: !!inputSource.gripSpace
+//         });
+//     });
 
-    if (this.controllers) {
-        console.log('Controller objects:', this.controllers.length);
-        this.controllers.forEach((controller, index) => {
-            console.log(`Controller ${index}:`, {
-                visible: controller.visible,
-                hasMatrixWorld: !!controller.matrixWorld,
-                position: controller.position
-            });
-        });
-    }
+//     if (this.controllers) {
+//         console.log('Controller objects:', this.controllers.length);
+//         this.controllers.forEach((controller, index) => {
+//             console.log(`Controller ${index}:`, {
+//                 visible: controller.visible,
+//                 hasMatrixWorld: !!controller.matrixWorld,
+//                 position: controller.position
+//             });
+//         });
+//     }
 
-    // Test raycaster setup
-    if (this.raycasterLine) {
-        console.log('Raycaster line exists:', !!this.raycasterLine);
-        }
-    }
+//     // Test raycaster setup
+//     if (this.raycasterLine) {
+//         console.log('Raycaster line exists:', !!this.raycasterLine);
+//         }
+//     }
 
     // Update the ray visualization method (improved)
-    updateRaycastRay() {
-        if (!this.raycasterLine || !this.controllers || !this.controllers[0]) return;
+    // updateRaycastRay() {
+    //     if (!this.raycasterLine || !this.controllers || !this.controllers[0]) return;
 
-        const frame = this.renderer.xr.getFrame();
-        if (!frame) return;
+    //     const frame = this.renderer.xr.getFrame();
+    //     if (!frame) return;
 
-        const referenceSpace = this.renderer.xr.getReferenceSpace();
-        if (!referenceSpace) return;
+    //     const referenceSpace = this.renderer.xr.getReferenceSpace();
+    //     if (!referenceSpace) return;
 
-        // Try to get controller input source
-        const inputSources = this.session.inputSources;
-        let targetRayPose = null;
+    //     // Try to get controller input source
+    //     const inputSources = this.session.inputSources;
+    //     let targetRayPose = null;
 
-        for (const inputSource of inputSources) {
-            if (inputSource.targetRaySpace) {
-                targetRayPose = frame.getPose(inputSource.targetRaySpace, referenceSpace);
-                if (targetRayPose) break;
-            }
-        }
+    //     for (const inputSource of inputSources) {
+    //         if (inputSource.targetRaySpace) {
+    //             targetRayPose = frame.getPose(inputSource.targetRaySpace, referenceSpace);
+    //             if (targetRayPose) break;
+    //         }
+    //     }
 
-        if (targetRayPose) {
-            // Update ray from input source pose
-            const matrix = new THREE.Matrix4().fromArray(targetRayPose.transform.matrix);
-            const position = new THREE.Vector3().setFromMatrixPosition(matrix);
+    //     if (targetRayPose) {
+    //         // Update ray from input source pose
+    //         const matrix = new THREE.Matrix4().fromArray(targetRayPose.transform.matrix);
+    //         const position = new THREE.Vector3().setFromMatrixPosition(matrix);
             
-            const rotationMatrix = new THREE.Matrix4().extractRotation(matrix);
-            const direction = new THREE.Vector3(0, 0, -1).applyMatrix4(rotationMatrix).normalize();
+    //         const rotationMatrix = new THREE.Matrix4().extractRotation(matrix);
+    //         const direction = new THREE.Vector3(0, 0, -1).applyMatrix4(rotationMatrix).normalize();
 
-            const endPoint = position.clone().add(direction.multiplyScalar(this.rayLength));
+    //         const endPoint = position.clone().add(direction.multiplyScalar(this.rayLength));
             
-            const positions = this.raycasterLine.geometry.attributes.position;
-            positions.setXYZ(0, position.x, position.y, position.z);
-            positions.setXYZ(1, endPoint.x, endPoint.y, endPoint.z);
-            positions.needsUpdate = true;
-        } else {
-            // Fallback to controller matrix world
-            const controller = this.controllers[0];
-            if (controller.visible) {
-                const position = new THREE.Vector3().setFromMatrixPosition(controller.matrixWorld);
-                const tempMatrix = new THREE.Matrix4().extractRotation(controller.matrixWorld);
-                const direction = new THREE.Vector3(0, 0, -1).applyMatrix4(tempMatrix).normalize();
-                const endPoint = position.clone().add(direction.multiplyScalar(this.rayLength));
+    //         const positions = this.raycasterLine.geometry.attributes.position;
+    //         positions.setXYZ(0, position.x, position.y, position.z);
+    //         positions.setXYZ(1, endPoint.x, endPoint.y, endPoint.z);
+    //         positions.needsUpdate = true;
+    //     } else {
+    //         // Fallback to controller matrix world
+    //         const controller = this.controllers[0];
+    //         if (controller.visible) {
+    //             const position = new THREE.Vector3().setFromMatrixPosition(controller.matrixWorld);
+    //             const tempMatrix = new THREE.Matrix4().extractRotation(controller.matrixWorld);
+    //             const direction = new THREE.Vector3(0, 0, -1).applyMatrix4(tempMatrix).normalize();
+    //             const endPoint = position.clone().add(direction.multiplyScalar(this.rayLength));
                 
-                const positions = this.raycasterLine.geometry.attributes.position;
-                positions.setXYZ(0, position.x, position.y, position.z);
-                positions.setXYZ(1, endPoint.x, endPoint.y, endPoint.z);
-                positions.needsUpdate = true;
-            }
-        }
-    }
+    //             const positions = this.raycasterLine.geometry.attributes.position;
+    //             positions.setXYZ(0, position.x, position.y, position.z);
+    //             positions.setXYZ(1, endPoint.x, endPoint.y, endPoint.z);
+    //             positions.needsUpdate = true;
+    //         }
+    //     }
+    // }
 
     // Simplified fallback camera controls for non-AR devices
     setupFallbackCameraControls() {
