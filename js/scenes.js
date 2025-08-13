@@ -85,7 +85,7 @@ ARExperience.prototype.scene1 = function() {
     this.scene.add(this.wendyNTModel);     
     this.wendyNTModel.name = "wendyNTModel";
 
-    this.playModelAnimation('wendyNTModel', 'talking');
+    this.playModelAnimation('wendyNTModel', 'humping'); // Play initial animation
         
     this.makeModelClickable(this.startButtonModel, () => {
         this.moveModel("wendyNTModel", 
