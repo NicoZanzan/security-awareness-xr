@@ -442,7 +442,7 @@ class ARExperience {
                     // Request XR session with needed features
                     this.session = await navigator.xr.requestSession(sessionType, {
                         requiredFeatures: ['local'],
-                        optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking', 'hit-test']
+                        optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking']
                     });
                     
                     await this.renderer.xr.setSession(this.session);
@@ -476,8 +476,7 @@ class ARExperience {
                     
                     // Adjust for VR if needed (particularly for Meta Quest)
                     if (isVRSupported && !isARSupported) {
-                        //this.adjustForVR();
-                        //this.camera.position.set(0, -1.6, 0);
+                 
                     }
                     
                 } else {
