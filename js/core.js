@@ -699,61 +699,60 @@ debugControllers() {
     // Test raycaster setup
     if (this.raycasterLine) {
         console.log('Raycaster line exists:', !!this.raycasterLine);
-    }
-}
-
-// Update the ray visualization method (improved)
-updateRaycastRay() {
-    if (!this.raycasterLine || !this.controllers || !this.controllers[0]) return;
-
-    const frame = this.renderer.xr.getFrame();
-    if (!frame) return;
-
-    const referenceSpace = this.renderer.xr.getReferenceSpace();
-    if (!referenceSpace) return;
-
-    // Try to get controller input source
-    const inputSources = this.session.inputSources;
-    let targetRayPose = null;
-
-    for (const inputSource of inputSources) {
-        if (inputSource.targetRaySpace) {
-            targetRayPose = frame.getPose(inputSource.targetRaySpace, referenceSpace);
-            if (targetRayPose) break;
         }
     }
 
-    if (targetRayPose) {
-        // Update ray from input source pose
-        const matrix = new THREE.Matrix4().fromArray(targetRayPose.transform.matrix);
-        const position = new THREE.Vector3().setFromMatrixPosition(matrix);
-        
-        const rotationMatrix = new THREE.Matrix4().extractRotation(matrix);
-        const direction = new THREE.Vector3(0, 0, -1).applyMatrix4(rotationMatrix).normalize();
+    // Update the ray visualization method (improved)
+    updateRaycastRay() {
+        if (!this.raycasterLine || !this.controllers || !this.controllers[0]) return;
 
-        const endPoint = position.clone().add(direction.multiplyScalar(this.rayLength));
-        
-        const positions = this.raycasterLine.geometry.attributes.position;
-        positions.setXYZ(0, position.x, position.y, position.z);
-        positions.setXYZ(1, endPoint.x, endPoint.y, endPoint.z);
-        positions.needsUpdate = true;
-    } else {
-        // Fallback to controller matrix world
-        const controller = this.controllers[0];
-        if (controller.visible) {
-            const position = new THREE.Vector3().setFromMatrixPosition(controller.matrixWorld);
-            const tempMatrix = new THREE.Matrix4().extractRotation(controller.matrixWorld);
-            const direction = new THREE.Vector3(0, 0, -1).applyMatrix4(tempMatrix).normalize();
+        const frame = this.renderer.xr.getFrame();
+        if (!frame) return;
+
+        const referenceSpace = this.renderer.xr.getReferenceSpace();
+        if (!referenceSpace) return;
+
+        // Try to get controller input source
+        const inputSources = this.session.inputSources;
+        let targetRayPose = null;
+
+        for (const inputSource of inputSources) {
+            if (inputSource.targetRaySpace) {
+                targetRayPose = frame.getPose(inputSource.targetRaySpace, referenceSpace);
+                if (targetRayPose) break;
+            }
+        }
+
+        if (targetRayPose) {
+            // Update ray from input source pose
+            const matrix = new THREE.Matrix4().fromArray(targetRayPose.transform.matrix);
+            const position = new THREE.Vector3().setFromMatrixPosition(matrix);
+            
+            const rotationMatrix = new THREE.Matrix4().extractRotation(matrix);
+            const direction = new THREE.Vector3(0, 0, -1).applyMatrix4(rotationMatrix).normalize();
+
             const endPoint = position.clone().add(direction.multiplyScalar(this.rayLength));
             
             const positions = this.raycasterLine.geometry.attributes.position;
             positions.setXYZ(0, position.x, position.y, position.z);
             positions.setXYZ(1, endPoint.x, endPoint.y, endPoint.z);
             positions.needsUpdate = true;
+        } else {
+            // Fallback to controller matrix world
+            const controller = this.controllers[0];
+            if (controller.visible) {
+                const position = new THREE.Vector3().setFromMatrixPosition(controller.matrixWorld);
+                const tempMatrix = new THREE.Matrix4().extractRotation(controller.matrixWorld);
+                const direction = new THREE.Vector3(0, 0, -1).applyMatrix4(tempMatrix).normalize();
+                const endPoint = position.clone().add(direction.multiplyScalar(this.rayLength));
+                
+                const positions = this.raycasterLine.geometry.attributes.position;
+                positions.setXYZ(0, position.x, position.y, position.z);
+                positions.setXYZ(1, endPoint.x, endPoint.y, endPoint.z);
+                positions.needsUpdate = true;
+            }
         }
     }
-}
-
 
     // Simplified fallback camera controls for non-AR devices
     setupFallbackCameraControls() {
