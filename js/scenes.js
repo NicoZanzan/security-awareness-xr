@@ -85,7 +85,7 @@ ARExperience.prototype.scene1 = function() {
     this.scene.add(this.wendyNTModel);     
     this.wendyNTModel.name = "wendyNTModel";
 
-    this.playModelAnimation('wendyNTModel', 'humping');
+    this.playModelAnimation('wendyNTModel', 'talking');
         
     this.makeModelClickable(this.startButtonModel, () => {
         this.moveModel("wendyNTModel", 
@@ -124,13 +124,13 @@ ARExperience.prototype.scene2 = function() {
         { name: 'wendyGlassesModelS3', y:1},
     ]);       
     
-    //this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
+    this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
     
     const estimatedDuration = 35000; // 35 seconds
     setTimeout(() => {       
          this.showNextButton('scene3');        
-    //}, estimatedDuration);
-    }, 1000);  
+    }, estimatedDuration);
+    //}, 1000);  
 };
 
 
