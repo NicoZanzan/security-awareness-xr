@@ -324,10 +324,25 @@ class ARExperience {
         
         const loadGLB = (path, name) => {
             return new Promise((resolve, reject) => {
-                loader.load(path, resolve, undefined, (error) => {
-                    console.warn(`⚠️ Failed to load ${name}:`, error);
-                    reject(error);
-                });
+                loader.load(
+                    path,
+                    (gltf) => resolve(gltf),
+                    (progress) => {
+                        // SAFETY CHECK HERE
+                        let percent = 0;
+                        if (progress.total > 0 && progress.loaded >= 0) {
+                            percent = Math.round((progress.loaded / progress.total) * 100);
+                            // Clamp between 0-100
+                            percent = Math.min(100, Math.max(0, percent));
+                        } else if (progress.loaded > 0) {
+                            // If total is unknown but we have loaded data, show indeterminate
+                            percent = 50; // or use a spinner instead
+                        }
+                        
+                        this.updateLoadingProgress(`Loading ${name}: ${percent}%`, percent);
+                    },
+                    (error) => reject(error)
+                );
             });
         };
 
@@ -457,22 +472,7 @@ class ARExperience {
                             
                             this.checkInteractions(controllerRaycaster);
                         });
-                    }
-                    
-                    // // Set up the controller's select event for interaction
-                    // this.controller.addEventListener('select', (event) => {
-                                            
-                    //     // Set up raycaster from controller
-                    //     const tempMatrix = new THREE.Matrix4();
-                    //     tempMatrix.identity().extractRotation(this.controller.matrixWorld);
-                        
-                    //     const controllerRaycaster = new THREE.Raycaster();
-                    //     controllerRaycaster.ray.origin.setFromMatrixPosition(this.controller.matrixWorld);
-                    //     controllerRaycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
-                        
-                    //     // Check for interactive object intersections
-                    //     this.checkInteractions(controllerRaycaster);
-                    // });
+                    }                  
                     
                     // Adjust for VR if needed (particularly for Meta Quest)
                     if (isVRSupported && !isARSupported) {

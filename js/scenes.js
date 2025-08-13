@@ -124,13 +124,13 @@ ARExperience.prototype.scene2 = function() {
         { name: 'wendyGlassesModelS3', y:1},
     ]);       
     
-    this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
+    //this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
     
     const estimatedDuration = 35000; // 35 seconds
     setTimeout(() => {       
          this.showNextButton('scene3');        
-    }, estimatedDuration);
-    //}, 1000);  
+    //}, estimatedDuration);
+    }, 1000);  
 };
 
 
@@ -230,6 +230,12 @@ ARExperience.prototype.scene4 = function() {
         yOffset: 0.29  // Slightly below center
     });   
 
+    this.addModelsToScene([       
+        { name: 'wendyModel', y:1 },       
+    ]); 
+    
+    this.wendyModel.visible = true;
+
     this.quitButtonModel.position.set(0, 1, -1.5); 
     this.scaleModel(this.quitButtonModel, 0.3);      
     this.scene.add(this.quitButtonModel);  
@@ -244,7 +250,7 @@ ARExperience.prototype.scene4 = function() {
         this.wendyModel.position.set(-2, 1.7, -5);
         this.scene.add(this.wendyModel);
         // Uncomment if you have a goodbye animation:
-        // this.playModelAnimation('wendyModel', 'WaveGoodbye');
+        this.playModelAnimation('wendyNTModel', 'humping');
     }
 };
 
