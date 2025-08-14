@@ -127,8 +127,8 @@ ARExperience.prototype.scene2 = function() {
     const estimatedDuration = 35000; // 35 seconds
     setTimeout(() => {       
          this.showNextButton('scene3');        
-    //}, estimatedDuration);
-    }, 1000);  
+    }, estimatedDuration);
+    //}, 1000);  
 };
 
 
