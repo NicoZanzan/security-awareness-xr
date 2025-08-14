@@ -52,24 +52,50 @@ ARExperience.prototype.disposeObject = function(object) {
 
 ARExperience.prototype.finishAR = function() {
     console.log('🔄 Finishing AR experience...');
-    
-    // Show end page
+
+    // 1. Clean up XR session if active
+    const cleanupXR = async () => {
+        try {
+            if (this.renderer?.xr?.isPresenting) {
+                await this.renderer.xr.getSession().end();
+                console.log('✅ XR session ended');
+            }
+        } catch (e) {
+            console.warn('XR cleanup error:', e);
+        }
+    };
+
+    // 2. Show end page
     document.getElementById('arView').style.display = 'none';
     document.getElementById('landingPage').style.display = 'none';
     document.getElementById('endPage').style.display = 'block';
-    
-    // Setup restart button to reload page
-    const restartButton = document.getElementById('restartButton');
-    if (restartButton) {
+
+    // 3. Setup restart button with proper cleanup
+    const setupRestartButton = () => {
+        const restartButton = document.getElementById('restartButton');
+        if (!restartButton) return;
+
+        // Clean clone to remove any existing event listeners
         const newButton = restartButton.cloneNode(true);
         restartButton.parentNode.replaceChild(newButton, restartButton);
-        newButton.addEventListener('click', () => {
-            window.location.reload(); // Fresh page reload
+
+        newButton.addEventListener('click', async () => {
+            console.log('🔄 Restarting experience...');
+
+            // Clean up before restart
+            await cleanupXR();
+
+            // Force fresh reload from server
+            window.location.reload(true);
         });
-    }
-    
-    console.log('✅ Ready to restart fresh');
+    };
+
+    // Initialize
+    cleanupXR().then(setupRestartButton);
+
+    console.log('✅ Ready for restart');
 };
+
 
 
 ARExperience.prototype.playAudio = function(audioName) {
