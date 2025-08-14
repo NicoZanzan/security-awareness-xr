@@ -207,7 +207,6 @@ ARExperience.prototype.scene3 = function() {
     this.makeModelClickable(this.Park, () => {       
         this.playAudio('audioWrongAnswer');       
     });  
-   
 };
 
 
