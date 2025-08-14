@@ -70,7 +70,6 @@ ARExperience.prototype.scene1 = function() {
     });    
     
     this.playAudio('audioIntroMsg');
-
   
     //this.startButtonModel.position.set(0, 0, 0);  // Reset first
     this.startButtonModel.scale.set(1, 1, 1);
@@ -81,10 +80,12 @@ ARExperience.prototype.scene1 = function() {
     
     // Wendy NT model creation and placement
     this.wendyNTModel.position.set(0, 1.5, -7); 
+    this.wendyNTModel.rotation.y = -Math.PI / 2;
     this.scene.add(this.wendyNTModel);     
     this.wendyNTModel.name = "wendyNTModel";
 
-    this.playModelAnimation('wendyNTModel', 'Humping'); // Play initial animation
+
+    this.playModelAnimation('wendyNTModel', 'Jumping'); // Play initial animation
         
     this.makeModelClickable(this.startButtonModel, () => {
         this.moveModel("wendyNTModel", 
@@ -122,13 +123,13 @@ ARExperience.prototype.scene2 = function() {
         { name: 'wendyGlassesModelS3', y:1},
     ]);       
     
-    this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
+    //this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
     
-    const estimatedDuration = 35000; // 35 seconds
+    //const estimatedDuration = 35000; // 35 seconds
     setTimeout(() => {       
          this.showNextButton('scene3');        
-    }, estimatedDuration);
-    //}, 1000);  
+    //}, estimatedDuration);
+    }, 1000);  
 };
 
 
@@ -151,8 +152,9 @@ ARExperience.prototype.scene3 = function() {
         { name: 'Laptop', x: 10, y: 10, z: -7, rotation: Math.PI / 2 + (135 * Math.PI / 180)}    
     ]);
     
-   // Wendy stays at the same position (0° - front)
-    this.Wendy.visible = true; 
+    // Wendy stays at the same position (0° - front)
+    // Wendy stays at the same position (0° - front)
+    this.wendyModel.visible = true; 
     this.moveModel("Wendy", 
         {x: 0, y: 0.7, z: -7},  // 0° - North (front) - UNCHANGED
         8                   
@@ -167,29 +169,30 @@ ARExperience.prototype.scene3 = function() {
 
     // Sofa at 144° (southeast) - closer to Wendy
     this.Sofa.visible = true; 
-    this.moveModel("Sofa", 
-        {x: 2.88, y: 0.7, z: 3.97},  // 144° - Southeast (radius 4.9)
-        5                   
+    this.moveModel("Sofa",       
+        {x: -2.88, y: 0.7, z: 3.97},  // 216° - Southwest (radius 4.9)
+        5       
     );  
 
     // Park at 216° (southwest) - closer to Wendy
     this.Park.visible = true; 
-    this.moveModel("Park", 
-        {x: -2.88, y: 0.7, z: 3.97},  // 216° - Southwest (radius 4.9)
+    this.moveModel("Park",        
+        {x: -4.66, y: 0.7, z: -1.44},  // 288° - Northwest (radius 4.9)
         5                   
     );  
 
     // Laptop at 288° (northwest) - closer to Wendy
     this.Laptop.visible = true; 
     this.moveModel("Laptop", 
-        {x: -4.66, y: 0.7, z: -1.44},  // 288° - Northwest (radius 4.9)
-        5                   
+       
+         {x: 2.88, y: 0.7, z: 3.97},  // 144° - Southeast (radius 4.9)
+        5                    
     );
 
         
     this.makeModelClickable(this.Laptop, () => {       
         this.playAudio('audioCorrectAnswer'); 
-        this.playModelAnimation('wendyNTModel', 'Jumping');
+        this.playModelAnimation('wendyModel', 'Jumping');
         this.showNextButton('scene4');
     });   
 
