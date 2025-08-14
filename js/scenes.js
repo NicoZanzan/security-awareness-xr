@@ -81,11 +81,10 @@ ARExperience.prototype.scene1 = function() {
     
     // Wendy NT model creation and placement
     this.wendyNTModel.position.set(0, 1.5, -7); 
-    this.wendyNTModel.rotation.y = -Math.PI / 2; // 90 degrees clockwise
     this.scene.add(this.wendyNTModel);     
     this.wendyNTModel.name = "wendyNTModel";
 
-    this.playModelAnimation('wendyNTModel', 'Jumping'); // Play initial animation
+    this.playModelAnimation('wendyNTModel', 'Humping'); // Play initial animation
         
     this.makeModelClickable(this.startButtonModel, () => {
         this.moveModel("wendyNTModel", 
@@ -145,7 +144,7 @@ ARExperience.prototype.scene3 = function() {
     this.playAudio('audioQuizIntro');
     
    this.addModelsToScene([
-        { name: 'wendyNTModel', x: -10, y: -10, z: -7, rotation: -Math.PI / 2 }, 
+        { name: 'Wendy', x: -10, y: -10, z: -7}, 
         { name: 'Bird', x: 10, y: 10, z: -7, rotation: -Math.PI / 2 + Math.PI / 9 - Math.PI / 18 - Math.PI / 18 + Math.PI / 4 },
         { name: 'Sofa', x: 10, y: 10, z: 7, rotation: -3 * Math.PI / 4 - (140 * Math.PI / 180) - (10 * Math.PI / 180) + Math.PI / 4 },
         { name: 'Park', x: 10, y: 10, z: -7, rotation: -Math.PI + (35 * Math.PI / 180) - (45 * Math.PI / 180) - (30 * Math.PI / 180) - (20 * Math.PI / 180) - (10 * Math.PI / 180) - Math.PI / 4 },
@@ -153,8 +152,8 @@ ARExperience.prototype.scene3 = function() {
     ]);
     
    // Wendy stays at the same position (0° - front)
-    this.wendyNTModel.visible = true; 
-    this.moveModel("wendyNTModel", 
+    this.Wendy.visible = true; 
+    this.moveModel("Wendy", 
         {x: 0, y: 0.7, z: -7},  // 0° - North (front) - UNCHANGED
         8                   
     );
@@ -188,7 +187,6 @@ ARExperience.prototype.scene3 = function() {
         {x: 2.88, y: 0.7, z: 3.97},  // 144° - Southeast (radius 4.9)
         5                    
     );
-
 
         
     this.makeModelClickable(this.Laptop, () => {       

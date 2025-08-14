@@ -348,6 +348,7 @@ class ARExperience {
             
             // Load Scene 3 models in parallel
            const scene3Loads = [
+                loadGLB('./assets/models/wendyModel.glb', 'Wendy'),
                 loadGLB('./assets/models/A_bird.glb', 'Bird'),
                 loadGLB('./assets/models/B_laptop.glb', 'Laptop'),
                 loadGLB('./assets/models/C_sofa.glb', 'Sofa'),
@@ -360,10 +361,11 @@ class ARExperience {
             const results = await Promise.all(scene3Loads);
             
             // Assign results  
-            [this.A_birdGLB, this.B_laptopGLB, this.C_sofaGLB,
+            [this.wendyModelGLB, this.A_birdGLB, this.B_laptopGLB, this.C_sofaGLB,
              this.D_parkGLB, this.correctGLB, this.incorrectGLB] = results;
             
             // Extract scenes
+            this.Wendy =
             this.Bird = this.A_birdGLB.scene;
             this.Laptop = this.B_laptopGLB.scene;
             this.Sofa = this.C_sofaGLB.scene;
