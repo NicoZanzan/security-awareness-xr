@@ -178,51 +178,56 @@ class ARExperience {
     }
 
     // SCENE 1 RESOURCES (Essential - loaded first)
-    async loadScene1Resources() {
-        const loader = new THREE.GLTFLoader();
+  // SCENE 1 RESOURCES (Essential - loaded first)
+async loadScene1Resources() {
+    const loader = new THREE.GLTFLoader();
+    
+    const loadGLB = (path, name) => {
+        return new Promise((resolve, reject) => {
+            loader.load(
+                path,
+                (gltf) => {
+                    console.log(`✅ Loaded: ${name}`);
+                    resolve(gltf);
+                },
+                (progress) => {
+                    const percent = Math.round((progress.loaded / progress.total) * 100);
+                    this.updateLoadingProgress(`Loading ${name}: ${percent}%`, percent);
+                },
+                (error) => {
+                    console.error(`❌ Failed to load ${path}:`, error);
+                    reject(error);
+                }
+            );
+        });
+    };
+
+    try {
+        console.log('📦 Loading Scene 1 (Essential) Resources...');
         
-        const loadGLB = (path, name) => {
-            return new Promise((resolve, reject) => {
-                loader.load(
-                    path,
-                    (gltf) => {
-                        console.log(`✅ Loaded: ${name}`);
-                        resolve(gltf);
-                    },
-                    (progress) => {
-                        const percent = Math.round((progress.loaded / progress.total) * 100);
-                        this.updateLoadingProgress(`Loading ${name}: ${percent}%`, percent);
-                    },
-                    (error) => {
-                        console.error(`❌ Failed to load ${path}:`, error);
-                        reject(error);
-                    }
-                );
-            });
-        };
+        // Scene 1 Models (blocking - needed immediately)
+        this.startButtonModelGLB = await loadGLB('./assets/models/startButtonModel.glb', 'Start Button');
+        this.startButtonModel = this.startButtonModelGLB.scene;
+        
+        this.wendyNTModelGLB = await loadGLB('./assets/models/wendyNTModel.glb', 'WendyNT');
+        this.wendyNTModel = this.wendyNTModelGLB.scene;
 
-        try {
-            console.log('📦 Loading Scene 1 (Essential) Resources...');
-            
-            // Scene 1 Models (blocking - needed immediately)
-            this.startButtonModelGLB = await loadGLB('./assets/models/startButtonModel.glb', 'Start Button');
-            this.startButtonModel = this.startButtonModelGLB.scene;
-            
-            this.wendyNTModelGLB = await loadGLB('./assets/models/wendyNTModel.glb', 'WendyNT');
-            this.wendyNTModel = this.wendyNTModelGLB.scene;
+        // ADD QUIT BUTTON TO ESSENTIAL LOADING - needed for Scene 4
+        this.quitButtonModelGLB = await loadGLB('./assets/models/quitButtonModel.glb', 'Quit Button');
+        this.quitButtonModel = this.quitButtonModelGLB.scene;
 
-            // Scene 1 Audio (essential)
-            this.audioIntroMsg = new Audio('./assets/audio/audioIntroMsg.mp3');
-            // Don't preload - let it load when played
-            
-            this.loadingStates.scene1 = true;
-            console.log('✅ Scene 1 resources loaded - app ready to start');
-            
-        } catch (error) {
-            console.error('❌ Scene 1 loading failed:', error);
-            throw error;
-        }
+        // Scene 1 Audio (essential)
+        this.audioIntroMsg = new Audio('./assets/audio/audioIntroMsg.mp3');
+        
+        this.loadingStates.scene1 = true;
+        console.log('✅ Scene 1 resources loaded - app ready to start');
+        
+    } catch (error) {
+        console.error('❌ Scene 1 loading failed:', error);
+        throw error;
     }
+}
+
 
     // Load remaining scenes in background (non-blocking)
     async loadRemainingResources() {
@@ -386,46 +391,45 @@ class ARExperience {
     }
 
     // SCENE 4 RESOURCES (Finale scene)  
-    async loadScene4Resources() {
-        const loader = new THREE.GLTFLoader();
-        
-        const loadGLB = (path, name) => {
-            return new Promise((resolve, reject) => {
-                loader.load(path, resolve, undefined, (error) => {
-                    console.warn(`⚠️ Failed to load ${name}:`, error);
-                    reject(error);
-                });
+    // SCENE 4 RESOURCES (Finale scene)  
+async loadScene4Resources() {
+    const loader = new THREE.GLTFLoader();
+    
+    const loadGLB = (path, name) => {
+        return new Promise((resolve, reject) => {
+            loader.load(path, resolve, undefined, (error) => {
+                console.warn(`⚠️ Failed to load ${name}:`, error);
+                reject(error);
             });
-        };
+        });
+    };
 
-        try {
-            console.log('📦 Loading Scene 4 Resources...');
-            
-            // Load Scene 4 models
-            const scene4Loads = [
-                loadGLB('./assets/models/quitButtonModel.glb', 'Quit Button'),
-                loadGLB('./assets/models/pauseButtonModel.glb', 'Pause Button'),
-                loadGLB('./assets/models/nextButtonModel.glb', 'Next Button')
-            ];
+    try {
+        console.log('📦 Loading Scene 4 Resources...');
+        
+        // Load Scene 4 models (quit button now in Scene 1)
+        const scene4Loads = [
+            loadGLB('./assets/models/pauseButtonModel.glb', 'Pause Button'),
+            loadGLB('./assets/models/nextButtonModel.glb', 'Next Button')
+        ];
 
-            const results = await Promise.all(scene4Loads);
-            
-            // Assign results
-            [this.quitButtonModelGLB, this.pauseButtonModelGLB, 
-             this.nextButtonModelGLB] = results;
-            
-            // Extract scenes
-            this.quitButtonModel = this.quitButtonModelGLB.scene;
-            this.pauseButtonModel = this.pauseButtonModelGLB.scene;
-            this.nextButtonModel = this.nextButtonModelGLB.scene;
-            
-            this.loadingStates.scene4 = true;
-            console.log('✅ Scene 4 resources loaded');
-            
-        } catch (error) {
-            console.warn('⚠️ Scene 4 loading failed:', error);
-        }
+        const results = await Promise.all(scene4Loads);
+        
+        // Assign results (quit button removed)
+        [this.pauseButtonModelGLB, this.nextButtonModelGLB] = results;
+        
+        // Extract scenes (quit button removed)
+        this.pauseButtonModel = this.pauseButtonModelGLB.scene;
+        this.nextButtonModel = this.nextButtonModelGLB.scene;
+        
+        this.loadingStates.scene4 = true;
+        console.log('✅ Scene 4 resources loaded');
+        
+    } catch (error) {
+        console.warn('⚠️ Scene 4 loading failed:', error);
     }
+}
+
 
     async setupControls() {
         // 1. Check for WebXR support
