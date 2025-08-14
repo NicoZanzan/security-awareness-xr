@@ -114,7 +114,6 @@ ARExperience.prototype.scene2 = function() {
     this.addModelsToScene([
         { name: 'cafeModelS3', y:1 },
         { name: 'doc1Model', y:1 },
-        { name: 'doc2Model', y:1 },
         { name: 'wendyModel', y:1 },
         { name: 'mendyModel', y:1, z: -3 },
         { name: 'word1Model', y:1 },

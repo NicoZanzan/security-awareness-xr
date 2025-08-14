@@ -263,7 +263,6 @@ class ARExperience {
                 loadGLB('./assets/models/wendyModel.glb', 'Wendy'),
                 loadGLB('./assets/models/mendyModel.glb', 'Mendy'),
                 loadGLB('./assets/models/doc1Model.glb', 'Document 1'),
-                loadGLB('./assets/models/doc2Model.glb', 'Document 2'),
                 loadGLB('./assets/models/word1Model.glb', 'Word 1'),
                 loadGLB('./assets/models/word2Model.glb', 'Word 2'),
                 loadGLB('./assets/models/word3Model.glb', 'Word 3'),
@@ -275,7 +274,7 @@ class ARExperience {
             
             // Assign results
             [this.cafeModelS3GLB, this.wendyModelGLB, this.mendyModelGLB, 
-             this.doc1ModelGLB, this.doc2ModelGLB, this.word1ModelGLB, 
+             this.doc1ModelGLB, this.word1ModelGLB, 
              this.word2ModelGLB, this.word3ModelGLB, this.sunglassesModelGLB, 
              this.wendyGlassesModelS3GLB] = results;
             
@@ -284,7 +283,6 @@ class ARExperience {
             this.wendyModel = this.wendyModelGLB.scene;
             this.mendyModel = this.mendyModelGLB.scene;
             this.doc1Model = this.doc1ModelGLB.scene;
-            this.doc2Model = this.doc2ModelGLB.scene;
             this.word1Model = this.word1ModelGLB.scene;
             this.word2Model = this.word2ModelGLB.scene;
             this.word3Model = this.word3ModelGLB.scene;
@@ -298,7 +296,6 @@ class ARExperience {
             this.scene2ModelAnimations = [
                 { modelName: 'cafeModelS3', animationName: 'CafeAction' },
                 { modelName: 'doc1Model', animationName: 'document_1Action' },
-                { modelName: 'doc2Model', animationName: 'document_2Action' },
                 { modelName: 'mendyModel', animationName: 'MendyAction' },
                 { modelName: 'wendyModel', animationName: 'Romy-WendyAction' },
                 { modelName: 'word1Model', animationName: 'S1_wordAction' },
