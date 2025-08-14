@@ -225,17 +225,23 @@ ARExperience.prototype.scene4 = function() {
     
     this.wendyModel.visible = true;
 
+    // Fix quit button setup to match working buttons
     this.quitButtonModel.position.set(0, 0, -1.5); 
-    this.scaleModel(this.quitButtonModel, 0.3);      
+    this.quitButtonModel.scale.set(0.3, 0.3, 0.3); // Use direct scale like other buttons
+    this.quitButtonModel.visible = true; // Ensure it's visible
+    this.quitButtonModel.updateMatrixWorld(true); // Force matrix update
     this.scene.add(this.quitButtonModel);  
+    this.quitButtonModel.name = 'quitButtonModel'; // Add name for debugging
 
-    this.makeModelClickable(this.quitButtonModel, () => {        
+    // Make sure it's clickable
+    this.makeModelClickable(this.quitButtonModel, () => {
+        console.log('Quit button clicked!'); // Add debug log        
         this.finishAR();
     });
 
     // Optional: Add farewell animation
-   
 };
+
 
 // ============== LEGACY METHODS (IMPROVED) ==============
 
