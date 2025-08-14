@@ -123,13 +123,13 @@ ARExperience.prototype.scene2 = function() {
         { name: 'wendyGlassesModelS3', y:1},
     ]);       
     
-    this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
+    //this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
     
     const estimatedDuration = 35000; // 35 seconds
     setTimeout(() => {       
          this.showNextButton('scene3');        
-    }, estimatedDuration);
-    //}, 1000);  
+    //}, estimatedDuration);
+    }, 1000);  
 };
 
 
@@ -146,76 +146,65 @@ ARExperience.prototype.scene3 = function() {
     
     this.addModelsToScene([
         { name: 'wendyNTModel', x: -10, y: -10, z: -7, rotation: -Math.PI / 2 }, 
-        { name: 'tabletModel', x: 10, y: 10, z: -7 },
-        { name: 'laptopModel', x: 10, y: 10, z: 7},
-        { name: 'tableModel', x: 10, y: 10, z: -7 },
-        { name: 'flatTableModel', x: 10, y: 10, z: -7 },
-        { name: 'notebookModel', x: 10, y: 10, z: -7 },        
+        { name: 'Bird', x: 10, y: 10, z: -7 },
+        { name: 'Sofa', x: 10, y: 10, z: 7},
+        { name: 'Park', x: 10, y: 10, z: -7 },
+        { name: 'Laptop', x: 10, y: 10, z: -7 },             
     ]);     
     
+    // Wendy stays at the same position (0° - front)
     this.wendyNTModel.visible = true; 
     this.moveModel("wendyNTModel", 
-        {x: 0, y: 1.7, z: -7},  // 0° - North (front)
+        {x: 0, y: 1.7, z: -7},  // 0° - North (front) - UNCHANGED
         8                   
     );
 
-    this.laptopModel.visible = true; 
-    this.moveModel("laptopModel", 
-        {x: 6.06, y: 1.7, z: -3.5},  // 60° - Northeast (right from wendy)
+    // Bird at 72° (northeast) - closer to Wendy
+    this.Bird.visible = true; 
+    this.moveModel("Bird", 
+        {x: 4.66, y: 1.7, z: -1.44},  // 72° - Northeast (radius 4.9)
         5                   
     );  
 
-    this.tabletModel.visible = true; 
-    this.moveModel("tabletModel", 
-        {x: 6.06, y: 1.7, z: 3.5},  // 120° - Southeast
+    // Sofa at 144° (southeast) - closer to Wendy
+    this.Sofa.visible = true; 
+    this.moveModel("Sofa", 
+        {x: 2.88, y: 1.7, z: 3.97},  // 144° - Southeast (radius 4.9)
         5                   
     );  
 
-    this.tableModel.visible = true; 
-    this.moveModel("tableModel", 
-        {x: 0, y: 1.7, z: 7},  // 180° - South (back)
+    // Park at 216° (southwest) - closer to Wendy
+    this.Park.visible = true; 
+    this.moveModel("Park", 
+        {x: -2.88, y: 1.7, z: 3.97},  // 216° - Southwest (radius 4.9)
         5                   
     );  
 
-    this.flatTableModel.visible = true; 
-    this.moveModel("flatTableModel", 
-        {x: -6.06, y: 1.7, z: 3.5},  // 240° - Southwest
-        5                   
-    );  
-
-    this.notebookModel.visible = true; 
-    this.moveModel("notebookModel", 
-        {x: -6.06, y: 1.7, z: -3.5},  // 300° - Northwest
+    // Laptop at 288° (northwest) - closer to Wendy
+    this.Laptop.visible = true; 
+    this.moveModel("Laptop", 
+        {x: -4.66, y: 1.7, z: -1.44},  // 288° - Northwest (radius 4.9)
         5                   
     );
 
         
-    this.makeModelClickable(this.laptopModel, () => {
-        console.log('💻 Laptop clicked!');
+    this.makeModelClickable(this.Laptop, () => {       
         this.playAudio('audioCorrectAnswer'); 
         this.playModelAnimation('wendyNTModel', 'Jumping');
         this.showNextButton('scene4');
     });   
 
-    this.makeModelClickable(this.notebookModel, () => {
-        console.log('📓 Notebook clicked!');
+    this.makeModelClickable(this.Bird, () => {       
         this.playAudio('audioWrongAnswer');       
     });  
 
-    this.makeModelClickable(this.tableModel, () => {
-        console.log('🪑 Table clicked!');
+    this.makeModelClickable(this.Sofa, () => {       
         this.playAudio('audioWrongAnswer');       
     });  
 
-    this.makeModelClickable(this.flatTableModel, () => {
-        console.log('📋 Flat Table clicked!');
+    this.makeModelClickable(this.Park, () => {       
         this.playAudio('audioWrongAnswer');       
-    }); 
-    
-    this.makeModelClickable(this.tabletModel, () => {
-        console.log('📱 Tablet clicked!');
-        this.playAudio('audioWrongAnswer');       
-    });    
+    });  
    
 };
 
