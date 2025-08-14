@@ -447,11 +447,7 @@ class ARExperience {
                     });
                     
                     await this.renderer.xr.setSession(this.session);
-                    this.isXRActive = true;                
-                    
-                    // Set up XR controller (moved from setupInteraction)
-                    // this.controller = this.renderer.xr.getController(0);
-                    // this.scene.add(this.controller);
+                    this.isXRActive = true;                  
 
                     // Create raycaster line for controller when in AR/VR mode
                      if (this.session) {  // If we're in AR/VR mode

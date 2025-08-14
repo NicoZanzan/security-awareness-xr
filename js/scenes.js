@@ -192,7 +192,7 @@ ARExperience.prototype.scene3 = function() {
         
     this.makeModelClickable(this.Laptop, () => {       
         this.playAudio('audioCorrectAnswer'); 
-        this.playModelAnimation('wendyModel', 'Jumping');
+        this.playModelAnimation('wendyNTModel', 'Jumping');
         this.showNextButton('scene4');
     });   
 
