@@ -145,7 +145,7 @@ ARExperience.prototype.scene3 = function() {
     this.playAudio('audioQuizIntro');
     
    this.addModelsToScene([
-        { name: 'Wendy', x: -10, y: -10, z: -7}, 
+        { name: 'Wendy', x: -10, y: -10, z: -7, rotation: -Math.PI / 2}, 
         { name: 'Bird', x: 10, y: 10, z: -7, rotation: -Math.PI / 2 + Math.PI / 9 - Math.PI / 18 - Math.PI / 18 + Math.PI / 4 },
         { name: 'Sofa', x: 10, y: 10, z: 7, rotation: -3 * Math.PI / 4 - (140 * Math.PI / 180) - (10 * Math.PI / 180) + Math.PI / 4 },
         { name: 'Park', x: 10, y: 10, z: -7, rotation: -Math.PI + (35 * Math.PI / 180) - (45 * Math.PI / 180) - (30 * Math.PI / 180) - (20 * Math.PI / 180) - (10 * Math.PI / 180) - Math.PI / 4 },
