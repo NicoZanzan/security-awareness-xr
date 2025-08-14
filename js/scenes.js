@@ -221,12 +221,12 @@ ARExperience.prototype.scene4 = function() {
     });   
 
     this.addModelsToScene([       
-        { name: 'wendyModel', y:1 },       
+        { name: 'wendyModel', x: 0, y: 0.7, z: -7},       
     ]); 
     
     this.wendyModel.visible = true;
 
-    this.quitButtonModel.position.set(0, 1, -1.5); 
+    this.quitButtonModel.position.set(0, 0, -1.5); 
     this.scaleModel(this.quitButtonModel, 0.3);      
     this.scene.add(this.quitButtonModel);  
 
@@ -236,12 +236,7 @@ ARExperience.prototype.scene4 = function() {
     });
 
     // Optional: Add farewell animation
-    if (this.wendyModel) {
-        this.wendyModel.position.set(-2, 1.7, -5);
-        this.scene.add(this.wendyModel);
-        // Uncomment if you have a goodbye animation:
-        this.playModelAnimation('wendyNTModel', 'humping');
-    }
+   
 };
 
 // ============== LEGACY METHODS (IMPROVED) ==============
