@@ -51,130 +51,26 @@ ARExperience.prototype.disposeObject = function(object) {
 };
 
 ARExperience.prototype.finishAR = function() {
-    console.log('Resetting scenes - clearing everything');
-
-    // Clean up interactions
-    if (this.modelInteractions) {
-        this.modelInteractions.clear();
-    }
-
-    // Remove interaction handlers
-    if (this.interactionHandlers) {
-        document.removeEventListener('pointerdown', this.interactionHandlers.pointerDown);
-        document.removeEventListener('pointermove', this.interactionHandlers.pointerMove);
-        document.removeEventListener('pointerup', this.interactionHandlers.pointerUp);
-        
-        if (this.controller && this.interactionHandlers.xrSelect) {
-            console.log("Removing XR controller event listener");
-            this.controller.removeEventListener('select', this.interactionHandlers.xrSelect);
-        }
-        
-        this.interactionHandlers = null;
-        this.modelInteractionHandlerActive = false;
-    }
+    console.log('🔄 Finishing AR experience...');
     
-    // Stop any audio that might be playing
-    if (this.wendyAudio_1) {
-        this.wendyAudio_1.pause();
-        this.wendyAudio_1.currentTime = 0;
-    }
-    
-    if (this.wendyAudio_2) {
-        this.wendyAudio_2.pause();
-        this.wendyAudio_2.currentTime = 0;
-    }
-    
-    // Remove text plate from camera or scene before clearing everything
-    if (this.textPlate) {
-        if (this.uiGroup && this.textPlate.parent === this.uiGroup) {
-            this.uiGroup.remove(this.textPlate);
-        } else if (this.scene) {
-            this.scene.remove(this.textPlate);
-        }
-        
-        // Dispose text plate resources
-        if (this.textPlate.material && this.textPlate.material.map) {
-            this.textPlate.material.map.dispose();
-        }
-        this.disposeObject(this.textPlate);
-    }
-    
-    // Remove UI group from camera if it exists
-    if (this.uiGroup && this.camera) {
-        this.camera.remove(this.uiGroup);
-    }
-    
-    // Clear UI references to ensure they're recreated
-    this.textPlate = null;
-    this.uiGroup = null;
-    
-    // Remove all models from scene
-    if (this.scene) {
-        // Remove all objects from the scene
-        while (this.scene.children.length > 0) {
-            const object = this.scene.children[0];
-            this.scene.remove(object);
-        }
-    }
-    
-    // Dispose of all resources to prevent memory leaks
-    if (this.startButtonModel) this.disposeObject(this.startButtonModel);
-    if (this.pauseButtonModel) this.disposeObject(this.pauseButtonModel);
-    if (this.nextButtonModel) this.disposeObject(this.nextButtonModel);
-    if (this.wendy) this.disposeObject(this.wendy);
-    if (this.mendy) this.disposeObject(this.mendy);
-    if (this.tableModel) this.disposeObject(this.tableModel);
-    
-    // Clear all models
-    this.startButtonModel = null;
-    this.pauseButtonModel = null;
-    this.nextButtonModel = null;
-    this.tableModel = null;
-    this.wendy = null;
-    this.mendy = null;
-    
-    // End WebXR session if active
-    if (this.session) {
-        this.session.end().catch(error => console.error('Error ending XR session:', error));
-        this.session = null;
-    }
-    
-    // Stop animation loop
-    if (this.renderer) {
-        this.renderer.setAnimationLoop(null);
-    }
-    
-    // Reset state
-    this.experienceStarted = false;
-    this.isPaused = false;
-    this.isXRActive = false;
-    
-    // Reset UI
+    // Show end page
     document.getElementById('arView').style.display = 'none';
     document.getElementById('landingPage').style.display = 'none';
     document.getElementById('endPage').style.display = 'block';
     
-    // Set up restart button
+    // Setup restart button to reload page
     const restartButton = document.getElementById('restartButton');
     if (restartButton) {
-        // Remove any existing event listeners to avoid duplicates
         const newButton = restartButton.cloneNode(true);
         restartButton.parentNode.replaceChild(newButton, restartButton);
-        
-        // Add fresh event listener
         newButton.addEventListener('click', () => {
-            // Clear display
-            document.getElementById('endPage').style.display = 'none';
-            document.getElementById('landingPage').style.display = 'block';
-            
-            // Start fresh
-            this.init();
+            window.location.reload(); // Fresh page reload
         });
     }
     
-    // Remove window resize listener
-    window.removeEventListener('resize', this.onWindowResize);
+    console.log('✅ Ready to restart fresh');
 };
+
 
 ARExperience.prototype.playAudio = function(audioName) {
     console.log(`🔍 Trying to play: '${audioName}'`);

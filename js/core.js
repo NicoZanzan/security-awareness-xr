@@ -208,7 +208,7 @@ class ARExperience {
             this.startButtonModelGLB = await loadGLB('./assets/models/startButtonModel.glb', 'Start Button');
             this.startButtonModel = this.startButtonModelGLB.scene;
             
-            this.wendyNTModelGLB = await loadGLB('./assets/models/wendyNTModel.glb', 'Wendy NT');
+            this.wendyNTModelGLB = await loadGLB('./assets/models/wendyNTModel.glb', 'WendyNT');
             this.wendyNTModel = this.wendyNTModelGLB.scene;
 
             // Scene 1 Audio (essential)

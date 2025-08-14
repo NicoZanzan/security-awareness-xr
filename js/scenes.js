@@ -192,9 +192,9 @@ ARExperience.prototype.scene3 = function() {
         
     this.makeModelClickable(this.Laptop, () => {       
         this.playAudio('audioCorrectAnswer'); 
-        this.playModelAnimation('wendyNTModel', 'Jumping');
+        this.playModelAnimation('Wendy', 'Jumping');  // ← Use Scene 3's Wendy, not wendyNTModel
         this.showNextButton('scene4');
-    });   
+    });    
 
     this.makeModelClickable(this.Bird, () => {       
         this.playAudio('audioWrongAnswer');       
@@ -230,8 +230,7 @@ ARExperience.prototype.scene4 = function() {
     this.scaleModel(this.quitButtonModel, 0.3);      
     this.scene.add(this.quitButtonModel);  
 
-    this.makeModelClickable(this.quitButtonModel, () => {
-        
+    this.makeModelClickable(this.quitButtonModel, () => {        
         this.finishAR();
     });
 
@@ -289,7 +288,7 @@ ARExperience.prototype.clearScene = function() {
             this.modelInteractions.delete(model);
         });
         console.log(`🧹 Cleaned up ${modelsToRemove.length} stale interactions, ${this.modelInteractions.size} remaining`);
-    }
+    }    
 
     // Don't reset animation callbacks in XR mode (they might be needed for controller updates)
     if (!this.isXRActive && this._animationCallbacks) {
