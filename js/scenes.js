@@ -143,7 +143,6 @@ ARExperience.prototype.scene3 = function() {
 
     this.playAudio('audioQuizIntro');
     
-<<<<<<< HEAD
    this.addModelsToScene([
         { name: 'Wendy', x: -10, y: -10, z: -7}, 
         { name: 'Bird', x: 10, y: 10, z: -7, rotation: -Math.PI / 2 + Math.PI / 9 - Math.PI / 18 - Math.PI / 18 + Math.PI / 4 },
@@ -155,19 +154,6 @@ ARExperience.prototype.scene3 = function() {
    // Wendy stays at the same position (0° - front)
     this.Wendy.visible = true; 
     this.moveModel("Wendy", 
-=======
-    this.addModelsToScene([
-        { name: 'wendyNTModel', x: -10, y: -10, z: -7, rotation: -Math.PI / 2 }, 
-        { name: 'Bird', x: 10, y: 10, z: -7, rotation: -Math.PI / 2 },
-        { name: 'Sofa', x: 10, y: 10, z: 7, rotation: -3 * Math.PI / 4 },
-        { name: 'Park', x: 10, y: 10, z: -7, rotation: -Math.PI },
-        { name: 'Laptop', x: 10, y: 10, z: -7, rotation: Math.PI / 2 }            
-    ]);     
-    
-    // Wendy stays at the same position (0° - front)
-    this.wendyNTModel.visible = true; 
-    this.moveModel("wendyNTModel", 
->>>>>>> parent of 8ea2df5 (minor changes)
         {x: 0, y: 0.7, z: -7},  // 0° - North (front) - UNCHANGED
         8                   
     );
