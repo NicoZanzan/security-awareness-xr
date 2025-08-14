@@ -227,7 +227,7 @@ ARExperience.prototype.scene4 = function() {
 
     // Fix quit button setup to match working buttons
     this.quitButtonModel.position.set(0, 0, -1.5); 
-    this.quitButtonModel.scale.set(0.3, 0.3, 0.3); // Use direct scale like other buttons
+    this.quitButtonModel.scale.set(0.1, 0.1, 0.1); // Use direct scale like other buttons
     this.quitButtonModel.visible = true; // Ensure it's visible
     this.quitButtonModel.updateMatrixWorld(true); // Force matrix update
     this.scene.add(this.quitButtonModel);  
