@@ -123,13 +123,13 @@ ARExperience.prototype.scene2 = function() {
         { name: 'wendyGlassesModelS3', y:1},
     ]);       
     
-    this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
+    //this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
     
     const estimatedDuration = 35000; // 35 seconds
     setTimeout(() => {       
          this.showNextButton('scene3');        
-    }, estimatedDuration);
-    //}, 1000);  
+    //}, estimatedDuration);
+    }, 1000);  
 };
 
 
@@ -144,15 +144,15 @@ ARExperience.prototype.scene3 = function() {
 
     this.playAudio('audioQuizIntro');
     
-    this.addModelsToScene([
+   this.addModelsToScene([
         { name: 'wendyNTModel', x: -10, y: -10, z: -7, rotation: -Math.PI / 2 }, 
-        { name: 'Bird', x: 10, y: 10, z: -7, rotation: -Math.PI / 2 },
-        { name: 'Sofa', x: 10, y: 10, z: 7, rotation: -3 * Math.PI / 4 },
-        { name: 'Park', x: 10, y: 10, z: -7, rotation: -Math.PI },
-        { name: 'Laptop', x: 10, y: 10, z: -7, rotation: Math.PI / 2 }            
-    ]);     
+        { name: 'Bird', x: 10, y: 10, z: -7, rotation: -Math.PI / 2 + Math.PI / 9 - Math.PI / 18 - Math.PI / 18 + Math.PI / 4 },
+        { name: 'Sofa', x: 10, y: 10, z: 7, rotation: -3 * Math.PI / 4 - (140 * Math.PI / 180) - (10 * Math.PI / 180) + Math.PI / 4 },
+        { name: 'Park', x: 10, y: 10, z: -7, rotation: -Math.PI + (35 * Math.PI / 180) - (45 * Math.PI / 180) - (30 * Math.PI / 180) - (20 * Math.PI / 180) - (10 * Math.PI / 180) - Math.PI / 4 },
+        { name: 'Laptop', x: 10, y: 10, z: -7, rotation: Math.PI / 2 + (135 * Math.PI / 180)}    
+    ]);
     
-    // Wendy stays at the same position (0° - front)
+   // Wendy stays at the same position (0° - front)
     this.wendyNTModel.visible = true; 
     this.moveModel("wendyNTModel", 
         {x: 0, y: 0.7, z: -7},  // 0° - North (front) - UNCHANGED
@@ -168,24 +168,27 @@ ARExperience.prototype.scene3 = function() {
 
     // Sofa at 144° (southeast) - closer to Wendy
     this.Sofa.visible = true; 
-    this.moveModel("Sofa", 
-        {x: 2.88, y: 0.7, z: 3.97},  // 144° - Southeast (radius 4.9)
-        5                   
+    this.moveModel("Sofa",       
+        
+        {x: -2.88, y: 0.7, z: 3.97},  // 216° - Southwest (radius 4.9)
+        5       
     );  
 
     // Park at 216° (southwest) - closer to Wendy
     this.Park.visible = true; 
     this.moveModel("Park", 
-        {x: -2.88, y: 0.7, z: 3.97},  // 216° - Southwest (radius 4.9)
+    
+        {x: -4.66, y: 0.7, z: -1.44},  // 288° - Northwest (radius 4.9)
         5                   
     );  
 
     // Laptop at 288° (northwest) - closer to Wendy
     this.Laptop.visible = true; 
     this.moveModel("Laptop", 
-        {x: -4.66, y: 0.7, z: -1.44},  // 288° - Northwest (radius 4.9)
-        5                   
+        {x: 2.88, y: 0.7, z: 3.97},  // 144° - Southeast (radius 4.9)
+        5                    
     );
+
 
         
     this.makeModelClickable(this.Laptop, () => {       
