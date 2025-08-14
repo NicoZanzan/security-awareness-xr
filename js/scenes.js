@@ -62,7 +62,7 @@ ARExperience.prototype.showNextButton = function(targetScene) {
 ARExperience.prototype.scene1 = function() {    
         
     // Initial text plate creation
-    this.createTextPlate('Welcome - use START below to begin', {
+    this.createTextPlate('Welcome!', {
         backgroundColor: 0x3366cc,
         width: 0.5,
         height: 0.2,
@@ -79,7 +79,7 @@ ARExperience.prototype.scene1 = function() {
     this.scene.add(this.startButtonModel);  
     
     // Wendy NT model creation and placement
-    this.wendyNTModel.position.set(0, 1.5, -7); 
+    this.wendyNTModel.position.set(0, 0.7, -7); 
     this.wendyNTModel.rotation.y = -Math.PI / 2;
     this.scene.add(this.wendyNTModel);     
     this.wendyNTModel.name = "wendyNTModel";
@@ -135,7 +135,7 @@ ARExperience.prototype.scene2 = function() {
 
 ARExperience.prototype.scene3 = function() {    
       
-    this.createTextPlate('Welcome to the Quiz!', {
+    this.createTextPlate('Quiz', {
         backgroundColor: 0x3366cc,
         width: 0.5,
         height: 0.2,
@@ -213,7 +213,7 @@ ARExperience.prototype.scene3 = function() {
 
 ARExperience.prototype.scene4 = function() {
    
-    this.createTextPlate('Thanks for looking around - use QUIT below to finish', {
+    this.createTextPlate('Goodbye!', {
         backgroundColor: 0x3366cc,
         width: 0.5,
         height: 0.2,
