@@ -122,13 +122,13 @@ ARExperience.prototype.scene2 = function() {
         { name: 'wendyGlassesModelS3', y:1},
     ]);       
     
-    this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
+    //this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
     
     const estimatedDuration = 35000; // 35 seconds
     setTimeout(() => {       
          this.showNextButton('scene3');        
-    }, estimatedDuration);
-    //}, 1000);  
+    //}, estimatedDuration);
+    }, 1000);  
 };
 
 
@@ -145,10 +145,10 @@ ARExperience.prototype.scene3 = function() {
     
    this.addModelsToScene([
         { name: 'wendyNTModel', x: -10, y: -10, z: -7, rotation: -Math.PI / 2}, 
-        { name: 'Bird', x: 10, y: 10, z: -7, rotation: -Math.PI / 2 + Math.PI / 9 - Math.PI / 18 - Math.PI / 18 + Math.PI / 4 },
-        { name: 'Sofa', x: 10, y: 10, z: 7, rotation: -3 * Math.PI / 4 - (140 * Math.PI / 180) - (10 * Math.PI / 180) + Math.PI / 4 },
-        { name: 'Park', x: 10, y: 10, z: -7, rotation: -Math.PI + (35 * Math.PI / 180) - (45 * Math.PI / 180) - (30 * Math.PI / 180) - (20 * Math.PI / 180) - (10 * Math.PI / 180) - Math.PI / 4 },
-        { name: 'Laptop', x: 10, y: 10, z: -7, rotation: Math.PI / 2 + (135 * Math.PI / 180)}    
+        { name: 'A_bird', x: 10, y: 10, z: -7, rotation: -Math.PI / 2 + Math.PI / 9 - Math.PI / 18 - Math.PI / 18 + Math.PI / 4 },
+        { name: 'C_sofa', x: 10, y: 10, z: 7, rotation: -3 * Math.PI / 4 - (140 * Math.PI / 180) - (10 * Math.PI / 180) + Math.PI / 4 },
+        { name: 'D_park', x: 10, y: 10, z: -7, rotation: -Math.PI + (35 * Math.PI / 180) - (45 * Math.PI / 180) - (30 * Math.PI / 180) - (20 * Math.PI / 180) - (10 * Math.PI / 180) - Math.PI / 4 },
+        { name: 'B_laptop', x: 10, y: 10, z: -7, rotation: Math.PI / 2 + (135 * Math.PI / 180)}    
     ]);    
     
     this.wendyNTModel.visible = true; 
@@ -157,46 +157,48 @@ ARExperience.prototype.scene3 = function() {
         8                   
     );
    
-    this.Bird.visible = true; 
-    this.moveModel("Bird", 
+    this.A_bird.visible = true; 
+    this.moveModel("A_bird", 
         {x: 4.66, y: 0.7, z: -1.44},  
         5                   
     );
     
-    this.Sofa.visible = true; 
-    this.moveModel("Sofa",       
+    this.C_sofa.visible = true; 
+    this.moveModel("C_sofa",       
         {x: -2.88, y: 0.7, z: 3.97},  
         5       
     );
    
-    this.Park.visible = true; 
-    this.moveModel("Park",        
+    this.D_park.visible = true; 
+    this.moveModel("D_park",        
         {x: -4.66, y: 0.7, z: -1.44}, 
         5                   
     );  
 
-    this.Laptop.visible = true; 
-    this.moveModel("Laptop", 
+    this.B_laptop.visible = true; 
+    this.moveModel("B_laptop", 
        
          {x: 2.88, y: 0.7, z: 3.97},  
         5                    
     );
         
-    this.makeModelClickable(this.Laptop, () => {       
+    this.makeModelClickable(this.B_laptop, () => {       
         this.playAudio('audioCorrectAnswer'); 
         this.playModelAnimation('wendyNTModel', 'Jumping');
         this.showNextButton('scene4');
     });    
 
-    this.makeModelClickable(this.Bird, () => {       
+    this.makeModelClickable(this.A_bird, () => {       
+        this.playAudio('audioWrongAnswer'); 
+        this.playModelAnimation('A_bird' , 'sb_xAction');
+
+    });  
+
+    this.makeModelClickable(this.C_sofa, () => {       
         this.playAudio('audioWrongAnswer');       
     });  
 
-    this.makeModelClickable(this.Sofa, () => {       
-        this.playAudio('audioWrongAnswer');       
-    });  
-
-    this.makeModelClickable(this.Park, () => {       
+    this.makeModelClickable(this.D_park, () => {       
         this.playAudio('audioWrongAnswer');       
     });  
 };

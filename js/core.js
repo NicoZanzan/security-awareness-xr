@@ -354,28 +354,25 @@ async loadScene1Resources() {
             // Load Scene 3 models in parallel
            const scene3Loads = [
                 //loadGLB('./assets/models/wendyNTModel.glb', 'Wendy'),
-                loadGLB('./assets/models/A_bird.glb', 'Bird'),
-                loadGLB('./assets/models/B_laptop.glb', 'Laptop'),
-                loadGLB('./assets/models/C_sofa.glb', 'Sofa'),
-                loadGLB('./assets/models/D_park.glb', 'Park'),
-                loadGLB('./assets/models/correct.glb', 'Correct'),
-                loadGLB('./assets/models/incorrect.glb', 'Incorrect'),
+                loadGLB('./assets/models/A_bird.glb', 'A_bird'),
+                loadGLB('./assets/models/B_laptop.glb', 'B_laptop'),
+                loadGLB('./assets/models/C_sofa.glb', 'C_sofa'),
+                loadGLB('./assets/models/D_park.glb', 'D_park'),               
             ];
 
             const results = await Promise.all(scene3Loads);
             
             // Assign results  
             [this.A_birdGLB, this.B_laptopGLB, this.C_sofaGLB,
-             this.D_parkGLB, this.correctGLB, this.incorrectGLB] = results;
+             this.D_parkGLB] = results;
             
             // Extract scenes
             //this.Wendy = this.wendyNTModelGLB.scene;
-            this.Bird = this.A_birdGLB.scene;
-            this.Laptop = this.B_laptopGLB.scene;
-            this.Sofa = this.C_sofaGLB.scene;
-            this.Park = this.D_parkGLB.scene;
-            this.Correct = this.correctGLB.scene;
-            this.Incorrect = this.incorrectGLB.scene;
+            this.A_bird = this.A_birdGLB.scene;
+            this.B_laptop = this.B_laptopGLB.scene;
+            this.C_sofa = this.C_sofaGLB.scene;
+            this.D_park = this.D_parkGLB.scene;
+           
 
             // Scene 3 Audio
             this.audioQuizIntro = new Audio('./assets/audio/audioQuizIntro.mp3');

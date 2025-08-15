@@ -72,28 +72,22 @@ ARExperience.prototype.finishAR = function() {
 
     // 3. Setup restart button with proper cleanup
     const setupRestartButton = () => {
-        const restartButton = document.getElementById('restartButton');
-        if (!restartButton) return;
+    const restartButton = document.getElementById('restartButton');
+    if (!restartButton) return;
 
-        // Clean clone to remove any existing event listeners
-        const newButton = restartButton.cloneNode(true);
-        restartButton.parentNode.replaceChild(newButton, restartButton);
+    const newButton = restartButton.cloneNode(true);
+    restartButton.parentNode.replaceChild(newButton, restartButton);
 
-        newButton.addEventListener('click', async () => {
-            console.log('🔄 Restarting experience...');
-
-            // Clean up before restart
-            await cleanupXR();
-
-            // Force fresh reload from server
-            window.location.reload(true);
-        });
+    newButton.addEventListener('click', () => {
+        console.log('🔄 Restarting experience...');
+        window.location.reload();
+    });
     };
 
-    // Initialize
-    cleanupXR().then(setupRestartButton);
+        // Initialize
+        cleanupXR().then(setupRestartButton);
 
-    console.log('✅ Ready for restart');
+        console.log('✅ Ready for restart');
 };
 
 
