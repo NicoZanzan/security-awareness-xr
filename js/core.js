@@ -405,31 +405,32 @@ async loadScene4Resources() {
     };
 
     try {
-        console.log('📦 Loading Scene 4 Resources...');
+        console.log('📦 Loading Scene 4 Resources...');        
         
-        // Load Scene 4 models (quit button now in Scene 1)
         const scene4Loads = [
             loadGLB('./assets/models/pauseButtonModel.glb', 'Pause Button'),
-            loadGLB('./assets/models/nextButtonModel.glb', 'Next Button')
+            loadGLB('./assets/models/nextButtonModel.glb', 'Next Button'),
+            loadGLB('./assets/models/wendyNTModel.glb', 'Wendy'),
+            
         ];
 
         const results = await Promise.all(scene4Loads);
         
         // Assign results (quit button removed)
-        [this.pauseButtonModelGLB, this.nextButtonModelGLB] = results;
+        [this.pauseButtonModelGLB, this.nextButtonModelGLB, this.wendyNTModelGLB] = results;
         
         // Extract scenes (quit button removed)
         this.pauseButtonModel = this.pauseButtonModelGLB.scene;
-        this.nextButtonModel = this.nextButtonModelGLB.scene;
+        this.nextButtonModel = this.nextButtonModelGLB.scene;  
+        this.Wendy = this.wendyNTModelGLB.scene;      
         
         this.loadingStates.scene4 = true;
         console.log('✅ Scene 4 resources loaded');
         
-    } catch (error) {
-        console.warn('⚠️ Scene 4 loading failed:', error);
+        } catch (error) {
+            console.warn('⚠️ Scene 4 loading failed:', error);
+        }
     }
-}
-
 
     async setupControls() {
         // 1. Check for WebXR support

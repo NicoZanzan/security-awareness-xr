@@ -103,7 +103,7 @@ ARExperience.prototype.scene1 = function() {
 
 ARExperience.prototype.scene2 = function() {     
 
-    this.createTextPlate('Chapter 1: 3D Video', {
+    this.createTextPlate('3D Video', {
        backgroundColor: 0x3366cc,
         width: 0.5,
         height: 0.2,
@@ -192,7 +192,7 @@ ARExperience.prototype.scene3 = function() {
         
     this.makeModelClickable(this.Laptop, () => {       
         this.playAudio('audioCorrectAnswer'); 
-        this.playModelAnimation('Wendy', 'Jumping');  // ← Use Scene 3's Wendy, not wendyNTModel
+        this.playModelAnimation('wendyNTModel', 'Jumping');
         this.showNextButton('scene4');
     });    
 
@@ -218,28 +218,29 @@ ARExperience.prototype.scene4 = function() {
         height: 0.2,
         yOffset: 0.29  // Slightly below center
     });   
-
-    this.addModelsToScene([       
-        { name: 'wendyModel', x: 0, y: 0.7, z: -7},       
-    ]); 
     
-    this.wendyModel.visible = true;
+    this.scene.add(this.wendyNTModel); 
+    
+    this.wendyNTModel.visible = true;
+
+    this.wendyNTModel.position.set(0, 0.7, -7);      
+
+    // Play farewell animation
+    this.playModelAnimation('wendyNTModel', 'Jumping');
+   
 
     // Fix quit button setup to match working buttons
     this.quitButtonModel.position.set(0, 0, -1.5); 
     this.quitButtonModel.scale.set(0.1, 0.1, 0.1); // Use direct scale like other buttons
-    this.quitButtonModel.visible = true; // Ensure it's visible
-    this.quitButtonModel.updateMatrixWorld(true); // Force matrix update
-    this.scene.add(this.quitButtonModel);  
-    this.quitButtonModel.name = 'quitButtonModel'; // Add name for debugging
+    this.quitButtonModel.visible = true; // Ensure it's visible   
+    this.scene.add(this.quitButtonModel);    
 
     // Make sure it's clickable
     this.makeModelClickable(this.quitButtonModel, () => {
         console.log('Quit button clicked!'); // Add debug log        
         this.finishAR();
     });
-
-    // Optional: Add farewell animation
+    
 };
 
 
