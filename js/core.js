@@ -419,7 +419,9 @@ async loadScene1Resources() {
         // Extract scenes (quit button removed)
         this.pauseButtonModel = this.pauseButtonModelGLB.scene;
         this.nextButtonModel = this.nextButtonModelGLB.scene;  
-        this.Wendy = this.wendyNTModelGLB.scene;      
+        this.Wendy = this.wendyNTModelGLB.scene;    
+        
+        this.audioFarewell = new Audio('./assets/audio/audioFarewellMsg.mp3');
         
         this.loadingStates.scene4 = true;
         console.log('✅ Scene 4 resources loaded');

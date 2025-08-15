@@ -226,7 +226,7 @@ ARExperience.prototype.scene4 = function() {
 
     // Play farewell animation
     this.playModelAnimation('wendyNTModel', 'Jumping');
-   
+    this.playAudio('audioFarewell');   
 
     // Fix quit button setup to match working buttons
     this.quitButtonModel.position.set(0, 0, -1.5); 
