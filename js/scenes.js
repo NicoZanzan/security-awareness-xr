@@ -241,7 +241,6 @@ ARExperience.prototype.scene4 = function() {
     });    
 };
 
-
 // ============== LEGACY METHODS (IMPROVED) ==============
 
 // ARExperience.prototype.nextScene = function(sceneName) {
