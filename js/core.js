@@ -353,7 +353,7 @@ async loadScene1Resources() {
             
             // Load Scene 3 models in parallel
            const scene3Loads = [
-                loadGLB('./assets/models/wendyNTModel.glb', 'Wendy'),
+                //loadGLB('./assets/models/wendyNTModel.glb', 'Wendy'),
                 loadGLB('./assets/models/A_bird.glb', 'Bird'),
                 loadGLB('./assets/models/B_laptop.glb', 'Laptop'),
                 loadGLB('./assets/models/C_sofa.glb', 'Sofa'),
@@ -365,11 +365,11 @@ async loadScene1Resources() {
             const results = await Promise.all(scene3Loads);
             
             // Assign results  
-            [this.wendyNTModelGLB, this.A_birdGLB, this.B_laptopGLB, this.C_sofaGLB,
+            [this.A_birdGLB, this.B_laptopGLB, this.C_sofaGLB,
              this.D_parkGLB, this.correctGLB, this.incorrectGLB] = results;
             
             // Extract scenes
-            this.Wendy = this.wendyNTModelGLB.scene;
+            //this.Wendy = this.wendyNTModelGLB.scene;
             this.Bird = this.A_birdGLB.scene;
             this.Laptop = this.B_laptopGLB.scene;
             this.Sofa = this.C_sofaGLB.scene;
@@ -389,19 +389,17 @@ async loadScene1Resources() {
             console.warn('⚠️ Scene 3 loading failed:', error);
         }
     }
-
-    // SCENE 4 RESOURCES (Finale scene)  
-    // SCENE 4 RESOURCES (Finale scene)  
-async loadScene4Resources() {
-    const loader = new THREE.GLTFLoader();
-    
-    const loadGLB = (path, name) => {
-        return new Promise((resolve, reject) => {
-            loader.load(path, resolve, undefined, (error) => {
-                console.warn(`⚠️ Failed to load ${name}:`, error);
-                reject(error);
+   
+    async loadScene4Resources() {
+        const loader = new THREE.GLTFLoader();
+        
+        const loadGLB = (path, name) => {
+            return new Promise((resolve, reject) => {
+                loader.load(path, resolve, undefined, (error) => {
+                    console.warn(`⚠️ Failed to load ${name}:`, error);
+                    reject(error);
+                });
             });
-        });
     };
 
     try {
@@ -410,8 +408,7 @@ async loadScene4Resources() {
         const scene4Loads = [
             loadGLB('./assets/models/pauseButtonModel.glb', 'Pause Button'),
             loadGLB('./assets/models/nextButtonModel.glb', 'Next Button'),
-            loadGLB('./assets/models/wendyNTModel.glb', 'Wendy'),
-            
+            loadGLB('./assets/models/wendyNTModel.glb', 'WendyNT'),            
         ];
 
         const results = await Promise.all(scene4Loads);

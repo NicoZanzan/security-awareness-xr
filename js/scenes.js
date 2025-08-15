@@ -84,8 +84,7 @@ ARExperience.prototype.scene1 = function() {
     this.scene.add(this.wendyNTModel);     
     this.wendyNTModel.name = "wendyNTModel";
 
-
-    this.playModelAnimation('wendyNTModel', 'Jumping'); // Play initial animation
+    this.playModelAnimation('wendyNTModel', 'Jumping');
         
     this.makeModelClickable(this.startButtonModel, () => {
         this.moveModel("wendyNTModel", 
@@ -145,7 +144,7 @@ ARExperience.prototype.scene3 = function() {
     this.playAudio('audioQuizIntro');
     
    this.addModelsToScene([
-        { name: 'Wendy', x: -10, y: -10, z: -7, rotation: -Math.PI / 2}, 
+        { name: 'wendyNTModel', x: -10, y: -10, z: -7, rotation: -Math.PI / 2}, 
         { name: 'Bird', x: 10, y: 10, z: -7, rotation: -Math.PI / 2 + Math.PI / 9 - Math.PI / 18 - Math.PI / 18 + Math.PI / 4 },
         { name: 'Sofa', x: 10, y: 10, z: 7, rotation: -3 * Math.PI / 4 - (140 * Math.PI / 180) - (10 * Math.PI / 180) + Math.PI / 4 },
         { name: 'Park', x: 10, y: 10, z: -7, rotation: -Math.PI + (35 * Math.PI / 180) - (45 * Math.PI / 180) - (30 * Math.PI / 180) - (20 * Math.PI / 180) - (10 * Math.PI / 180) - Math.PI / 4 },
@@ -154,8 +153,8 @@ ARExperience.prototype.scene3 = function() {
     
     // Wendy stays at the same position (0° - front)
     // Wendy stays at the same position (0° - front)
-    this.wendyModel.visible = true; 
-    this.moveModel("Wendy", 
+    this.wendyNTModel.visible = true; 
+    this.moveModel("wendyNTModel", 
         {x: 0, y: 0.7, z: -7},  // 0° - North (front) - UNCHANGED
         8                   
     );
@@ -239,8 +238,7 @@ ARExperience.prototype.scene4 = function() {
     this.makeModelClickable(this.quitButtonModel, () => {
         console.log('Quit button clicked!'); // Add debug log        
         this.finishAR();
-    });
-    
+    });    
 };
 
 
