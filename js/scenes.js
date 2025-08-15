@@ -122,13 +122,13 @@ ARExperience.prototype.scene2 = function() {
         { name: 'wendyGlassesModelS3', y:1},
     ]);       
     
-    //this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
+    this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
     
-    //const estimatedDuration = 35000; // 35 seconds
+    const estimatedDuration = 35000; // 35 seconds
     setTimeout(() => {       
          this.showNextButton('scene3');        
-    //}, estimatedDuration);
-    }, 1000);  
+    }, estimatedDuration);
+    //}, 1000);  
 };
 
 
@@ -138,7 +138,7 @@ ARExperience.prototype.scene3 = function() {
         backgroundColor: 0x3366cc,
         width: 0.5,
         height: 0.2,
-        yOffset: 0.29  // Slightly below center
+        yOffset: 0.29  
     }); 
 
     this.playAudio('audioQuizIntro');
@@ -149,45 +149,38 @@ ARExperience.prototype.scene3 = function() {
         { name: 'Sofa', x: 10, y: 10, z: 7, rotation: -3 * Math.PI / 4 - (140 * Math.PI / 180) - (10 * Math.PI / 180) + Math.PI / 4 },
         { name: 'Park', x: 10, y: 10, z: -7, rotation: -Math.PI + (35 * Math.PI / 180) - (45 * Math.PI / 180) - (30 * Math.PI / 180) - (20 * Math.PI / 180) - (10 * Math.PI / 180) - Math.PI / 4 },
         { name: 'Laptop', x: 10, y: 10, z: -7, rotation: Math.PI / 2 + (135 * Math.PI / 180)}    
-    ]);
+    ]);    
     
-    // Wendy stays at the same position (0° - front)
-    // Wendy stays at the same position (0° - front)
     this.wendyNTModel.visible = true; 
     this.moveModel("wendyNTModel", 
-        {x: 0, y: 0.7, z: -7},  // 0° - North (front) - UNCHANGED
+        {x: 0, y: 0.7, z: -7},  
         8                   
     );
-
-    // Bird at 72° (northeast) - closer to Wendy
+   
     this.Bird.visible = true; 
     this.moveModel("Bird", 
-        {x: 4.66, y: 0.7, z: -1.44},  // 72° - Northeast (radius 4.9)
+        {x: 4.66, y: 0.7, z: -1.44},  
         5                   
-    );  
-
-    // Sofa at 144° (southeast) - closer to Wendy
+    );
+    
     this.Sofa.visible = true; 
     this.moveModel("Sofa",       
-        {x: -2.88, y: 0.7, z: 3.97},  // 216° - Southwest (radius 4.9)
+        {x: -2.88, y: 0.7, z: 3.97},  
         5       
-    );  
-
-    // Park at 216° (southwest) - closer to Wendy
+    );
+   
     this.Park.visible = true; 
     this.moveModel("Park",        
-        {x: -4.66, y: 0.7, z: -1.44},  // 288° - Northwest (radius 4.9)
+        {x: -4.66, y: 0.7, z: -1.44}, 
         5                   
     );  
 
-    // Laptop at 288° (northwest) - closer to Wendy
     this.Laptop.visible = true; 
     this.moveModel("Laptop", 
        
-         {x: 2.88, y: 0.7, z: 3.97},  // 144° - Southeast (radius 4.9)
+         {x: 2.88, y: 0.7, z: 3.97},  
         5                    
     );
-
         
     this.makeModelClickable(this.Laptop, () => {       
         this.playAudio('audioCorrectAnswer'); 
@@ -229,7 +222,7 @@ ARExperience.prototype.scene4 = function() {
     this.playAudio('audioFarewell');   
 
     // Fix quit button setup to match working buttons
-    this.quitButtonModel.position.set(0, 0, -1.5); 
+    this.quitButtonModel.position.set(0, 0.3, -1.5); 
     this.quitButtonModel.scale.set(0.1, 0.1, 0.1); // Use direct scale like other buttons
     this.quitButtonModel.visible = true; // Ensure it's visible   
     this.scene.add(this.quitButtonModel);    
