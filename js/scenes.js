@@ -125,7 +125,7 @@ ARExperience.prototype.scene2 = function() {
     
     this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 0);
     
-    const estimatedDuration = 35000; // 35 seconds
+    const estimatedDuration = 1000; // 35 seconds
     setTimeout(() => {       
          this.showNextButton('scene3');        
     }, estimatedDuration);
@@ -158,7 +158,10 @@ this.moveModel("wendyNTModel",
     {x: 0, y: 0.7, z: -5},  // Was -7, now -5
     8                   
 );
-
+//FACIAL ANIMATIONS HERE BUT GLB MODEL NOT WORKING
+// this.playModelAnimation('wendyNTModel', 'Jumping');
+// this.playModelAnimation('wendyNTModel', 'talking');
+// this.playModelAnimation('wendyNTModel', 'Eye_left_');
 this.A_bird.visible = true; 
 this.moveModel("A_bird", 
     {x: 3.3, y: 0.7, z: -1},  // Was 4.66, -1.44
@@ -235,8 +238,9 @@ ARExperience.prototype.scene4 = function() {
     this.playAudio('audioFarewell');   
 
     // Fix quit button setup to match working buttons
-    this.quitButtonModel.position.set(0, 0.3, -1.5); 
-    this.quitButtonModel.scale.set(0.1, 0.1, 0.1); // Use direct scale like other buttons
+    this.quitButtonModel.position.set(0, 0, -1.5); 
+    this.quitButtonModel.scale.set(1, 1, 1); // Same scale as start button
+    this.scaleModel(this.quitButtonModel, 1); // Same scaleModel call as start button
     this.quitButtonModel.visible = true; // Ensure it's visible   
     this.scene.add(this.quitButtonModel);    
 
@@ -244,7 +248,7 @@ ARExperience.prototype.scene4 = function() {
     this.makeModelClickable(this.quitButtonModel, () => {
         console.log('Quit button clicked!'); // Add debug log        
         this.finishAR();
-    });    
+    });   
 };
 
 // ============== LEGACY METHODS (IMPROVED) ==============

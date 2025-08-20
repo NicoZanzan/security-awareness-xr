@@ -213,7 +213,7 @@ async loadScene1Resources() {
         this.wendyNTModel = this.wendyNTModelGLB.scene;
 
         // ADD QUIT BUTTON TO ESSENTIAL LOADING - needed for Scene 4
-        this.quitButtonModelGLB = await loadGLB('./assets/models/quitButtonModel.glb', 'Quit Button');
+        this.quitButtonModelGLB = await loadGLB('./assets/models/Complete_button.glb', 'Quit Button');
         this.quitButtonModel = this.quitButtonModelGLB.scene;
 
         // Scene 1 Audio (essential)
@@ -441,7 +441,7 @@ if (this.D_parkGLB && this.D_parkGLB.animations) {
         // Extract scenes (quit button removed)
         this.pauseButtonModel = this.pauseButtonModelGLB.scene;
         this.nextButtonModel = this.nextButtonModelGLB.scene;  
-        this.Wendy = this.wendyNTModelGLB.scene;    
+        this.wendy = this.wendyNTModelGLB.scene;    
         
         this.audioFarewell = new Audio('./assets/audio/audioFarewellMsg.mp3');
         
@@ -827,9 +827,9 @@ setupMouseTouchInteraction() {
             this.idleMove(this.startButtonModel, timestamp);
         }
         
-        // if (this.pauseButtonModel) {
-        //     this.idleMove(this.pauseButtonModel, timestamp);
-        // }
+        if (this.quitButtonModel) {  
+            this.idleMove(this.quitButtonModel, timestamp);
+        }
         
         if (this.nextButtonModel) {
             this.idleMove(this.nextButtonModel, timestamp);
