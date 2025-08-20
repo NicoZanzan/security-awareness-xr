@@ -84,7 +84,8 @@ ARExperience.prototype.scene1 = function() {
     this.scene.add(this.wendyNTModel);     
     this.wendyNTModel.name = "wendyNTModel";
 
-    this.playModelAnimation('wendyNTModel', 'Jumping', 'SMILE','talking' );
+    this.playModelAnimation('wendyNTModel', 'Jumping' );
+
         
     this.makeModelClickable(this.startButtonModel, () => {
         this.moveModel("wendyNTModel", 
@@ -122,9 +123,9 @@ ARExperience.prototype.scene2 = function() {
         { name: 'wendyGlassesModelS3', y:1},
     ]);       
     
-    this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 10);
+    this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 0);
     
-    const estimatedDuration = 38000; // 35 seconds
+    const estimatedDuration = 35000; // 35 seconds
     setTimeout(() => {       
          this.showNextButton('scene3');        
     }, estimatedDuration);
