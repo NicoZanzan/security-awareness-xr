@@ -357,14 +357,15 @@ async loadScene1Resources() {
                 loadGLB('./assets/models/A_bird.glb', 'A_bird'),
                 loadGLB('./assets/models/B_laptop.glb', 'B_laptop'),
                 loadGLB('./assets/models/C_sofa.glb', 'C_sofa'),
-                loadGLB('./assets/models/D_park.glb', 'D_park'),               
+                loadGLB('./assets/models/D_park.glb', 'D_park'),      
+                loadGLB('./assets/models/Quiz_text1.glb', 'Quiz_text1'),  
             ];
 
             const results = await Promise.all(scene3Loads);
             
             // Assign results  
             [this.A_birdGLB, this.B_laptopGLB, this.C_sofaGLB,
-             this.D_parkGLB] = results;
+             this.D_parkGLB, this.Quiz_text1GLB] = results;
             
             // Extract scenes
             //this.Wendy = this.wendyNTModelGLB.scene;
@@ -372,6 +373,7 @@ async loadScene1Resources() {
             this.B_laptop = this.B_laptopGLB.scene;
             this.C_sofa = this.C_sofaGLB.scene;
             this.D_park = this.D_parkGLB.scene;
+            this.Quiz_text1 = this.Quiz_text1GLB.scene;
            
 
             // Scene 3 Audio
@@ -381,7 +383,30 @@ async loadScene1Resources() {
             
             this.loadingStates.scene3 = true;
             console.log('✅ Scene 3 resources loaded');
-            
+            console.log('=== CHECKING QUIZ MODEL ANIMATIONS ===');
+if (this.A_birdGLB && this.A_birdGLB.animations) {
+    console.log('A_bird animations:', this.A_birdGLB.animations.map(anim => anim.name));
+} else {
+    console.log('A_bird: No animations found');
+}
+
+if (this.B_laptopGLB && this.B_laptopGLB.animations) {
+    console.log('B_laptop animations:', this.B_laptopGLB.animations.map(anim => anim.name));
+} else {
+    console.log('B_laptop: No animations found');
+}
+
+if (this.C_sofaGLB && this.C_sofaGLB.animations) {
+    console.log('C_sofa animations:', this.C_sofaGLB.animations.map(anim => anim.name));
+} else {
+    console.log('C_sofa: No animations found');
+}
+
+if (this.D_parkGLB && this.D_parkGLB.animations) {
+    console.log('D_park animations:', this.D_parkGLB.animations.map(anim => anim.name));
+} else {
+    console.log('D_park: No animations found');
+}
         } catch (error) {
             console.warn('⚠️ Scene 3 loading failed:', error);
         }

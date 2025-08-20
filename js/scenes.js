@@ -148,40 +148,46 @@ ARExperience.prototype.scene3 = function() {
         { name: 'A_bird', x: 10, y: 10, z: -7, rotation: -Math.PI / 2 + Math.PI / 9 - Math.PI / 18 - Math.PI / 18 + Math.PI / 4 },
         { name: 'C_sofa', x: 10, y: 10, z: 7, rotation: -3 * Math.PI / 4 - (140 * Math.PI / 180) - (10 * Math.PI / 180) + Math.PI / 4 },
         { name: 'D_park', x: 10, y: 10, z: -7, rotation: -Math.PI + (35 * Math.PI / 180) - (45 * Math.PI / 180) - (30 * Math.PI / 180) - (20 * Math.PI / 180) - (10 * Math.PI / 180) - Math.PI / 4 },
-        { name: 'B_laptop', x: 10, y: 10, z: -7, rotation: Math.PI / 2 + (135 * Math.PI / 180)}    
+        { name: 'B_laptop', x: 10, y: 10, z: -7, rotation: Math.PI / 2 + (135 * Math.PI / 180)},
+        { name: 'Quiz_text1', x: 10, y: 10, z: -7}   
     ]);    
     
     this.wendyNTModel.visible = true; 
-    this.moveModel("wendyNTModel", 
-        {x: 0, y: 0.7, z: -7},  
-        8                   
-    );
-   
-    this.A_bird.visible = true; 
-    this.moveModel("A_bird", 
-        {x: 4.66, y: 0.7, z: -1.44},  
-        5                   
-    );
-    
-    this.C_sofa.visible = true; 
-    this.moveModel("C_sofa",       
-        {x: -2.88, y: 0.7, z: 3.97},  
-        5       
-    );
-   
-    this.D_park.visible = true; 
-    this.moveModel("D_park",        
-        {x: -4.66, y: 0.7, z: -1.44}, 
-        5                   
-    );  
+this.moveModel("wendyNTModel", 
+    {x: 0, y: 0.7, z: -5},  // Was -7, now -5
+    8                   
+);
 
-    this.B_laptop.visible = true; 
-    this.moveModel("B_laptop", 
-       
-         {x: 2.88, y: 0.7, z: 3.97},  
-        5                    
-    );
-        
+this.A_bird.visible = true; 
+this.moveModel("A_bird", 
+    {x: 3.3, y: 0.7, z: -1},  // Was 4.66, -1.44
+    5                   
+);
+
+this.C_sofa.visible = true; 
+this.moveModel("C_sofa",       
+    {x: -2, y: 0.7, z: 2.8},  // Was -2.88, 3.97
+    5       
+);
+
+this.D_park.visible = true; 
+this.moveModel("D_park",        
+    {x: -3.3, y: 0.7, z: -1}, // Was -4.66, -1.44
+    5                   
+);  
+
+this.B_laptop.visible = true; 
+this.moveModel("B_laptop", 
+    {x: 2, y: 0.7, z: 2.8},  // Was 2.88, 3.97
+    5                    
+);
+this.Quiz_text1.visible = true;
+this.moveModel("Quiz_text1", 
+    {x: 0, y: 1.5, z: -5},  // Same x,z as Wendy but higher y (1.5 instead of 0.7)
+    5  
+);
+this.Quiz_text1.scale.set(1.2, 1.2, 1.2);    
+
     this.makeModelClickable(this.B_laptop, () => {       
         this.playAudio('audioCorrectAnswer'); 
         this.playModelAnimation('wendyNTModel', 'Jumping');
@@ -195,11 +201,15 @@ ARExperience.prototype.scene3 = function() {
     });  
 
     this.makeModelClickable(this.C_sofa, () => {       
-        this.playAudio('audioWrongAnswer');       
+        this.playAudio('audioWrongAnswer');  
+        this.playModelAnimation('C_sofa' , 'sb_xAction');
+     
     });  
 
     this.makeModelClickable(this.D_park, () => {       
-        this.playAudio('audioWrongAnswer');       
+        this.playAudio('audioWrongAnswer');    
+        this.playModelAnimation('D_park' , 'sb_slide_xAction');
+   
     });  
 };
 
