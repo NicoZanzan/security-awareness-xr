@@ -78,23 +78,27 @@ ARExperience.prototype.scene1 = function() {
     this.scaleModel(this.startButtonModel, 1);// 1m in front
     this.scene.add(this.startButtonModel);  
     
-    // Wendy NT model creation and placement
-    this.wendyNTModel.position.set(0, 0.7, -7); 
-    this.wendyNTModel.rotation.y = -Math.PI / 2;
-    this.scene.add(this.wendyNTModel);     
-    this.wendyNTModel.name = "wendyNTModel";
+    // Wendy Jump model creation and placement
+    this.wendyJump.position.set(0, 0.7, -7); 
+    this.wendyJump.rotation.y = 0;
+    this.scene.add(this.wendyJump);     
+    this.wendyJump.name = "wendyJump";
 
-    this.playModelAnimation('wendyNTModel', 'Jumping' );
+    // Play both animations on wendyJump
+    this.playModelAnimation('wendyJump', 'right_eye.002');
+    setTimeout(() => {
+    this.playModelAnimation('wendyJump', 'Romy-WendyAction');
+}, 2000); // 2s delay just about for the jump
 
         
     this.makeModelClickable(this.startButtonModel, () => {
-        this.moveModel("wendyNTModel", 
+        this.moveModel("wendyJump", 
             {x: 1, y: 10, z: -5.5},  
             7                   
         );  
 
         setTimeout(() => {
-            this.wendyNTModel.visible = false;
+            this.wendyJump.visible = false;
             this.startButtonModel.visible = false;
             this.goToScene('scene2'); // NC: Use scene manager
         }, 2000);
