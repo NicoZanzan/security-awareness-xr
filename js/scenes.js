@@ -238,7 +238,7 @@ ARExperience.prototype.scene4 = function() {
     this.playAudio('audioFarewell');   
 
     // Fix quit button setup to match working buttons
-    this.quitButtonModel.position.set(0, -2, -1.5); 
+    this.quitButtonModel.position.set(0, -10, -3); 
     this.quitButtonModel.scale.set(1, 1, 1); // Same scale as start button
     this.scaleModel(this.quitButtonModel, 1); // Same scaleModel call as start button
     this.quitButtonModel.visible = true; // Ensure it's visible   
