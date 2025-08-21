@@ -88,7 +88,7 @@ ARExperience.prototype.scene1 = function() {
     this.wendyJump.position.set(0, 0.7, -7); 
     this.wendyJump.rotation.y = 0;
     this.scene.add(this.wendyJump);     
-    this.wendyJump.name = "wendyJump";
+    this.wendyJump.name = "wendyJump"; 
 
     // Play both animations on wendyJump
     this.playModelAnimation('wendyJump', 'right_eye.002');
@@ -122,15 +122,15 @@ ARExperience.prototype.scene2 = function() {
 
     // NC: Use helper function to add multiple models
     this.addModelsToScene([
-        { name: 'cafeModelS3', y:1 },
-        { name: 'doc1Model', y:1 },
-        { name: 'wendyModel', y:1 },
+        { name: 'cafeModelS3', y:1, z: -3 },
+        { name: 'doc1Model', y:1, z: -3 },
+        { name: 'wendyModel', y:1, z: -3 },
         { name: 'mendyModel', y:1, z: -3 },
-        { name: 'word1Model', y:1 },
-        { name: 'word2Model', y:1 },
-        { name: 'word3Model', y:1 },
-        { name: 'sunglassesModel', y:1 },
-        { name: 'wendyGlassesModelS3', y:1},
+        { name: 'word1Model', y:1, z: -3 },
+        { name: 'word2Model', y:1, z: -3 },
+        { name: 'word3Model', y:1, z: -3 },
+        { name: 'sunglassesModel', y:1, z: -3 },
+        { name: 'wendyGlassesModelS3', y:1, z: -3},
     ]);       
     
     this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 0);
