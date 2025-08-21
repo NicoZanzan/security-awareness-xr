@@ -70,13 +70,19 @@ ARExperience.prototype.scene1 = function() {
     });    
     
     this.playAudio('audioIntroMsg');
-  
+      // IMPORTANT: Reset button parent and ensure it's in world space
+    if (this.startButtonModel.parent) {
+        this.startButtonModel.parent.remove(this.startButtonModel);
+    }
     //this.startButtonModel.position.set(0, 0, 0);  // Reset first
     this.startButtonModel.scale.set(1, 1, 1);
     this.startButtonModel.position.set(0, 0, -2.5);  // Then position
+    this.startButtonModel.rotation.set(0, 0, 0); // Reset rotation
+    this.startButtonModel.updateMatrixWorld(true); // Force update
 
     this.scaleModel(this.startButtonModel, 1);// 1m in front
     this.scene.add(this.startButtonModel);  
+    this.startButtonModel.name = "startButtonModel"; // Ensure name is set
     
     // Wendy Jump model creation and placement
     this.wendyJump.position.set(0, 0.7, -7); 
