@@ -125,7 +125,7 @@ ARExperience.prototype.scene2 = function() {
         { name: 'cafeModelS3', y:1, z: -7 },
         { name: 'doc1Model', y:1, z: -7 },
         { name: 'wendyModel', y:1, z: -7 },
-        { name: 'mendyModel', y:1, z: -7 },
+        { name: 'mendyModel', y:1, z: -3 },
         { name: 'word1Model', y:1, z: -7 },
         { name: 'word2Model', y:1, z: -7 },
         { name: 'word3Model', y:1, z: -7 },
