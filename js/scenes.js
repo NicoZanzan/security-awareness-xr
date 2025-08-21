@@ -135,7 +135,7 @@ ARExperience.prototype.scene2 = function() {
     
     this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 0);
     
-    const estimatedDuration = 3000; // 35 seconds
+    const estimatedDuration = 35000; // 35 seconds
     setTimeout(() => {       
         this.showNextButton('scene3');        
     }, estimatedDuration);
