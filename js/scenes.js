@@ -122,15 +122,15 @@ ARExperience.prototype.scene2 = function() {
 
     // NC: Use helper function to add multiple models
     this.addModelsToScene([
-        { name: 'cafeModelS3', y:1, z: -5 },
-        { name: 'doc1Model', y:1, z: -5 },
-        { name: 'wendyModel', y:1, z: -5 },
-        { name: 'mendyModel', y:1, z: -5 },
-        { name: 'word1Model', y:1, z: -5 },
-        { name: 'word2Model', y:1, z: -5 },
-        { name: 'word3Model', y:1, z: -5 },
-        { name: 'sunglassesModel', y:1, z: -5 },
-        { name: 'wendyGlassesModelS3', y:1, z: -5},
+        { name: 'cafeModelS3', y:1, z: -7 },
+        { name: 'doc1Model', y:1, z: -7 },
+        { name: 'wendyModel', y:1, z: -7 },
+        { name: 'mendyModel', y:1, z: -7 },
+        { name: 'word1Model', y:1, z: -7 },
+        { name: 'word2Model', y:1, z: -7 },
+        { name: 'word3Model', y:1, z: -7 },
+        { name: 'sunglassesModel', y:1, z: -7 },
+        { name: 'wendyGlassesModelS3', y:1, z: -7},
     ]);       
     
     this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 0);
