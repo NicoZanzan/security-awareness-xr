@@ -43,7 +43,7 @@ ARExperience.prototype.showNextButton = function(targetScene) {
     }
 
     // Reset and position next button
-    this.nextButtonModel.position.set(0, 1.7, -1.5);
+    this.nextButtonModel.position.set(0, 1.7, -2.5);
     this.nextButtonModel.rotation.set(0, 0, 0);
     this.nextButtonModel.scale.set(0.5, 0.5, 0.5); // Scale to 0.5m 
     this.nextButtonModel.visible = true;
@@ -73,7 +73,7 @@ ARExperience.prototype.scene1 = function() {
   
     //this.startButtonModel.position.set(0, 0, 0);  // Reset first
     this.startButtonModel.scale.set(1, 1, 1);
-    this.startButtonModel.position.set(0, 0, -1.5);  // Then position
+    this.startButtonModel.position.set(0, 0, -2.5);  // Then position
 
     this.scaleModel(this.startButtonModel, 1);// 1m in front
     this.scene.add(this.startButtonModel);  
@@ -93,7 +93,7 @@ ARExperience.prototype.scene1 = function() {
         
     this.makeModelClickable(this.startButtonModel, () => {
         this.moveModel("wendyJump", 
-            {x: 1, y: 10, z: -5.5},  
+            {x: 1, y: 10, z: -6.5},  
             7                   
         );  
 
