@@ -217,13 +217,16 @@ async loadScene1Resources() {
        this.wendyNTModelGLB = await loadGLB('./assets/models/wendyNTModel.glb', 'WendyNT');
        this.wendyNTModel = this.wendyNTModelGLB.scene;
 
+        this.nextButtonModelGLB = await loadGLB('./assets/models/nextButtonModel.glb', 'Next Button');
+        this.nextButtonModel = this.nextButtonModelGLB.scene;
+
         // ADD QUIT BUTTON TO ESSENTIAL LOADING - needed for Scene 4
         this.quitButtonModelGLB = await loadGLB('./assets/models/Complete_button.glb', 'Quit Button');
         this.quitButtonModel = this.quitButtonModelGLB.scene;
 
         // Scene 1 Audio (essential)
         this.audioIntroMsg = new Audio('./assets/audio/audioIntroMsg.mp3');
-        
+        this.audioFarewell = new Audio('./assets/audio/audioFarewellMsg.mp3'); 
         this.loadingStates.scene1 = true;
         console.log('✅ Scene 1 resources loaded - app ready to start');
         
@@ -433,22 +436,22 @@ if (this.D_parkGLB && this.D_parkGLB.animations) {
         console.log('📦 Loading Scene 4 Resources...');        
         
         const scene4Loads = [
-            loadGLB('./assets/models/pauseButtonModel.glb', 'Pause Button'),
-            loadGLB('./assets/models/nextButtonModel.glb', 'Next Button'),
-            loadGLB('./assets/models/wendyNTModel.glb', 'WendyNT'),            
+            // loadGLB('./assets/models/pauseButtonModel.glb', 'Pause Button'),
+            // loadGLB('./assets/models/nextButtonModel.glb', 'Next Button'),
+            // loadGLB('./assets/models/wendyNTModel.glb', 'WendyNT'),            
         ];
-
+    if (scene4Loads.length > 0) {
         const results = await Promise.all(scene4Loads);
-        
+    }    
         // Assign results (quit button removed)
-        [this.pauseButtonModelGLB, this.nextButtonModelGLB, this.wendyNTModelGLB] = results;
+        // [this.pauseButtonModelGLB, this.wendyNTModelGLB] = results;
         
         // Extract scenes (quit button removed)
-        this.pauseButtonModel = this.pauseButtonModelGLB.scene;
-        this.nextButtonModel = this.nextButtonModelGLB.scene;  
-        this.wendy = this.wendyNTModelGLB.scene;    
+        // this.pauseButtonModel = this.pauseButtonModelGLB.scene;
+        // this.nextButtonModel = this.nextButtonModelGLB.scene;  
+        // this.wendy = this.wendyNTModelGLB.scene;    
         
-        this.audioFarewell = new Audio('./assets/audio/audioFarewellMsg.mp3');
+        // this.audioFarewell = new Audio('./assets/audio/audioFarewellMsg.mp3');
         
         this.loadingStates.scene4 = true;
         console.log('✅ Scene 4 resources loaded');

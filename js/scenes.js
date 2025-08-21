@@ -131,7 +131,7 @@ ARExperience.prototype.scene2 = function() {
     
     const estimatedDuration = 35000; // 35 seconds
     setTimeout(() => {       
-         this.showNextButton('scene3');        
+        this.showNextButton('scene3');        
     }, estimatedDuration);
     //}, 1000);  
 };
@@ -163,7 +163,6 @@ this.moveModel("wendyNTModel",
     8                   
 );
 //FACIAL ANIMATIONS HERE BUT GLB MODEL NOT WORKING
-// this.playModelAnimation('wendyNTModel', 'Jumping');
 // this.playModelAnimation('wendyNTModel', 'talking');
 // this.playModelAnimation('wendyNTModel', 'Eye_left_');
 this.A_bird.visible = true; 
@@ -198,6 +197,7 @@ this.Quiz_text1.scale.set(1.2, 1.2, 1.2);
 
     this.makeModelClickable(this.B_laptop, () => {       
         this.playAudio('audioCorrectAnswer'); 
+        this.playModelAnimation('B_laptop' , 'sb_check_b_Action');
         this.playModelAnimation('wendyNTModel', 'Jumping');
         this.showNextButton('scene4');
     });    
@@ -210,7 +210,7 @@ this.Quiz_text1.scale.set(1.2, 1.2, 1.2);
 
     this.makeModelClickable(this.C_sofa, () => {       
         this.playAudio('audioWrongAnswer');  
-        this.playModelAnimation('C_sofa' , 'sb_xAction');
+        this.playModelAnimation('C_sofa' , 'sb_sofa_xAction');
      
     });  
 
@@ -231,15 +231,18 @@ ARExperience.prototype.scene4 = function() {
         yOffset: 0.29  // Slightly below center
     });   
     
-    this.scene.add(this.wendyNTModel); 
+    this.scene.add(this.wendyJump);  // Changed from wendyNTModel to wendyJump
     
-    this.wendyNTModel.visible = true;
+    this.wendyJump.visible = true;   // Changed from wendyNTModel to wendyJump
 
-    this.wendyNTModel.position.set(0, 0.7, -7);      
+    this.wendyJump.position.set(0, 0.7, -7);  // Changed from wendyNTModel to wendyJump
 
     // Play farewell animation
-    this.playModelAnimation('wendyNTModel', 'Jumping');
+    this.playModelAnimation('wendyJump', 'right_eye.002');  // Changed model and animation
     this.playAudio('audioFarewell');   
+    setTimeout(() => {
+    this.playModelAnimation('wendyJump', 'Romy-WendyAction');
+}, 2000); // 2s delay just about for the jump
 
     // Fix quit button setup to match working buttons
     this.quitButtonModel.position.set(0, 0, -3); 
