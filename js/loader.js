@@ -177,7 +177,6 @@ class ARExperience {
         }
     }
 
-    // SCENE 1 RESOURCES (Essential - loaded first)
   // SCENE 1 RESOURCES (Essential - loaded first)
 async loadScene1Resources() {
     const loader = new THREE.GLTFLoader();

@@ -125,7 +125,7 @@ ARExperience.prototype.scene2 = function() {
         { name: 'cafeModelS3', y:1, z: -7 },
         { name: 'doc1Model', y:1, z: -7 },
         { name: 'wendyModel', y:1, z: -7 },
-        { name: 'mendyModel', y:1, z: 4 },
+        { name: 'mendyModel', y:1, z: 3 },
         { name: 'word1Model', y:1, z: -7 },
         { name: 'word2Model', y:1, z: -7 },
         { name: 'word3Model', y:1, z: -7 },
@@ -134,7 +134,7 @@ ARExperience.prototype.scene2 = function() {
     ]);       
     
     this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 0);
-    
+
     const estimatedDuration = 35000; // 35 seconds
     setTimeout(() => {       
         this.showNextButton('scene3');        
@@ -155,12 +155,12 @@ ARExperience.prototype.scene3 = function() {
     this.playAudio('audioQuizIntro');
     
    this.addModelsToScene([
-        { name: 'wendyNTModel', x: -10, y: -10, z: -7, rotation: -Math.PI / 2}, 
-        { name: 'A_bird', x: 10, y: 10, z: -7, rotation: -Math.PI / 2 + Math.PI / 9 - Math.PI / 18 - Math.PI / 18 + Math.PI / 4 },
-        { name: 'C_sofa', x: 10, y: 10, z: 7, rotation: -3 * Math.PI / 4 - (140 * Math.PI / 180) - (10 * Math.PI / 180) + Math.PI / 4 },
-        { name: 'D_park', x: 10, y: 10, z: -7, rotation: -Math.PI + (35 * Math.PI / 180) - (45 * Math.PI / 180) - (30 * Math.PI / 180) - (20 * Math.PI / 180) - (10 * Math.PI / 180) - Math.PI / 4 },
-        { name: 'B_laptop', x: 10, y: 10, z: -7, rotation: Math.PI / 2 + (135 * Math.PI / 180)},
-        { name: 'Quiz_text1', x: 10, y: 10, z: -7}   
+        { name: 'wendyNTModel', x: -10, y: -10, z: -5, rotation: -Math.PI / 2}, 
+        { name: 'A_bird', x: 10, y: 10, z: -5, rotation: -Math.PI / 2 + Math.PI / 9 - Math.PI / 18 - Math.PI / 18 + Math.PI / 4 },
+        { name: 'C_sofa', x: 10, y: 10, z: 5, rotation: -3 * Math.PI / 4 - (140 * Math.PI / 180) - (10 * Math.PI / 180) + Math.PI / 4 },
+        { name: 'D_park', x: 10, y: 10, z: -5, rotation: -Math.PI + (35 * Math.PI / 180) - (45 * Math.PI / 180) - (30 * Math.PI / 180) - (20 * Math.PI / 180) - (10 * Math.PI / 180) - Math.PI / 4 },
+        { name: 'B_laptop', x: 10, y: 10, z: -5, rotation: Math.PI / 2 + (135 * Math.PI / 180)},
+        { name: 'Quiz_text1', x: 10, y: 10, z: -5}   
     ]);    
     
     this.wendyNTModel.visible = true; 
