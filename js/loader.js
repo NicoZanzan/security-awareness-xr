@@ -1,4 +1,4 @@
-// core.js - Main class initialization and WebXR setup with batched loading
+// loader.js - Main class initialization and WebXR setup with batched loading
 
 class ARExperience {
     constructor() {
