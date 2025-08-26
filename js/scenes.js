@@ -91,10 +91,10 @@ ARExperience.prototype.scene1 = function() {
     this.wendyJump.name = "wendyJump"; 
 
     // Play both animations on wendyJump
-    this.playModelAnimation('wendyJump', 'right_eye.002');
+    this.playModelAnimation('wendyJump', 'jump in');
     setTimeout(() => {
-    this.playModelAnimation('wendyJump', 'Romy-WendyAction');
-}, 2000); // 2s delay just about for the jump
+    this.playModelAnimation('wendyJump', 'hover');
+}, 1500); // 1.5s delay just about for the jump
 
         
     this.makeModelClickable(this.startButtonModel, () => {
@@ -135,7 +135,7 @@ ARExperience.prototype.scene2 = function() {
     
     this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 0);
 
-    const estimatedDuration = 35000; // 35 seconds
+    const estimatedDuration = 1000; // 35 seconds
     setTimeout(() => {       
         this.showNextButton('scene3');        
     }, estimatedDuration);
@@ -155,7 +155,7 @@ ARExperience.prototype.scene3 = function() {
     this.playAudio('audioQuizIntro');
     
    this.addModelsToScene([
-        { name: 'wendyNoMove', x: -10, y: -10, z: -5, rotation: 0}, 
+        { name: 'wendySuccessSpin', x: -10, y: -10, z: -5, rotation: 0}, 
         { name: 'A_bird', x: 10, y: 10, z: -5, rotation: -Math.PI / 2 + Math.PI / 9 - Math.PI / 18 - Math.PI / 18 + Math.PI / 4 },
         { name: 'C_sofa', x: 10, y: 10, z: 5, rotation: -3 * Math.PI / 4 - (140 * Math.PI / 180) - (10 * Math.PI / 180) + Math.PI / 4 },
         { name: 'D_park', x: 10, y: 10, z: -5, rotation: -Math.PI + (35 * Math.PI / 180) - (45 * Math.PI / 180) - (30 * Math.PI / 180) - (20 * Math.PI / 180) - (10 * Math.PI / 180) - Math.PI / 4 },
@@ -163,8 +163,8 @@ ARExperience.prototype.scene3 = function() {
         { name: 'Quiz_text1', x: 10, y: 10, z: -5}   
     ]);    
     
-    this.wendyNoMove.visible = true; 
-    this.moveModel("wendyNoMove", {x: 0, y: 0.7, z: -5}, 8);
+    this.wendySuccessSpin.visible = true; 
+    this.moveModel("wendySuccessSpin", {x: 0, y: 0.7, z: -5}, 8);
 
 //FACIAL ANIMATIONS HERE BUT GLB MODEL NOT WORKING
 // this.playModelAnimation('wendyNTModel', 'talking');
@@ -202,7 +202,7 @@ this.Quiz_text1.scale.set(1.2, 1.2, 1.2);
     this.makeModelClickable(this.B_laptop, () => {       
         this.playAudio('audioCorrectAnswer'); 
         this.playModelAnimation('B_laptop' , 'sb_check_b_Action');
-        this.playModelAnimation('wendyNoMove', 'Jumping');
+        this.playModelAnimation('wendySuccessSpin', 'success-spinAction');
         this.showNextButton('scene4');
     });    
 
@@ -242,10 +242,10 @@ ARExperience.prototype.scene4 = function() {
     this.wendyJump.position.set(0, 0.7, -7);  // Changed from wendyNTModel to wendyJump
 
     // Play farewell animation
-    this.playModelAnimation('wendyJump', 'right_eye.002');  // Changed model and animation
+    this.playModelAnimation('wendyJump', 'jump in');  // Changed model and animation
     this.playAudio('audioFarewell');   
     setTimeout(() => {
-    this.playModelAnimation('wendyJump', 'Romy-WendyAction');
+    this.playModelAnimation('wendyJump', 'hover');
 }, 2000); // 2s delay just about for the jump
 
     // Fix quit button setup to match working buttons
