@@ -213,8 +213,8 @@ async loadScene1Resources() {
         this.wendyJump = this.wendyJumpGLB.scene;
 
 
-        this.wendyNTModelGLB = await loadGLB('./assets/models/wendyNTModel.glb', 'WendyNT');
-        this.wendyNTModel = this.wendyNTModelGLB.scene;
+        // this.wendyNTModelGLB = await loadGLB('./assets/models/wendyNTModel.glb', 'WendyNT');
+        // this.wendyNTModel = this.wendyNTModelGLB.scene;
 
         this.nextButtonModelGLB = await loadGLB('./assets/models/nextButtonModel.glb', 'Next Button');
         this.nextButtonModel = this.nextButtonModelGLB.scene;

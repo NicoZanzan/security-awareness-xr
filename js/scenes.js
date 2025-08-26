@@ -94,7 +94,7 @@ ARExperience.prototype.scene1 = function() {
     this.playModelAnimation('wendyJump', 'jump in');
     setTimeout(() => {
     this.playModelAnimation('wendyJump', 'hover');
-}, 1500); // 1.5s delay just about for the jump
+}, 2000); // 1.5s delay just about for the jump
 
         
     this.makeModelClickable(this.startButtonModel, () => {
@@ -135,7 +135,7 @@ ARExperience.prototype.scene2 = function() {
     
     this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 0);
 
-    const estimatedDuration = 1000; // 35 seconds
+    const estimatedDuration = 35000; // 35 seconds
     setTimeout(() => {       
         this.showNextButton('scene3');        
     }, estimatedDuration);
