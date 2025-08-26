@@ -90,8 +90,6 @@ ARExperience.prototype.finishAR = function() {
         console.log('✅ Ready for restart');
 };
 
-
-
 ARExperience.prototype.playAudio = function(audioName) {
     console.log(`🔍 Trying to play: '${audioName}'`);
     
@@ -138,6 +136,36 @@ ARExperience.prototype.playAudio = function(audioName) {
     return audio;
 };
 
+// NEW: Mobile device detection and distance optimization
+ARExperience.prototype.isMobileDevice = function() {
+    // Check multiple indicators for mobile devices
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isMobileUserAgent = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+    
+    // Check for touch capability and screen size
+    const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const smallScreen = window.screen.width <= 768 || window.screen.height <= 1024;
+    
+    // Check if NOT a VR headset (Quest has specific user agent patterns)
+    const isVRHeadset = /oculus|quest|vr/i.test(userAgent) || 
+                        navigator.xr && this.isXRActive;
+    
+    return (isMobileUserAgent || (hasTouch && smallScreen)) && !isVRHeadset;
+};
 
+ARExperience.prototype.getDistanceMultiplier = function() {
+    // Return distance multiplier based on device type
+    if (this.isMobileDevice()) {
+        return 1.6; // Move objects 60% further away on mobile
+    }
+    return 1.0; // Keep original distances for VR headsets
+};
 
-
+ARExperience.prototype.adjustPositionForDevice = function(x, y, z) {
+    const multiplier = this.getDistanceMultiplier();
+    return {
+        x: x,
+        y: y,
+        z: z * multiplier // Only adjust depth, not lateral/vertical positioning
+    };
+};
