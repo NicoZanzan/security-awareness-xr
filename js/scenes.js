@@ -42,9 +42,8 @@ ARExperience.prototype.showNextButton = function(targetScene) {
         return;
     }
 
-    // UPDATED: Device-aware positioning
-    const buttonPos = this.adjustPositionForDevice(0, 1.7, -2.5);
-    this.nextButtonModel.position.set(buttonPos.x, buttonPos.y, buttonPos.z);
+    // Reset and position next button
+    this.nextButtonModel.position.set(0, 1.7, -2.5);
     this.nextButtonModel.rotation.set(0, 0, 0);
     this.nextButtonModel.scale.set(0.5, 0.5, 0.5); // Scale to 0.5m 
     this.nextButtonModel.visible = true;
@@ -71,18 +70,13 @@ ARExperience.prototype.scene1 = function() {
     });    
     
     this.playAudio('audioIntroMsg');
-    
-    // IMPORTANT: Reset button parent and ensure it's in world space
+      // IMPORTANT: Reset button parent and ensure it's in world space
     if (this.startButtonModel.parent) {
         this.startButtonModel.parent.remove(this.startButtonModel);
     }
-    
-    // UPDATED: Device-aware positioning
-    const startPos = this.adjustPositionForDevice(0, 0, -2.5);
-    const wendyPos = this.adjustPositionForDevice(0, 0.7, -7);
-    
+    //this.startButtonModel.position.set(0, 0, 0);  // Reset first
     this.startButtonModel.scale.set(1, 1, 1);
-    this.startButtonModel.position.set(startPos.x, startPos.y, startPos.z);
+    this.startButtonModel.position.set(0, 0, -2.5);  // Then position
     this.startButtonModel.rotation.set(0, 0, 0); // Reset rotation
     this.startButtonModel.updateMatrixWorld(true); // Force update
 
@@ -91,7 +85,7 @@ ARExperience.prototype.scene1 = function() {
     this.startButtonModel.name = "startButtonModel"; // Ensure name is set
     
     // Wendy Jump model creation and placement
-    this.wendyJump.position.set(wendyPos.x, wendyPos.y, wendyPos.z); 
+    this.wendyJump.position.set(0, 0.7, -7); 
     this.wendyJump.rotation.y = 0;
     this.scene.add(this.wendyJump);     
     this.wendyJump.name = "wendyJump"; 
@@ -99,13 +93,15 @@ ARExperience.prototype.scene1 = function() {
     // Play both animations on wendyJump
     this.playModelAnimation('wendyJump', 'jump in');
     setTimeout(() => {
-        this.playModelAnimation('wendyJump', 'hover');
-    }, 1500); // 1.5s delay just about for the jump
+    this.playModelAnimation('wendyJump', 'hover');
+}, 1500); // 1.5s delay just about for the jump
+
         
     this.makeModelClickable(this.startButtonModel, () => {
-        // UPDATED: Device-aware movement target
-        const targetPos = this.adjustPositionForDevice(1, 10, -6.5);
-        this.moveModel("wendyJump", targetPos, 7);  
+        this.moveModel("wendyJump", 
+            {x: 1, y: 10, z: -6.5},  
+            7                   
+        );  
 
         setTimeout(() => {
             this.wendyJump.visible = false;
@@ -124,23 +120,17 @@ ARExperience.prototype.scene2 = function() {
         yOffset: 0.29  // Slightly below center
     });    
 
-    // UPDATED: Device-aware positioning
-    const multiplier = this.getDistanceMultiplier();
-    const baseZ = -7;
-    const adjustedZ = baseZ * multiplier;
-    const mendyZ = 1 * multiplier;
-
     // NC: Use helper function to add multiple models
     this.addModelsToScene([
-        { name: 'cafeModelS3', y:1, z: adjustedZ },
-        { name: 'doc1Model', y:1, z: adjustedZ },
-        { name: 'wendyModel', y:1, z: adjustedZ },
-        { name: 'mendyModel', y:1, z: mendyZ },
-        { name: 'word1Model', y:1, z: adjustedZ },
-        { name: 'word2Model', y:1, z: adjustedZ },
-        { name: 'word3Model', y:1, z: adjustedZ },
-        { name: 'sunglassesModel', y:1, z: adjustedZ },
-        { name: 'wendyGlassesModelS3', y:1, z: adjustedZ},
+        { name: 'cafeModelS3', y:1, z: -7 },
+        { name: 'doc1Model', y:1, z: -7 },
+        { name: 'wendyModel', y:1, z: -7 },
+        { name: 'mendyModel', y:1, z: 1 },
+        { name: 'word1Model', y:1, z: -7 },
+        { name: 'word2Model', y:1, z: -7 },
+        { name: 'word3Model', y:1, z: -7 },
+        { name: 'sunglassesModel', y:1, z: -7 },
+        { name: 'wendyGlassesModelS3', y:1, z: -7},
     ]);       
     
     this.playback3D(this.scene2ModelAnimations, this.scene2AudioTracks, 0);
@@ -151,6 +141,7 @@ ARExperience.prototype.scene2 = function() {
     }, estimatedDuration);
     //}, 1000);  
 };
+
 
 ARExperience.prototype.scene3 = function() {    
       
@@ -163,41 +154,50 @@ ARExperience.prototype.scene3 = function() {
 
     this.playAudio('audioQuizIntro');
     
-    // UPDATED: Device-aware positioning
-    const multiplier = this.getDistanceMultiplier();
-    
-    this.addModelsToScene([
-        { name: 'wendySuccessSpin', x: -10, y: -10, z: -5 * multiplier, rotation: 0}, 
-        { name: 'A_bird', x: 10, y: 10, z: -5 * multiplier, rotation: -Math.PI / 2 + Math.PI / 9 - Math.PI / 18 - Math.PI / 18 + Math.PI / 4 },
-        { name: 'C_sofa', x: 10, y: 10, z: 5 * multiplier, rotation: -3 * Math.PI / 4 - (140 * Math.PI / 180) - (10 * Math.PI / 180) + Math.PI / 4 },
-        { name: 'D_park', x: 10, y: 10, z: -5 * multiplier, rotation: -Math.PI + (35 * Math.PI / 180) - (45 * Math.PI / 180) - (30 * Math.PI / 180) - (20 * Math.PI / 180) - (10 * Math.PI / 180) - Math.PI / 4 },
-        { name: 'B_laptop', x: 10, y: 10, z: -5 * multiplier, rotation: Math.PI / 2 + (135 * Math.PI / 180)},
-        { name: 'Quiz_text1', x: 10, y: 10, z: -5 * multiplier}   
+   this.addModelsToScene([
+        { name: 'wendySuccessSpin', x: -10, y: -10, z: -5, rotation: 0}, 
+        { name: 'A_bird', x: 10, y: 10, z: -5, rotation: -Math.PI / 2 + Math.PI / 9 - Math.PI / 18 - Math.PI / 18 + Math.PI / 4 },
+        { name: 'C_sofa', x: 10, y: 10, z: 5, rotation: -3 * Math.PI / 4 - (140 * Math.PI / 180) - (10 * Math.PI / 180) + Math.PI / 4 },
+        { name: 'D_park', x: 10, y: 10, z: -5, rotation: -Math.PI + (35 * Math.PI / 180) - (45 * Math.PI / 180) - (30 * Math.PI / 180) - (20 * Math.PI / 180) - (10 * Math.PI / 180) - Math.PI / 4 },
+        { name: 'B_laptop', x: 10, y: 10, z: -5, rotation: Math.PI / 2 + (135 * Math.PI / 180)},
+        { name: 'Quiz_text1', x: 10, y: 10, z: -5}   
     ]);    
     
     this.wendySuccessSpin.visible = true; 
-    this.moveModel("wendySuccessSpin", {x: 0, y: 0.7, z: -5 * multiplier}, 8);
+    this.moveModel("wendySuccessSpin", {x: 0, y: 0.7, z: -5}, 8);
 
-    // UPDATED: Slightly adjusted positioning for mobile readability
-    const lateralSpread = this.isMobileDevice() ? 3.8 : 3.3;
-    const depthNear = -1 * multiplier;
-    const depthFar = 2.8 * multiplier;
+//FACIAL ANIMATIONS HERE BUT GLB MODEL NOT WORKING
+// this.playModelAnimation('wendyNTModel', 'talking');
+// this.playModelAnimation('wendyNTModel', 'Eye_left_');
+this.A_bird.visible = true; 
+this.moveModel("A_bird", 
+    {x: 3.3, y: 0.7, z: -1},  // Was 4.66, -1.44
+    5                   
+);
 
-    this.A_bird.visible = true; 
-    this.moveModel("A_bird", {x: lateralSpread, y: 0.7, z: depthNear}, 5);
+this.C_sofa.visible = true; 
+this.moveModel("C_sofa",       
+    {x: -2, y: 0.7, z: 2.8},  // Was -2.88, 3.97
+    5       
+);
 
-    this.C_sofa.visible = true; 
-    this.moveModel("C_sofa", {x: -2, y: 0.7, z: depthFar}, 5);
+this.D_park.visible = true; 
+this.moveModel("D_park",        
+    {x: -3.3, y: 0.7, z: -1}, // Was -4.66, -1.44
+    5                   
+);  
 
-    this.D_park.visible = true; 
-    this.moveModel("D_park", {x: -lateralSpread, y: 0.7, z: depthNear}, 5);
-
-    this.B_laptop.visible = true; 
-    this.moveModel("B_laptop", {x: 2, y: 0.7, z: depthFar}, 5);
-    
-    this.Quiz_text1.visible = true;
-    this.moveModel("Quiz_text1", {x: 0, y: 1.5, z: -5 * multiplier}, 5);
-    this.Quiz_text1.scale.set(1.2, 1.2, 1.2);    
+this.B_laptop.visible = true; 
+this.moveModel("B_laptop", 
+    {x: 2, y: 0.7, z: 2.8},  // Was 2.88, 3.97
+    5                    
+);
+this.Quiz_text1.visible = true;
+this.moveModel("Quiz_text1", 
+    {x: 0, y: 1.5, z: -5},  // Same x,z as Wendy but higher y (1.5 instead of 0.7)
+    5  
+);
+this.Quiz_text1.scale.set(1.2, 1.2, 1.2);    
 
     this.makeModelClickable(this.B_laptop, () => {       
         this.playAudio('audioCorrectAnswer'); 
@@ -209,18 +209,22 @@ ARExperience.prototype.scene3 = function() {
     this.makeModelClickable(this.A_bird, () => {       
         this.playAudio('audioWrongAnswer'); 
         this.playModelAnimation('A_bird' , 'sb_xAction');
+
     });  
 
     this.makeModelClickable(this.C_sofa, () => {       
         this.playAudio('audioWrongAnswer');  
         this.playModelAnimation('C_sofa' , 'sb_sofa_xAction');
+     
     });  
 
     this.makeModelClickable(this.D_park, () => {       
         this.playAudio('audioWrongAnswer');    
         this.playModelAnimation('D_park' , 'sb_slide_xAction');
+   
     });  
 };
+
 
 ARExperience.prototype.scene4 = function() {
    
@@ -235,21 +239,17 @@ ARExperience.prototype.scene4 = function() {
     
     this.wendyJump.visible = true;   // Changed from wendyNTModel to wendyJump
 
-    // UPDATED: Device-aware positioning
-    const wendyPos = this.adjustPositionForDevice(0, 0.7, -7);
-    const quitPos = this.adjustPositionForDevice(0, 0, -4);
-    
-    this.wendyJump.position.set(wendyPos.x, wendyPos.y, wendyPos.z);
+    this.wendyJump.position.set(0, 0.7, -7);  // Changed from wendyNTModel to wendyJump
 
     // Play farewell animation
     this.playModelAnimation('wendyJump', 'jump in');  // Changed model and animation
     this.playAudio('audioFarewell');   
     setTimeout(() => {
-        this.playModelAnimation('wendyJump', 'hover');
-    }, 2000); // 2s delay just about for the jump
+    this.playModelAnimation('wendyJump', 'hover');
+}, 2000); // 2s delay just about for the jump
 
     // Fix quit button setup to match working buttons
-    this.quitButtonModel.position.set(quitPos.x, quitPos.y, quitPos.z); 
+    this.quitButtonModel.position.set(0, 0, -4); 
     this.quitButtonModel.scale.set(1, 1, 1); // Same scale as start button
     // this.scaleModel(this.quitButtonModel, 1); // Same scaleModel call as start button
     this.quitButtonModel.visible = true; // Ensure it's visible   
@@ -263,6 +263,11 @@ ARExperience.prototype.scene4 = function() {
 };
 
 // ============== LEGACY METHODS (IMPROVED) ==============
+
+// ARExperience.prototype.nextScene = function(sceneName) {
+//     // NC: Simplified - just show the next button
+//     this.showNextButton(sceneName);
+// };
 
 ARExperience.prototype.clearScene = function() {
     console.log('🧹 Clearing scene - hiding all assets');
@@ -322,3 +327,5 @@ ARExperience.prototype.clearScene = function() {
     
     console.log('✅ Scene cleared (XR components preserved)');
 };
+
+
