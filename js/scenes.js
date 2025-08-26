@@ -155,7 +155,7 @@ ARExperience.prototype.scene3 = function() {
     this.playAudio('audioQuizIntro');
     
    this.addModelsToScene([
-        { name: 'wendyNTModel', x: -10, y: -10, z: -5, rotation: -Math.PI / 2}, 
+        { name: 'wendyNoMove', x: -10, y: -10, z: -5, rotation: 0}, 
         { name: 'A_bird', x: 10, y: 10, z: -5, rotation: -Math.PI / 2 + Math.PI / 9 - Math.PI / 18 - Math.PI / 18 + Math.PI / 4 },
         { name: 'C_sofa', x: 10, y: 10, z: 5, rotation: -3 * Math.PI / 4 - (140 * Math.PI / 180) - (10 * Math.PI / 180) + Math.PI / 4 },
         { name: 'D_park', x: 10, y: 10, z: -5, rotation: -Math.PI + (35 * Math.PI / 180) - (45 * Math.PI / 180) - (30 * Math.PI / 180) - (20 * Math.PI / 180) - (10 * Math.PI / 180) - Math.PI / 4 },
@@ -163,11 +163,9 @@ ARExperience.prototype.scene3 = function() {
         { name: 'Quiz_text1', x: 10, y: 10, z: -5}   
     ]);    
     
-    this.wendyNTModel.visible = true; 
-this.moveModel("wendyNTModel", 
-    {x: 0, y: 0.7, z: -5},  // Was -7, now -5
-    8                   
-);
+    this.wendyNoMove.visible = true; 
+    this.moveModel("wendyNoMove", {x: 0, y: 0.7, z: -5}, 8);
+
 //FACIAL ANIMATIONS HERE BUT GLB MODEL NOT WORKING
 // this.playModelAnimation('wendyNTModel', 'talking');
 // this.playModelAnimation('wendyNTModel', 'Eye_left_');
@@ -204,7 +202,7 @@ this.Quiz_text1.scale.set(1.2, 1.2, 1.2);
     this.makeModelClickable(this.B_laptop, () => {       
         this.playAudio('audioCorrectAnswer'); 
         this.playModelAnimation('B_laptop' , 'sb_check_b_Action');
-        this.playModelAnimation('wendyNTModel', 'Jumping');
+        this.playModelAnimation('wendyNoMove', 'Jumping');
         this.showNextButton('scene4');
     });    
 

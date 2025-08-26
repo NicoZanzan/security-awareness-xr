@@ -209,15 +209,19 @@ async loadScene1Resources() {
         this.startButtonModel = this.startButtonModelGLB.scene;
         
      
-       this.wendyJumpGLB = await loadGLB('./assets/models/wendyJump.glb', 'WendyJump');
-       this.wendyJump = this.wendyJumpGLB.scene;
+        this.wendyJumpGLB = await loadGLB('./assets/models/wendyJump.glb', 'WendyJump');
+        this.wendyJump = this.wendyJumpGLB.scene;
 
 
-       this.wendyNTModelGLB = await loadGLB('./assets/models/wendyNTModel.glb', 'WendyNT');
-       this.wendyNTModel = this.wendyNTModelGLB.scene;
+        this.wendyNTModelGLB = await loadGLB('./assets/models/wendyNTModel.glb', 'WendyNT');
+        this.wendyNTModel = this.wendyNTModelGLB.scene;
 
         this.nextButtonModelGLB = await loadGLB('./assets/models/nextButtonModel.glb', 'Next Button');
         this.nextButtonModel = this.nextButtonModelGLB.scene;
+
+        // ADD WendyNoMove for scene 3 
+        this.wendyNoMoveGLB = await loadGLB('./assets/models/Wendy-no-move.glb', 'WendyNoMove');
+        this.wendyNoMove = this.wendyNoMoveGLB.scene;
 
         // ADD QUIT BUTTON TO ESSENTIAL LOADING - needed for Scene 4
         this.quitButtonModelGLB = await loadGLB('./assets/models/Complete_button.glb', 'Quit Button');
