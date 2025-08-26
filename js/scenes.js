@@ -94,7 +94,7 @@ ARExperience.prototype.scene1 = function() {
     this.playModelAnimation('wendyJump', 'jump in');
     setTimeout(() => {
     this.playModelAnimation('wendyJump', 'hover');
-}, 2000); // 1.5s delay just about for the jump
+}, 1500); // 1.5s delay just about for the jump
 
         
     this.makeModelClickable(this.startButtonModel, () => {
@@ -125,7 +125,7 @@ ARExperience.prototype.scene2 = function() {
         { name: 'cafeModelS3', y:1, z: -7 },
         { name: 'doc1Model', y:1, z: -7 },
         { name: 'wendyModel', y:1, z: -7 },
-        { name: 'mendyModel', y:1, z: 3 },
+        { name: 'mendyModel', y:1, z: 1 },
         { name: 'word1Model', y:1, z: -7 },
         { name: 'word2Model', y:1, z: -7 },
         { name: 'word3Model', y:1, z: -7 },
