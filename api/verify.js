@@ -1,6 +1,3 @@
-// === FILE 2: /api/verify.js ===
-// Endpoint to verify if user is still authenticated
-
 export default function handler(req, res) {
     const cookies = parseCookies(req.headers.cookie);
     const isAuthenticated = cookies.authenticated === 'true';

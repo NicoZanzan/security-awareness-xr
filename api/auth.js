@@ -1,7 +1,4 @@
-// === FILE 1: /api/auth.js ===
-// Server-side authentication endpoint
-
-export default function handler(req, res) {
+export default async function handler(req, res) {
     // Only allow POST requests
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Method not allowed' });
