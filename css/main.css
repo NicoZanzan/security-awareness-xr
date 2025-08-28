@@ -1,3 +1,5 @@
+/* Main Application Styles for Security Awareness XR */
+
 /* Reset and Base Styles */
 * {
     margin: 0;
@@ -6,17 +8,23 @@
 }
 
 body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     height: 100vh;
+}
+
+/* Landing Page Styles - Default visible */
+.landing-page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
-}
-
-/* Landing Page Styles */
-.landing-page {
     text-align: center;
     color: white;
     z-index: 100;
@@ -63,7 +71,12 @@ body {
     opacity: 0.8;
 }
 
-/* AR View Styles */
+/* Hide end page by default */
+#endPage {
+    display: none;
+}
+
+/* AR View Styles - Hidden by default */
 .ar-view {
     position: absolute;
     top: 0;
@@ -74,20 +87,210 @@ body {
     display: none;
 }
 
-.error-message {
+/* When AR is active, apply AR body styles */
+body.ar-active {
+    background: #000;
+    overflow: hidden;
+}
+
+#container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 100;
+    color: white;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 400px;
+}
+
+#ui h1 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    color: #4CAF50;
+}
+
+#status {
+    margin: 10px 0;
+    font-size: 14px;
+    color: #e0e0e0;
+}
+
+#gestureStatus {
+    margin: 5px 0;
+    font-size: 12px;
+    color: #FFA726;
+    font-family: monospace;
+}
+
+#controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+}
+
+.btn {
+    background: linear-gradient(45deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    margin: 5px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.btn:hover {
+    background: linear-gradient(45deg, #45a049, #4CAF50);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.btn:disabled {
+    background: #666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+#subtitle {
+    position: absolute;
+    bottom: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+    color: white;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px 25px;
+    border-radius: 10px;
+    font-size: 18px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(76, 175, 80, 0.5);
+    display: none;
+    max-width: 80vw;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.loading-indicator {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: #ff6b6b;
-    background: rgba(0,0,0,0.8);
+    z-index: 300;
+    text-align: center;
+    color: white;
+}
+
+.spinner {
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid #4CAF50;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.gesture-indicator {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    z-index: 100;
+    background: rgba(255, 165, 0, 0.9);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    display: none;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+}
+
+.error-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 0, 0, 0.9);
+    color: white;
     padding: 20px;
     border-radius: 10px;
     text-align: center;
-    z-index: 10;
+    z-index: 1000;
+    max-width: 400px;
 }
 
 #arCanvas {
     width: 100%;
     height: 100%;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    #ui {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        max-width: none;
+        padding: 10px;
+    }
+    
+    #controls {
+        top: auto;
+        bottom: 20px;
+        right: 10px;
+    }
+    
+    .btn {
+        padding: 10px 16px;
+        font-size: 12px;
+    }
+    
+    #subtitle {
+        bottom: 15%;
+        font-size: 16px;
+        padding: 12px 20px;
+    }
+    
+    .landing-page h1 {
+        font-size: 2rem;
+    }
+    
+    .start-button {
+        padding: 15px 30px;
+        font-size: 1.2rem;
+    }
 }
